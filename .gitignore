@@ -1,0 +1,5 @@
+mysql.cnf
+
+.venv
+*.pyc
+.idea/
