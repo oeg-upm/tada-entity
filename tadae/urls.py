@@ -19,10 +19,10 @@ import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'ent_ann_list', views.ent_ann_list),
-    url(r'ent_ann_stored_results', views.ent_ann_stored_results),
-    url(r'ent_ann_raw_results', views.ent_ann_raw_results),
-    url(r'ent_ann_recompute', views.ent_ann_recompute),
-    url(r'ent_ann_add', views.EntAnnAddView.as_view()),
-    url('', views.about),
+    url(r'ent_ann_list', views.ent_ann_list, name="ent_ann_list"),
+    url(r'ent_ann_stored_results', views.ent_ann_stored_results, name="ent_ann_stored_results"),
+    url(r'ent_ann_raw_results', views.ent_ann_raw_results, name="ent_ann_raw_results"),
+    url(r'ent_ann_recompute', views.ent_ann_recompute, name="ent_ann_recompute"),
+    url(r'ent_ann_add', views.EntAnnAddView.as_view(), name="ent_ann_add"),
+    url('', views.about, name="about"),
 ]
