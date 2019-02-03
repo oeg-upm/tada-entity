@@ -1,0 +1,27 @@
+{%extends "base.html"%}
+{%block content%}
+<h2>List of Entity Annotations</h2>
+<table class="u-full-width">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Status</th>
+        <th>See raw results</th>
+        <th>Annotation results</th>
+    </tr>
+    </thead>
+    <tbody>
+    {%for eann in eanns%}
+    <tr>
+        <td>{{eann.id}}</td>
+        <td>{{eann.ann_run.name}} (id={{eann.ann_run.id}})</td>
+        <td>{{eann.ann_run.status}}</td>
+        <td><a href="ent_ann_raw_results?id={{eann.id}}">raw</a></td>
+        <td><a href="ent_ann_recompute?ann={{eann.id}}">results</a></td>
+
+    </tr>
+    {%endfor%}
+    </tbody>
+</table>
+{%endblock%}

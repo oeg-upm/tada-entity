@@ -7,22 +7,22 @@ from django.contrib.auth.models import User
 from settings import MODELS_DIR
 
 
-class TypeModel(models.Model):
-    name = models.CharField(max_length=250)
-    graph_dir = models.CharField(max_length=250, default="")
-
-
 class AnnRun(models.Model):
-    name = models.CharField(max_length=120, default='')
-    status = models.CharField(max_length=120, default='Ready')
+    name = models.CharField(max_length=120)
+    status = models.CharField(max_length=120, default='New')
     datetime = datetime.now
+
+    def __str__(self):
+        return str(self.id) + " - "+self.name
 
 
 class EntityAnn(models.Model):
     ann_run = models.ForeignKey(AnnRun, on_delete=models.CASCADE)
     results = models.CharField(max_length=500, default='')
     col_id = models.PositiveIntegerField()
-    model = models.ForeignKey(on_delete=models.CASCADE)
+    graph_dir = models.CharField(max_length=250, default="")
+    status = models.CharField(max_length=120, default='New')
+    progress = models.PositiveSmallIntegerField(default=0)
 
     @property
     def cells(self):

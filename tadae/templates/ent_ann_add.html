@@ -1,0 +1,19 @@
+{%extends "base.html"%}
+{%block content%}
+<h2></h2>
+{{msg}}
+{{error}}
+<form method="POST" enctype = "multipart/form-data"> {%csrf_token%}
+    <label>Name</label>
+    <input class="w3-input" type="text" name="name"/>
+    <label>Prefix (optional)</label>
+    <input class="w3-input" type="text" value="http://dbpedia.org/ontology/" name="prefix"/>
+    <label>Upload CSV file</label><br>
+    <input type="file" name="file"/><br>
+    <label>Subject column index (default is 0)</label>
+    <input class="w3-input" type="number" name="col_id">
+    <input class="w3-check" type="checkbox" name="camel"/> Force title case <br>
+
+    <input type="submit" value="Annotate"/>
+</form>
+{%endblock%}
