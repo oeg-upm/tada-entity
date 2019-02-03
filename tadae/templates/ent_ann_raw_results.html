@@ -1,0 +1,26 @@
+{%extends "base.html"%}
+{%block content%}
+<table >
+    <thead>
+    <tr>
+        <th>Cell</th>
+        <th>Entity</th>
+        <th>Class</th>
+    </tr>
+    </thead>
+    <tbody>
+    {%for cell in entity_ann.cells%}
+        {%for entity in cell.entities%}
+            {%for cclass in entity.classes%}
+                <tr>
+                    <td>{{cell.text_value}}</td>
+                    <td>{{entity.entity}}</td>
+                    <td>{{cclass.cclass}}</td>
+                </tr>
+            {%endfor%}
+        {%endfor%}
+
+    {%endfor%}
+    </tbody>
+</table>
+{%endblock%}

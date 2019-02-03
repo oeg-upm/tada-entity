@@ -1,0 +1,142 @@
+{%extends "base.html"%}
+{%block content%}
+
+{%if network%}
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+
+    <style type="text/css">
+        #mynetwork {
+            width: 800px;
+            height: 500px;
+            border: 1px solid lightgray;
+        }
+
+
+    </style>
+
+<div id="basearea"></div>
+
+<div id="mynetwork"></div>
+
+
+
+<script>
+    $('#mynetwork').css('width', $('#basearea').css('width'));
+
+</script>
+
+
+
+<script type="text/javascript">
+    // create an array with nodes
+
+    var nodes = new vis.DataSet([
+        {%for n in nodes%}
+
+            {%if n.title in highlights%}
+            {id: "{{n.title}}", label: "{{n.label}}", color: '#f4ee41', shape: 'box' },
+            {%else %}
+            {id: "{{n.title}}", label: "{{n.label}}", color: '#41f44c', shape: 'box' },
+            {%endif%}
+
+
+
+
+
+        {%endfor%}
+    ]);
+
+    // create an array with edges
+    /*
+    var edges = new vis.DataSet([
+        {from: "xyz", to: 3},
+        {from: 1, to: 2},
+        {from: 2, to: 4},
+        {from: 2, to: 5}
+    ]);
+    */
+
+     var edges = new vis.DataSet([
+        {%for f,t in edges%}
+            {from: "{{f}}", to: "{{t}}", arrows:'to'},
+        {%endfor%}
+    ]);
+
+
+    // create a network
+    var container = document.getElementById('mynetwork');
+
+    // provide the data in the vis format
+    var data = {
+        nodes: nodes,
+        edges: edges
+    };
+    //var options = {};
+    var options = {
+                layout: {
+                    hierarchical: {
+                        direction: "UD",
+                        sortMethod: "directed",
+                        nodeSpacing: 400
+                    }
+                },
+                physics: {
+                    enabled: false,
+
+                }
+    };
+
+
+    // initialize your network!
+    var network = new vis.Network(container, data, options);
+</script>
+
+{%endif%}
+
+<br>
+<form >
+    <div class="form-group ">
+        <label for="alpha">alpha</label>
+                <input class="u-full-width" type="number" min="0" max="1" step="0.001" value="{{alpha}}" class="form-control " name="alpha" id="alpha"
+               placeholder="Enter value for alpha between 0 and 1" required/>
+    </div>
+    <div class="form-group ">
+        <label for="ann-select">Annotation Model</label>
+        <select class="u-full-width" name="ann" id="ann-select">
+            {%for ann in anns%}
+            <option value="{{ann.id}}" {%if ann.id == selected%}selected{%endif%}>{{ann.id}} - {{ann.ann_run.name}}</option>
+            {%endfor%}
+        </select>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn form-control bg-dark">Score</button>
+    </div>
+</form>
+
+
+<table>
+<thead>
+    <tr>
+      <th>Top K</th>
+      <th>Concept</th>
+    </tr>
+  </thead>
+
+{%for r in results%}
+    <tr>
+        <td>{{forloop.counter}}</td>
+        <td><a href="{{r}}">{{r}}</a>
+
+            <!--{%if r in highlights%}-->
+                <!--<span>&#x2714</span>-->
+            <!--{%endif%}-->
+        </td>
+    </tr>
+    {%endfor%}
+</table>
+
+
+
+
+{%endblock%}

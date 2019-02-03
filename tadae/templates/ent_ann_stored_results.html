@@ -1,0 +1,21 @@
+{%extends "base.html"%}
+{%block content%}
+<table class="u-full-width">
+    <thead>
+    <tr>
+        <th>Classes</th>
+    </tr>
+    </thead>
+    <tbody>
+{%for c in classes%}
+    <tr>
+        <td>{{c}}</td>
+    </tr>
+{%endfor%}
+    </tbody>
+</table>
+{%endblock%}
+
+
+
+

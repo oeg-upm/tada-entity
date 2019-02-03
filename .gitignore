@@ -1,5 +1,5 @@
 mysql.cnf
-
+tadae/migrations
 .venv
 *.pyc
 .idea/
