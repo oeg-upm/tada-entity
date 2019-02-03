@@ -2,13 +2,14 @@ from django.views.generic import TemplateView
 from django.views import View
 from django.shortcuts import render, redirect
 from models import EntityAnn
-from annotator import workflow
+import annotator
 import os
 from settings import UPLOAD_DIR
 from commons import random_string
 from models import AnnRun
 
 ENDPOINT = "http://dbpedia.org/sparql"
+
 
 def about(request):
     return render(request, 'about.html')
@@ -36,12 +37,12 @@ def ent_ann_recompute(request):
         # from annotator import load_graph, score_graph, get_nodes, get_edges
         alpha = float(request.GET['alpha'])
         entity_ann = EntityAnn.objects.get(id=request.GET['ann'])
-        graph = workflow.load_graph(entity_ann=entity_ann)
-        results = workflow.score_graph(entity_ann=entity_ann, alpha=alpha, graph=graph)
+        graph = annotator.load_graph(entity_ann=entity_ann)
+        results = annotator.score_graph(entity_ann=entity_ann, alpha=alpha, graph=graph)
         return render(request, 'ent_ann_recompute.html',
                       {'anns': eanns, 'alpha': alpha, 'network': 'network',
-                       'highlights': results[:3], 'nodes': workflow.get_nodes(graph),
-                       'edges': workflow.get_edges(graph), 'results': results, 'selected': entity_ann.id})
+                       'highlights': results[:3], 'nodes': annotator.get_nodes(graph),
+                       'edges': annotator.get_edges(graph), 'results': results, 'selected': entity_ann.id})
     else:
         if len(eanns) == 0:
             selected = 0
@@ -79,11 +80,12 @@ class EntAnnAddView(TemplateView):
             prefix = None
             if 'prefix' in request.POST and len(request.POST['prefix'].strip()) > 0:
                 prefix = request.POST['prefix'].strip()
+            print("prefix: "+str(prefix))
             camel = False
             if 'camel' in request.POST:
                 camel = True
             print("calling the workflow annotate")
-            workflow.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=dest_file_dir, endpoint=ENDPOINT,
+            annotator.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=dest_file_dir, endpoint=ENDPOINT,
                                             hierarchy=False, entity_col_id=col_id, onlyprefix=prefix, camel_case=camel)
             print("return from the workflow annotate")
             return render(request, self.template_name, {'msg': 'The annotation is completed'})
