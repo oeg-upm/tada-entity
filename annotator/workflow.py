@@ -89,7 +89,8 @@ def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, o
     entity_ann.save()
     start = time.time()
     logger.info('annotating: ' + csv_file_dir)
-    mat = pd.read_csv(csv_file_dir).as_matrix()
+    # mat = pd.read_csv(csv_file_dir).as_matrix()
+    mat = pd.read_csv(csv_file_dir).values
     lock = Lock()
     params_list = []
     pipe_send, pipe_rec = Pipe()
@@ -123,7 +124,8 @@ def annotate_single_cell(entity_ann, cell_value, endpoint, hierarchy, onlyprefix
     cell.save()
     lock.release()
     logger.debug("cell: "+str(cell_value))
-    for entity in get_entities(subject_name=cell.text_value, endpoint=endpoint):
+    entities = get_entities(subject_name=cell.text_value, endpoint=endpoint)
+    for entity in entities:
         logger.debug("entity: "+str(entity))
         lock.acquire()
         e = Entity(cell=cell, entity=entity)

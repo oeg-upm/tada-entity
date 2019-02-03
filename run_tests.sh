@@ -1,1 +1,1 @@
-python manage.py test --pattern="test_*.py"
+python manage.py test tests/

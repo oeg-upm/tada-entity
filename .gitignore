@@ -3,3 +3,4 @@ tadae/migrations
 .venv
 *.pyc
 .idea/
+.coverage
