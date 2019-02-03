@@ -31,3 +31,6 @@ class AnnotateCellsTest(TestCase):
                     agg_annos.append(cc)
         # this is just an approximation to make sure that there are a handful number of classes
         self.assertTrue(len(agg_annos) > num_cells)
+
+    # def test_fail(self):
+    #     self.assertTrue(False)

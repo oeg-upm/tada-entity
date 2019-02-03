@@ -3,9 +3,11 @@
 [![codecov](https://codecov.io/gh/oeg-upm/tada-entity/branch/master/graph/badge.svg)](https://codecov.io/gh/oeg-upm/tada-entity)
 [![status](https://img.shields.io/badge/status-under%20development-ff69b4.svg)](https://github.com/oeg-upm/bob)
 
-expected alpha version release on: *17-Feb-2019*
+expected alpha version release: *17-Feb-2019*
 
 Tabular Data Annotation of entity columns
 
-The web application name is called tadae which stands for tada-e(ntity)
-
+## Operating Systems
+* MacOS
+* Linux (tested with Ubuntu)
+* Windows (not tested)
