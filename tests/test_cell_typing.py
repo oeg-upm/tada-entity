@@ -12,7 +12,7 @@ class AnnotateCellsTest(TestCase):
     def test_cell_annotation(self):
         ann_run = AnnRun(name="testing-swimmers-file")
         ann_run.save()
-        prefix="http://dbpedia.org/ontology/"
+        prefix = "http://dbpedia.org/ontology/"
         csv_file_dir = os.path.join(BASE_DIR, 'tests', 'swimmers.csv')
         annotator.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=csv_file_dir,
                                endpoint=commons.ENDPOINT,

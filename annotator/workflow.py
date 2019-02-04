@@ -23,7 +23,8 @@ from commons.easysparql import get_classes_subjects_count
 
 logger = set_config(logging.getLogger(__name__), logdir=os.path.join(LOG_DIR, 'tadae.log'))
 
-MAX_NUM_PROCESSES = 1
+MAX_NUM_PROCESSES = 5
+
 
 # This is not inuse at the moment
 # def update_ent_ann_progress(ent_ann, prog, lock):
@@ -275,7 +276,6 @@ def count_classes(classes, endpoint):
     pool = Pool(max_num_of_processes=MAX_NUM_PROCESSES, func=count_classes_func, params_list=param_list)
     pool.run()
     print "pool run if finished"
-
     print "sending 1"
     b_end.send(1)
     print "waiting to receive"
@@ -293,7 +293,7 @@ def remove_nodes(entity_ann, classes):
                 if cclass.cclass in classes:
                     print "removing lonely node: %s" % cclass.cclass
                     CClass.objects.get(cclass=cclass.cclass, entity=entity).delete()
-                        
+
 
 def remove_empty(entity_ann):
     for cell in entity_ann.cells:
@@ -313,6 +313,7 @@ def remove_noise_entities(entity_ann):
             num_classes_limit = math.sqrt(max_num)
             for entity in cell.entities:
                 if len(entity.classes) < num_classes_limit:
+                    logger.debug("remove_noise: "+str(entity.entity))
                     entity.delete()
 
 
@@ -363,9 +364,10 @@ def dotype(ann_run, endpoint, onlyprefix):
         for entity in cell.entities:
             for cclass in entity.classes:
                 if cclass.cclass not in collected_classes:
-                    if onlyprefix is None or (onlyprefix is not None and cclass.cclass.startswith(onlyprefix)):
+                    if onlyprefix is None or cclass.cclass.startswith(onlyprefix):
                         params.append((cclass.cclass, endpoint, v_lock, v_reader_end, 0, onlyprefix))
                         collected_classes.append(cclass.cclass)
+
     start = time.time()
     pool = Pool(max_num_of_processes=MAX_NUM_PROCESSES, func=build_graph_while_traversing, params_list=params)
     logger.debug("will run the pool")
@@ -444,14 +446,16 @@ def dotype(ann_run, endpoint, onlyprefix):
     logger.debug("graph_file_dir: "+graph_file_dir)
     graph.save(graph_file_dir)
     # entity_ann.graph_file.name = graph_file_name
-    entity_ann.graph_dir = graph_file_dir
+    # entity_ann.graph_dir = graph_file_dir
+    entity_ann.graph_dir = graph_file_name
     entity_ann.save()
     ann_run.status = 'Annotation is complete'
     ann_run.save()
 
 
 def load_graph(entity_ann):
-    f = open(entity_ann.graph_dir, 'r')
+    graph_dir = os.path.join(MODELS_DIR, entity_ann.graph_dir)
+    f = open(graph_dir, 'r')
     j = json.loads(f.read())
     g = TypeGraph()
     g.load(j, get_m(entity_ann))
@@ -474,3 +478,4 @@ def get_edges(graph):
 
 def random_string(length=4):
     return ''.join(random.choice(string.lowercase) for i in range(length))
+

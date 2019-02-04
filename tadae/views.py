@@ -87,7 +87,9 @@ class EntAnnAddView(TemplateView):
             print("calling the workflow annotate")
             annotator.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=dest_file_dir, endpoint=ENDPOINT,
                                             hierarchy=False, entity_col_id=col_id, onlyprefix=prefix, camel_case=camel)
-            print("return from the workflow annotate")
+            print("return from the annotate")
+            annotator.dotype(ann_run=ann_run, endpoint=ENDPOINT, onlyprefix=None)
+            print("return from dotype")
             return render(request, self.template_name, {'msg': 'The annotation is completed'})
         return render(request, self.template_name, {'error': 'missing parameters'})
 

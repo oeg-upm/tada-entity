@@ -48,7 +48,7 @@ if __name__ == '__main__':
             logger.error(err_msg)
 
     if args.dotype:
-        prefix = None
+        prefix = None  # this is because the root in dbpedia doesn't follow it.
         # The hierarchy is not restricted to the passed prefix
         # if args.onlyprefix:
         #     prefix = args.onlyprefix
