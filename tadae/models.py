@@ -13,7 +13,7 @@ class AnnRun(models.Model):
     datetime = datetime.now
 
     def __str__(self):
-        return str(self.id) + " - "+self.name
+        return str(self.id) + " - " + self.name
 
 
 class EntityAnn(models.Model):
