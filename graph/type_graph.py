@@ -1,6 +1,7 @@
 import os
 import subprocess
 import json
+import math
 from basic_graph import BasicGraph, Node
 
 
@@ -9,6 +10,7 @@ class TypeGraph(BasicGraph):
     def __init__(self, *args, **kwargs):
         self.m = 0
         super(TypeGraph, self).__init__(*args, **kwargs)
+        self.fs_funcs = [self.fs, self.fs1, self.fs2, self.fs3, self.fs4, self.fs5]
 
     def verify_roots(self):
         # just to test the roots
@@ -41,6 +43,61 @@ class TypeGraph(BasicGraph):
         l = node.path_specificity
         d = node.depth
         fs_score = 1.0/(l+1)**epsilon - 1.0/(d+1)**delta + 1
+        return fs_score
+
+    def fs1(self, node):
+        """
+        function that computes the specificity of a node
+        :param node: node
+        :return: the specificity score
+        """
+        l = node.path_specificity
+        d = node.depth
+        fs_score = math.sqrt(1-l*l)
+        return fs_score
+
+    def fs2(self, node):
+        """
+        function that computes the specificity of a node
+        :param node: node
+        :return: the specificity score
+        """
+        l = node.path_specificity
+        d = node.depth
+        fs_score = -l*l + 1
+        return fs_score
+
+    def fs3(self, node):
+        """
+        function that computes the specificity of a node
+        :param node: node
+        :return: the specificity score
+        """
+        l = node.path_specificity
+        d = node.depth
+        fs_score = -l + 1
+        return fs_score
+
+    def fs4(self, node):
+        """
+        function that computes the specificity of a node
+        :param node: node
+        :return: the specificity score
+        """
+        l = node.path_specificity
+        d = node.depth
+        fs_score = 1-math.sqrt(l)
+        return fs_score
+
+    def fs5(self, node):
+        """
+        function that computes the specificity of a node
+        :param node: node
+        :return: the specificity score
+        """
+        l = node.path_specificity
+        d = node.depth
+        fs_score = (1-math.sqrt(l))**2
         return fs_score
 
     def fc(self, node, m):
@@ -91,7 +148,7 @@ class TypeGraph(BasicGraph):
             nodes += self.get_score_for_node(child)
         return nodes
 
-    def set_score_for_graph(self, coverage_weight=0.5, m=1):
+    def set_score_for_graph(self, coverage_weight=0.5, m=1, fsid=None):
         """
         :param coverage_weight: the alpha
         :param coverage_norm: since coverage is actually increase when the number of entities increase, we need to
@@ -99,14 +156,16 @@ class TypeGraph(BasicGraph):
         :return:
         """
         for n in self.roots:
-            self.set_score_for_node(n, coverage_weight, m)
+            self.set_score_for_node(n, coverage_weight, m, fsid)
 
-    def set_score_for_node(self, node, coverage_weight, m):
+    def set_score_for_node(self, node, coverage_weight, m, fsid):
         if node.score != -1:
             return
-        node.score = coverage_weight * self.fc(node=node, m=m) + (1-coverage_weight) * self.fs(node)
+        node.score = coverage_weight * self.fc(node=node, m=m) + (1-coverage_weight) * self.fs_funcs[fsid](node)
+        # node.score = coverage_weight * self.fc(node=node, m=m) + (1-coverage_weight) * self.fs(node)
         for child in node.childs:
-            self.set_score_for_node(child, coverage_weight, m)
+            # self.set_score_for_node(child, coverage_weight, m)
+            self.set_score_for_node(child, coverage_weight, m, fsid)
 
     def set_converage_score(self):
         for n in self.roots:

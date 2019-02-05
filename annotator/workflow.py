@@ -462,8 +462,8 @@ def load_graph(entity_ann):
     return g
 
 
-def score_graph(graph, alpha, entity_ann):
-    graph.set_score_for_graph(coverage_weight=alpha, m=get_m(entity_ann))
+def score_graph(graph, alpha, entity_ann, fsid):
+    graph.set_score_for_graph(coverage_weight=alpha, m=get_m(entity_ann), fsid=fsid)
     return [n.title for n in graph.get_scores()]
 
 
