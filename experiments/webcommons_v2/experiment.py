@@ -67,9 +67,12 @@ def web_commons_to_csv():
         print file_name, concept
         csv_file_name = "wcv1_%s_%s.csv" % (concept, file_name)
         output_file = os.path.join(BASE_DIR, UPLOAD_DIR, csv_file_name)
-        input_fname = "data/json/%s.json" % file_name
+        input_fname = "data/%s.json" % file_name
         input_file = os.path.join(curr_dir, input_fname)
         web_commons_json_table_to_csv(input_file, output_file)
 
 
-web_commons_to_csv()
+if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        if sys.argv[1] == 'tocsv':
+            web_commons_to_csv()

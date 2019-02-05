@@ -4,3 +4,4 @@ tadae/migrations
 *.pyc
 .idea/
 .coverage
+.DS_Store
