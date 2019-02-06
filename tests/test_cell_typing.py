@@ -14,9 +14,8 @@ class AnnotateCellsTest(TestCase):
         ann_run.save()
         prefix = "http://dbpedia.org/ontology/"
         csv_file_dir = os.path.join(BASE_DIR, 'tests', 'swimmers.csv')
-        annotator.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=csv_file_dir,
-                               endpoint=commons.ENDPOINT,
-                              hierarchy=False, entity_col_id=0, onlyprefix=prefix, camel_case=False)
+        annotator.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=csv_file_dir, endpoint=commons.ENDPOINT,
+                               hierarchy=False, entity_col_id=0, onlyprefix=prefix, camel_case=False)
         eanns = ann_run.entityann_set.all()
         self.assertEqual(len(eanns), 1, 'entity annotation is not created for the AnnRun')
         eann = eanns[0]
