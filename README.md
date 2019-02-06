@@ -24,3 +24,16 @@ Tabular Data Annotation of entity columns
 
 ## Python
 v2.7
+
+## Database
+Having a database accessible by the application is a must. The file `mysql.cnf`` should include the credential.
+Below is an example of the file content : 
+```
+[client]
+database = mydbname
+user = dbuser
+password = dbpassword
+default-character-set = utf8
+```
+To user an *alternative* database engine, you might need to update the `settings.py` file 
+to specify the engine of your choosing (`sqlite` is not thread-safe, we don't recommend using it). 
