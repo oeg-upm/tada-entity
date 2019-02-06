@@ -148,11 +148,13 @@ class TypeGraph(BasicGraph):
             nodes += self.get_score_for_node(child)
         return nodes
 
-    def set_score_for_graph(self, coverage_weight=0.5, m=1, fsid=None):
+    def set_score_for_graph(self, coverage_weight=0.5, m=1, fsid=0):
         """
         :param coverage_weight: the alpha
         :param coverage_norm: since coverage is actually increase when the number of entities increase, we need to
         normalize the coverage score by dividing it with the coverage_norm
+        :param m:
+        :param fsid: The id of the fs function. We are trying multiple fs functions for the experiment
         :return:
         """
         for n in self.roots:

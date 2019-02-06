@@ -8,7 +8,6 @@ from datetime import datetime
 # f = open("web_commons_progress.txt")
 
 
-
 #################################################################
 #           TO make this app compatible with Django             #
 #################################################################
@@ -30,9 +29,11 @@ application = get_wsgi_application()
 
 from tadae.settings import LOG_DIR, UPLOAD_DIR, BASE_DIR
 
+
 #################################################################################
 #                           JSON to CSV                                         #
 #################################################################################
+
 
 import logging
 from commons.logger import set_config
