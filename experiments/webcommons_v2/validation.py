@@ -63,25 +63,5 @@ def validate_all():
             validate(k=k, fsid=fsid)
 
 
-def print_help():
-    s = """
-        To validate the annotations for data web commons v2:
-        python validation.py <alpha> <k> <fsid>
-    """
-    print(s)
-
-
 if __name__ == "__main__":
-    if len(sys.argv) == 4:
-        try:
-            alpha = float(sys.argv[1])
-            k = int(sys.argv[2])
-            fsid = int(sys.argv[3])
-            validate(alpha=alpha, k=k, fsid=fsid)
-        except Exception as e:
-            print(str(e))
-            print_help()
-    elif len(sys.argv) == 1:
         validate_all()
-    else:
-        print_help()
