@@ -12,9 +12,17 @@ Tabular Data Annotation of entity columns
 ## Web Commons v2
 1. Create the directory `tada-entity/experiments/webcommons_v2/data` (where `tada-entity` is the project's directory.
 2. Copy the json files to that directory. The data can be found [here](http://webdatacommons.org/webtables/goldstandardV2.html).
-3. Generate the csv files using the command:
+3. In the terminal (command line interface) go the directory `tada-entity/experiments/webcommons_v2/` using the below command (assuming you are in the directory `tada-entity`):
+
+```cd experiments/webcommons_v2```
+ 
+4. Generate the csv files using the command:
+
 ```python experiment.py tocsv```
 
+5. Run the automatic annotator using the command:
+
+```python experiment.py annotate```
 
 # Environment
 ## Operating Systems
@@ -26,7 +34,7 @@ Tabular Data Annotation of entity columns
 v2.7
 
 ## Database
-Having a database accessible by the application is a must. The file `mysql.cnf`` should include the credential.
+Having a database accessible by the application is a must. The file `mysql.cnf` should include the credential.
 Below is an example of the file content : 
 ```
 [client]
