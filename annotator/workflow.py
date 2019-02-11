@@ -91,10 +91,15 @@ def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, o
     start = time.time()
     logger.info('annotating: ' + csv_file_dir)
     # mat = pd.read_csv(csv_file_dir).as_matrix()
-    mat = pd.read_csv(csv_file_dir).values
+    # mat = pd.read_csv(csv_file_dir).values
+    df = pd.read_csv(csv_file_dir)
+    mat = df.values
+    mat = mat.astype(str)
     lock = Lock()
     params_list = []
     pipe_send, pipe_rec = Pipe()
+    # print("types: ")
+    # print(mat[entity_column_id])
     for r in mat:
         if camel_case:
             cell_val = r[entity_column_id].title()
