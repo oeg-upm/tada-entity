@@ -24,6 +24,9 @@ Tabular Data Annotation of entity columns
 
 ```python experiment.py annotate```
 
+6. Get the scores for the experiment. Note that this will run test with multiple values of alpha and k using the command:
+```python validation.py```
+
 # Environment
 ## Operating Systems
 * MacOS (tested with Mojave)
@@ -45,3 +48,12 @@ default-character-set = utf8
 ```
 To user an *alternative* database engine, you might need to update the `settings.py` file 
 to specify the engine of your choosing (`sqlite` is not thread-safe, we don't recommend using it). 
+
+# Tests
+## To run automated test
+```sh run_tests.sh```
+
+## To run the coverage
+```sh run_coverage.sh```
+
+*Note that the experiments are not included in the coverage*
