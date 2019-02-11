@@ -57,7 +57,7 @@ def get_file_and_concept_from_line(line):
 
 
 def get_csv_file(concept, file_name):
-    return "wcv1_%s_%s.csv" % (concept, file_name)
+    return "wcv2_%s_%s.csv" % (concept, file_name)
 
 
 def web_commons_json_table_to_csv(in_file_dir, out_file_dir):
