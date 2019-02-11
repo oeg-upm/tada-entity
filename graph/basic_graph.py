@@ -42,7 +42,7 @@ class BasicGraph(object):
             return
 
         node = Node(title=title)
-        print "%s new to the graph" % node.title
+        # print "%s new to the graph" % node.title
         self.index[title] = node  # title should not be previously in the index
         self.cache.append(title)
         if parents is None:
