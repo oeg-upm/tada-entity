@@ -131,10 +131,6 @@ class TypeGraph(BasicGraph):
             else:
                 self.dfs_break_cycle(visited=visited+[ch], log_path=log_path)
 
-    def draw_with_score_separate(self):
-        for idx, r in enumerate(self.roots):
-            self.draw_score_for_root(r, "%d_graph.gv"%idx)
-
     def get_scores(self):
         nodes = []
         for n in self.roots:

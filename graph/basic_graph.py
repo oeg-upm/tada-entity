@@ -117,34 +117,6 @@ class BasicGraph(object):
             return self.index[title]
         return None
 
-    def draw(self, file_name='graph.gv'):
-        from graphviz import Digraph
-        dot = Digraph(comment='The Round Table')
-        for n in self.cache:
-            dot.node(clean(n))
-        print "draw nodes"
-        for n in self.cache:
-            node = self.index[n]
-            for ch in node.childs:
-                dot.edge(clean(n), clean(ch.title))
-        dot.render(file_name, view=True)
-
-    def get_all_child_nodes(self, node, visited):
-        """
-        called by draw_score_for_root
-        :param node:
-        :param visited:
-        :return:
-        """
-        if node in visited:
-            print "cycle node: %s" % node.title
-            return visited
-        visited_local = visited[:] + [node]
-
-        for ch in node.childs:
-            visited_local = self.get_all_child_nodes(ch, visited_local)
-        return visited_local
-
     def get_leaves_from_graph(self):
         leaves = []
         for n in self.roots:
