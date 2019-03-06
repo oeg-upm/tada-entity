@@ -38,9 +38,10 @@ def ent_ann_recompute(request):
         alpha = float(request.GET['alpha'])
         entity_ann = EntityAnn.objects.get(id=request.GET['ann'])
         graph = annotator.load_graph(entity_ann=entity_ann)
-        fsid = 0
-        if 'fsid' in request.GET:
-            fsid = int(request.GET['fsid'])
+        # fsid = 0
+        # if 'fsid' in request.GET:
+        #     fsid = int(request.GET['fsid'])
+        fsid = int(request.GET['fsid'])
         results = annotator.score_graph(entity_ann=entity_ann, alpha=alpha, graph=graph, fsid=fsid)
         return render(request, 'ent_ann_recompute.html',
                       {'anns': eanns, 'alpha': alpha, 'network': 'network',

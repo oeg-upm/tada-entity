@@ -101,12 +101,23 @@
                 <input class="u-full-width" type="number" min="0" max="1" step="0.001" value="{{alpha}}" class="form-control " name="alpha" id="alpha"
                placeholder="Enter value for alpha between 0 and 1" required/>
     </div>
-    <div class="form-group ">
+    <div class="form-group">
         <label for="ann-select">Annotation Model</label>
         <select class="u-full-width" name="ann" id="ann-select">
             {%for ann in anns%}
             <option value="{{ann.id}}" {%if ann.id == selected%}selected{%endif%}>{{ann.id}} - {{ann.ann_run.name}}</option>
             {%endfor%}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="fsid-select">Specificity function</label>
+        <select class="u-full-width" name="fsid" id="fsid-select">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
         </select>
     </div>
     <div class="form-group">
