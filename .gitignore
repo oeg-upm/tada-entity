@@ -6,6 +6,7 @@ tadae/migrations
 .coverage
 .DS_Store
 *.swp
-wc_v2_incorrect.tsv
-wc_v2_notfound.tsv
-wc_v2_results.tsv
+wc_v2_incorrect*tsv
+wc_v2_notfound*tsv
+wc_v2_results*tsv
+wc_v2_correct*tsv

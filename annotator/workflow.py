@@ -213,22 +213,52 @@ def build_graph_from_nodes(graph, nodes_dict):
     logger.debug("cycles are broken")
 
 
+# Old coverage
+# def compute_coverage_score_for_graph(entity_ann, graph):
+#     for cell in entity_ann.cells:
+#         if len(cell.entities) == 0:
+#             e_score = 0
+#         else:
+#             e_score = 1.0 / len(cell.entities)
+#
+#         for entity in cell.entities:
+#             if len(entity.classes) == 0:
+#                 c_score = 0
+#             else:
+#                 c_score = 1.0 / len(entity.classes)
+#             for cclass in entity.classes:
+#                 n = graph.find_v(cclass.cclass)
+#                 if n is None:
+#                     print "couldn't find %s" % cclass.cclass
+#                 n.coverage_score += c_score
+
+
+# New coverage
 def compute_coverage_score_for_graph(entity_ann, graph):
     for cell in entity_ann.cells:
         if len(cell.entities) == 0:
             e_score = 0
         else:
             e_score = 1.0 / len(cell.entities)
+        d = {
+        }
         for entity in cell.entities:
             if len(entity.classes) == 0:
                 c_score = 0
             else:
                 c_score = 1.0 / len(entity.classes)
             for cclass in entity.classes:
-                n = graph.find_v(cclass.cclass)
-                if n is None:
-                    print "couldn't find %s" % cclass.cclass
-                n.coverage_score += c_score
+                if cclass.cclass not in d:
+                    d[cclass.cclass] = []
+                d[cclass.cclass].append(c_score*e_score)
+
+        for curi in d.keys():
+            curi_cov = sum(d[curi])*1.0/len(d[curi])
+            n = graph.find_v(curi)
+            if n is None:
+                print "couldn't find %s" % curi
+            n.coverage_score += curi_cov
+        del d
 
 
 def v_writer_func(visited, pipe):

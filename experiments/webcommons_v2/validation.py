@@ -7,6 +7,7 @@ import pprint
 
 NOT_FOUND_FNAME = "wc_v2_notfound.tsv"
 INCORRECT_FNAME = "wc_v2_incorrect.tsv"
+CORRECT_FNAME = "wc_v2_correct.tsv"
 RESULTS_FNAME = "wc_v2_results.tsv"
 
 
@@ -15,6 +16,9 @@ def prepare_report_files():
     f.write("file name\n")
     f.close()
     f = open(INCORRECT_FNAME, "w")
+    f.write("file name\tfs\tk\n")
+    f.close()
+    f = open(CORRECT_FNAME, "w")
     f.write("file name\tfs\tk\n")
     f.close()
 
@@ -35,6 +39,12 @@ def report_not_found(fname):
         f.close()
 
 
+def report_correct(fname, fsid, k):
+    f = open(CORRECT_FNAME, "a")
+    f.write("%s\t%s\t%s\n" % (fname, str(fsid), str(k)))
+    f.close()
+
+
 def validate(ks):
     prepare_report_files()
     tg = TypeGraph()  # dummy
@@ -52,7 +62,8 @@ def validate(ks):
                 results[fsid][k] = {}
             results[fsid][k] = {"correct": 0, "incorrect": 0, "notfound": 0}
     # if True:
-    ccc = 20
+    #ccc = 20
+    ccc = 10000
     with click.progressbar(range(tot)) as bar:
         for line in reader:
             file_name, concept = get_file_and_concept_from_line(line)
@@ -88,7 +99,6 @@ def validate(ks):
                             print(error_msg)
                             raise Exception(error_msg)
 
-
             bar.update(1)
             if ccc < 0:
                 break
@@ -107,6 +117,7 @@ def compute_scores(correct, incorrect, notfound):
     :return:
     """
     # print("correct: %d, incorrect: %d, notfound: %d" % (correct, incorrect, notfound))
+
     try:
         precision_val = correct*1.0 / (correct+incorrect)
         precision = "%.4f" % precision_val
@@ -154,8 +165,7 @@ def print_results(results, fs_funcs, kss):
                                                        results[fsid][k]["incorrect"], results[fsid][k]["notfound"],
                                                        precision,
                                                        recall,
-                                                       f1
-                                                ))
+                                                       f1))
 
 
 def validate_ent_ann(ent_ann, fsid, ks, correct_type):
@@ -171,29 +181,48 @@ def validate_ent_ann(ent_ann, fsid, ks, correct_type):
             ....
         }
     """
-    #alphas = [0.1, 0.01, 0.001]
-    alphas = [0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
+    # alphas = [0.1, 0.01, 0.001]
+    # alphas = [0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]
+    alphas = [0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
     k_id = len(ks)-1  # to start with the largest k
     k = ks[k_id]
     d = {}
-    graph = annotator.load_graph(entity_ann=ent_ann)
     for alpha in alphas:
+        # print("\n\n alpha: %f, entity_ann: %d, fsid: %d, k: %d" % (alpha, ent_ann.id, fsid, k))
+        graph = annotator.load_graph(entity_ann=ent_ann)
         results = annotator.score_graph(entity_ann=ent_ann, alpha=alpha, graph=graph, fsid=fsid)[0:k]
         if results == []:
             for k in ks:
                 d[k] = "NOTFOUND"
                 report_not_found(fname=ent_ann.ann_run.name)
-            # print("\n\nvalidate_ent_ann for: " + ent_ann.ann_run.name)
-            # print(d)
             return d
-        if correct_type in results:
+
+        while correct_type in results:
             d[k] = "CORRECT"
-            if k_id <= 0:
+            report_correct(fname=ent_ann.ann_run.name, fsid=fsid, k=k)
+            if k_id == 0:  # no more values of k left
                 k_id = -1
                 break
             else:
                 k_id -= 1
-            k = ks[k_id]
+                k = ks[k_id]  # new k
+                results = results[0:k]
+
+        # if correct_type not in results:
+        #     print("Incorrect log: alpha: %f, correct type: %s, fsid: %d" % (alpha, correct_type, fsid))
+        #     print("name: %s " % ent_ann.ann_run.name)
+        #     print("results: "+str(results))
+
+        if k_id < 0:
+            break
+        # if correct_type in results:
+        #     d[k] = "CORRECT"
+        #     if k_id == 0:  # no more values of k left
+        #         k_id = -1
+        #         break
+        #     else:
+        #         k_id -= 1
+        #         k = ks[k_id]  # new k
 
     while k_id >= 0:  # there are some values of k that is smaller than k
         d[k] = "INCORRECT"
@@ -207,4 +236,8 @@ def validate_ent_ann(ent_ann, fsid, ks, correct_type):
 
 
 if __name__ == "__main__":
-        validate(ks=[1])
+    # ent_ann = EntityAnn.objects.get(id=61)
+    # graph = annotator.load_graph(entity_ann=ent_ann)
+    # #print annotator.score_graph(entity_ann=ent_ann, alpha=0.00001, graph=graph, fsid=1)[0:1]
+    # validate_ent_ann(ent_ann, 1, [1], 'http://dbpedia.org/ontology/Airport')
+    validate(ks=[1, 3, 5, 10])
