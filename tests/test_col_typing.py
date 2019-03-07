@@ -23,7 +23,7 @@ class AnnotateColTest(TestCase):
     def test_col_annotation(self):
         self.assertTrue(True)
         ann_text = """<td>1</td><td><ahref="http://dbpedia.org/ontology/Swimmer">http://dbpedia.org/ontology/Swimmer</a>"""
-        response = self.client.get(reverse('ent_ann_recompute')+'?alpha=0.1&ann='+str(self.ann_run.id)+'fsid=3')
+        response = self.client.get(reverse('ent_ann_recompute')+'?alpha=0.1&ann='+str(self.ann_run.id)+'&fsid=0')
         self.assertEqual(response.status_code, 200)
         self.assertIn(ann_text, response.content.replace(' ', '').replace('\n', ''))
 
