@@ -1,7 +1,7 @@
 chardet==3.0.4
 Click==7.0
 coverage==4.5.2
-Django==1.11.18
+Django==1.11.20
 isodate==0.6.0
 mysqlclient==1.4.1
 numpy==1.16.1
