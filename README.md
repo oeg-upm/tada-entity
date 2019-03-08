@@ -5,11 +5,43 @@
 
 Tabular Data Annotation of entity columns
 
-# Status
-* Web GUI: :white_check_mark:
-* API: :x:
-* T2D Experiments: :x:
+# Installation
 
+## Requirements
+* `virtualenv`
+* `python2.7`
+* `mysql`
+
+## Installation steps (Linux and MacOS)
+1. Download the project 
+```
+git clone git@github.com:oeg-upm/tada-entity.git; cd tada-entity/
+```
+2. Create virtual environment 
+```
+virtualenv  -p /usr/bin/python2.7 .venv
+```
+3. Install dependencies 
+``` 
+pip install -r requirements.txt 
+```
+4. create a mysql.cfg file in the same folder (see below)
+5. Setup database and apply migrations 
+``` python manage.py makemigrations; python manage.py makemigrations tadae; python manage.py migrate
+```
+
+
+## Mysql configuration
+fill in the database name, user, and password
+```
+# my.cnf
+[client]
+database = 
+user = 
+password = 
+default-character-set = utf8mb4
+wait_timeout = 28800
+```
 
 # Run the experiments
 ## Web Commons v2
