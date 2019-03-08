@@ -108,6 +108,8 @@ class EntAnnAddView(TemplateView):
                                                 prefix,
                                                 col_id)
                 print("comm: "+comm)
+                import sys
+                sys.stdout.flush()
                 subprocess.Popen(comm, shell=True)
                 return render(request, self.template_name, {'msg': '''The annotation is under processing, check 
                     again in a few minutes'''})
