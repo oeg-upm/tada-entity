@@ -101,11 +101,10 @@ class EntAnnAddView(TemplateView):
                 virtual_env_dir = os.path.join(BASE_DIR, '.venv')
                 virtual_py = os.path.join(virtual_env_dir, 'bin', 'python')
                 cmd_dir = os.path.join(BASE_DIR, 'annotator', 'cmd.py')
-                comm = "%s %s %d --dotype --csvfiles %s --endpoint %s %s --onlyprefix %s --entitycol %d" % (
+                comm = "%s %s %d --dotype --csvfiles %s %s --onlyprefix %s --entitycol %d" % (
                     virtual_py, cmd_dir,
                                                 ann_run.id,
                                                 dest_file_dir,
-                                                ENDPOINT,
                                                 camelstr,
                                                 prefix,
                                                 col_id)
