@@ -10,7 +10,12 @@ import sys
 
 proj_path = (os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
 print("proj_path: "+proj_path)
+sys.stdout.flush()
+
 venv_python = os.path.join(proj_path, '.venv', 'bin', 'python')
+print("venv_python: "+venv_python)
+sys.stdout.flush()
+
 # This is so Django knows where to find stuff.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tadae.settings")
 sys.path.append(proj_path)
