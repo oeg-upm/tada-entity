@@ -48,7 +48,7 @@ def ent_ann_recompute(request):
         results = annotator.score_graph(entity_ann=entity_ann, alpha=alpha, graph=graph, fsid=fsid)
         return render(request, 'ent_ann_recompute.html',
                       {'anns': eanns, 'alpha': alpha, 'network': 'network',
-                       'highlights': results[:3], 'nodes': annotator.get_nodes(graph),
+                       'highlights': results[:3], 'nodes': annotator.get_nodes(graph), 'fsid': fsid,
                        'edges': annotator.get_edges(graph), 'results': results, 'selected': entity_ann.id})
     else:
         if len(eanns) == 0:
