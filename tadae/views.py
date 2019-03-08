@@ -4,11 +4,14 @@ from django.shortcuts import render, redirect
 from models import EntityAnn
 import annotator
 import os
-from settings import UPLOAD_DIR
+import subprocess
+from settings import UPLOAD_DIR, BASE_DIR
 from commons import random_string
 from models import AnnRun
 
+
 ENDPOINT = "http://dbpedia.org/sparql"
+
 
 
 def about(request):
@@ -70,6 +73,7 @@ class EntAnnAddView(TemplateView):
 
     def post(self, request):
         if 'file' in request.FILES and 'name' in request.POST:
+            LAZY = True
             name = request.POST['name'].strip()
             dest_file_name = name+"__"+random_string(length=10)+".csv"
             dest_file_name = dest_file_name.replace(" ", "_")
@@ -89,11 +93,30 @@ class EntAnnAddView(TemplateView):
             if 'camel' in request.POST:
                 camel = True
             print("calling the workflow annotate")
-            annotator.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=dest_file_dir, endpoint=ENDPOINT,
-                                            hierarchy=False, entity_col_id=col_id, onlyprefix=prefix, camel_case=camel)
-            print("return from the annotate")
-            annotator.dotype(ann_run=ann_run, endpoint=ENDPOINT, onlyprefix=None)
-            print("return from dotype")
-            return render(request, self.template_name, {'msg': 'The annotation is completed'})
+            if LAZY:
+                if camel:
+                    camelstr = '--camelcase'
+                else:
+                    camelstr = ''
+                virtual_env_dir = os.path.join(BASE_DIR, '.venv')
+                comm = "%s %d --dotype --csvfiles %s --endpoint %s %s --onlyprefix %s --entitycol %d" % (
+                    os.path.join(virtual_env_dir, 'bin', 'python'),
+                                                ann_run.id,
+                                                dest_file_dir,
+                                                ENDPOINT,
+                                                camelstr,
+                                                prefix,
+                                                col_id)
+                print("comm: "+comm)
+                subprocess.Popen(comm, shell=True)
+                return render(request, self.template_name, {'msg': '''The annotation is under processing, check 
+                    again in a few minutes'''})
+            else:
+                annotator.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=dest_file_dir, endpoint=ENDPOINT,
+                                                hierarchy=False, entity_col_id=col_id, onlyprefix=prefix, camel_case=camel)
+                print("return from the annotate")
+                annotator.dotype(ann_run=ann_run, endpoint=ENDPOINT, onlyprefix=None)
+                print("return from dotype")
+                return render(request, self.template_name, {'msg': 'The annotation is completed'})
         return render(request, self.template_name, {'error': 'missing parameters'})
 
