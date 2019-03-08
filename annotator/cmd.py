@@ -8,13 +8,15 @@ import sys
 #           TO make this app compatible with Django             #
 #################################################################
 
-proj_path = (os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
-print("proj_path: "+proj_path)
-sys.stdout.flush()
+
+# proj_path = (os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
+proj_path = (os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
+# print("proj_path: "+proj_path)
+# sys.stdout.flush()
 
 venv_python = os.path.join(proj_path, '.venv', 'bin', 'python')
-print("venv_python: "+venv_python)
-sys.stdout.flush()
+# print("venv_python: "+venv_python)
+# sys.stdout.flush()
 
 # This is so Django knows where to find stuff.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tadae.settings")
