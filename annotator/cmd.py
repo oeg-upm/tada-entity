@@ -2,6 +2,31 @@ import argparse
 import os
 import logging
 import traceback
+import sys
+
+#################################################################
+#           TO make this app compatible with Django             #
+#################################################################
+
+proj_path = (os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
+print("proj_path: "+proj_path)
+venv_python = os.path.join(proj_path, '.venv', 'bin', 'python')
+# This is so Django knows where to find stuff.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tadae.settings")
+sys.path.append(proj_path)
+
+# This is so my local_settings.py gets loaded.
+os.chdir(proj_path)
+
+# This is so models get loaded.
+from django.core.wsgi import get_wsgi_application
+
+application = get_wsgi_application()
+
+
+#################################################################
+#################################################################
+
 
 from tadae.settings import LOG_DIR
 from workflow import dotype, annotate_csv
