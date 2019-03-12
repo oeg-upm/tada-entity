@@ -51,6 +51,17 @@ def web_commons_to_csv():
         subprocess.Popen(comm, shell=True)
 
 
+def get_file_concept_and_subject_idx_from_line(line):
+    """
+    get file name without extension and the concept without spaces
+    :param line:
+    :return:
+    """
+    file_name = line[0][:-7]
+    concept = line[1].replace(' ', '_')
+    return file_name, concept, int(line[4])
+
+
 def get_file_and_concept_from_line(line):
     """
     get file name without extension and the concept without spaces
@@ -79,14 +90,24 @@ def build_empty_models_from_meta():
 
 
 def annotate_models():
-    anns = AnnRun.objects.filter(status='Created')
-    for ann_run in anns:
+    f = open(meta_dir)
+    reader = csv.reader(f)
+    file_subject_idx_pairs = []
+    for line in reader:
+        fname, concept , subject_idx = get_file_concept_and_subject_idx_from_line(line)
+        model_name = get_csv_file(fname, concept)
+        file_subject_idx_pairs.append((model_name, subject_idx))
+
+    # anns = AnnRun.objects.filter(status='Created')
+    # for ann_run in anns:
+    for model_name, subject_idx in file_subject_idx_pairs:
+        ann_run = AnnRun.objects.get(name=model_name, status='Created')
         ann_run.status = "started"
         ann_run.save()
         csv_file_dir = os.path.join(proj_path, UPLOAD_DIR, ann_run.name)
         prefix = "http://dbpedia.org/ontology/"
         annotator.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=csv_file_dir,
-                               endpoint=commons.ENDPOINT, hierarchy=False, entity_col_id=0, onlyprefix=prefix,
+                               endpoint=commons.ENDPOINT, hierarchy=False, entity_col_id=subject_idx, onlyprefix=prefix,
                                camel_case=True)
         annotator.dotype(ann_run, commons.ENDPOINT, onlyprefix=None)
 
