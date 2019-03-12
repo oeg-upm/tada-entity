@@ -73,7 +73,7 @@ class EntAnnAddView(TemplateView):
 
     def post(self, request):
         if 'file' in request.FILES and 'name' in request.POST:
-            LAZY = True
+            LAZY = True  # run the command in a separate process and return a message to the user
             name = request.POST['name'].strip()
             dest_file_name = name+"__"+random_string(length=10)+".csv"
             dest_file_name = dest_file_name.replace(" ", "_")
