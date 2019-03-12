@@ -143,16 +143,24 @@ def annotate_single_cell(entity_ann, cell_value, endpoint, hierarchy, onlyprefix
     for entity in entities:
         logger.debug("entity: "+str(entity))
         lock.acquire()
-        e = Entity(cell=cell, entity=entity)
-        e.save()
+        try:
+            e = Entity(cell=cell, entity=entity)
+            e.save()
+        except Exception as e:
+            logger.debug("annotate_single_cell> entity value: <" + entity + ">")
+            logger.debug(str(e))
         lock.release()
         logger.debug("will get classes of: " + entity)
         classes = get_classes(entity=entity, endpoint=endpoint, hierarchy=hierarchy)
         for c in classes:
             if onlyprefix is None or (c.startswith(onlyprefix)):
                 lock.acquire()
-                ccclass = CClass(entity=e, cclass=c)
-                ccclass.save()
+                try:
+                    ccclass = CClass(entity=e, cclass=c)
+                    ccclass.save()
+                except Exception as e:
+                    logger.debug("annotate_single_cell> class: <" + c + ">")
+                    logger.debug(str(e))
                 lock.release()
     # lock.acquire()
     # pipe.send(1)
