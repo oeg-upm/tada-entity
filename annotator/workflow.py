@@ -34,20 +34,20 @@ MAX_NUM_PROCESSES = 5
 #     lock.release()
 
 
-def update_ent_ann_progress_func(tot, pipe, ent_ann):
-    # a = pipe.recv()
-    # curr = 0
-    # old_prog = ent_ann.progress
-    # while a is not 0:
-    #     curr += 1
-    #     new_prog = curr*100.0 / tot
-    #     if new_prog - old_prog > 0.5:
-    #         ent_ann.progress = new_prog
-    #         ent_ann.save()
-    #         old_prog = new_prog
-    #     a = pipe.recv()
-    # print("will stop: ")
-    pass
+# def update_ent_ann_progress_func(tot, pipe, ent_ann):
+#     # a = pipe.recv()
+#     # curr = 0
+#     # old_prog = ent_ann.progress
+#     # while a is not 0:
+#     #     curr += 1
+#     #     new_prog = curr*100.0 / tot
+#     #     if new_prog - old_prog > 0.5:
+#     #         ent_ann.progress = new_prog
+#     #         ent_ann.save()
+#     #         old_prog = new_prog
+#     #     a = pipe.recv()
+#     # print("will stop: ")
+#     pass
 
 
 def detect_entity_col(csv_file_dir):
@@ -112,9 +112,12 @@ def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, o
         #params_list.append((entity_ann.id, r[entity_column_id], endpoint, hierarchy, onlyprefix))
     #progress_process = Process(target=update_ent_ann_progress_func, args=(len(params_list), pipe_rec, entity_ann))
     #progress_process.start()
+    logger.debug("annotate_csv> number of total processes to run: "+str(len(params_list)))
     pool = Pool(max_num_of_processes=MAX_NUM_PROCESSES, func=annotate_single_cell, params_list=params_list)
     pool.run()
+    logger.debug("annotate_csv> annotated all cells")
     pipe_send.send(0)  # to stop the process
+    logger.debug("annotate_csv> all processes are stopped now")
     #progress_process.join()
     end = time.time()
     logger.debug("Time spent: %f" % (end-start))
