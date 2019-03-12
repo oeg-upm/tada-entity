@@ -133,9 +133,11 @@ def annotate_single_cell(entity_ann, cell_value, endpoint, hierarchy, onlyprefix
     try:
         cell = Cell(text_value=cell_value, entity_ann=entity_ann)
         cell.save()
-    except Exception as e:
+    except Exception as ex:
         logger.debug("annotate_single_cell> cell value: <"+cell_value+">")
-        logger.debug(str(e))
+        logger.debug(str(ex))
+        lock.release()
+        return
     logger.debug("annotate_single_cell> releasing lock")
     lock.release()
     logger.debug("cell: "+str(cell_value))
@@ -146,9 +148,11 @@ def annotate_single_cell(entity_ann, cell_value, endpoint, hierarchy, onlyprefix
         try:
             e = Entity(cell=cell, entity=entity)
             e.save()
-        except Exception as e:
+        except Exception as ex:
             logger.debug("annotate_single_cell> entity value: <" + entity + ">")
-            logger.debug(str(e))
+            logger.debug(str(ex))
+            lock.release()
+            continue
         lock.release()
         logger.debug("will get classes of: " + entity)
         classes = get_classes(entity=entity, endpoint=endpoint, hierarchy=hierarchy)
@@ -158,9 +162,11 @@ def annotate_single_cell(entity_ann, cell_value, endpoint, hierarchy, onlyprefix
                 try:
                     ccclass = CClass(entity=e, cclass=c)
                     ccclass.save()
-                except Exception as e:
+                except Exception as ex:
                     logger.debug("annotate_single_cell> class: <" + c + ">")
-                    logger.debug(str(e))
+                    logger.debug(str(ex))
+                    lock.release()
+                    continue
                 lock.release()
     # lock.acquire()
     # pipe.send(1)
