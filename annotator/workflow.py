@@ -126,27 +126,47 @@ def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, o
 
 
 def annotate_single_cell(entity_ann, cell_value, endpoint, hierarchy, onlyprefix, lock, pipe):
-    logger.debug("annotate_single_cell> ")
+    logger.debug("annotate_single_cell> start")
     logger.debug("entity_ann parent name: "+entity_ann.ann_run.name)
     lock.acquire()
-    cell = Cell(text_value=cell_value, entity_ann=entity_ann)
-    cell.save()
+    logger.debug("annotate_single_cell> cell lock acquired")
+    try:
+        cell = Cell(text_value=cell_value, entity_ann=entity_ann)
+        cell.save()
+    except Exception as ex:
+        logger.debug("annotate_single_cell> cell value: <"+cell_value+">")
+        logger.debug(str(ex))
+        lock.release()
+        return
+    logger.debug("annotate_single_cell> releasing lock")
     lock.release()
     logger.debug("cell: "+str(cell_value))
     entities = get_entities(subject_name=cell.text_value, endpoint=endpoint)
     for entity in entities:
         logger.debug("entity: "+str(entity))
         lock.acquire()
-        e = Entity(cell=cell, entity=entity)
-        e.save()
+        try:
+            e = Entity(cell=cell, entity=entity)
+            e.save()
+        except Exception as ex:
+            logger.debug("annotate_single_cell> entity value: <" + entity + ">")
+            logger.debug(str(ex))
+            lock.release()
+            continue
         lock.release()
         logger.debug("will get classes of: " + entity)
         classes = get_classes(entity=entity, endpoint=endpoint, hierarchy=hierarchy)
         for c in classes:
             if onlyprefix is None or (c.startswith(onlyprefix)):
                 lock.acquire()
-                ccclass = CClass(entity=e, cclass=c)
-                ccclass.save()
+                try:
+                    ccclass = CClass(entity=e, cclass=c)
+                    ccclass.save()
+                except Exception as ex:
+                    logger.debug("annotate_single_cell> class: <" + c + ">")
+                    logger.debug(str(ex))
+                    lock.release()
+                    continue
                 lock.release()
     # lock.acquire()
     # pipe.send(1)
