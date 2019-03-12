@@ -130,8 +130,12 @@ def annotate_single_cell(entity_ann, cell_value, endpoint, hierarchy, onlyprefix
     logger.debug("entity_ann parent name: "+entity_ann.ann_run.name)
     lock.acquire()
     logger.debug("annotate_single_cell> cell lock acquired")
-    cell = Cell(text_value=cell_value, entity_ann=entity_ann)
-    cell.save()
+    try:
+        cell = Cell(text_value=cell_value, entity_ann=entity_ann)
+        cell.save()
+    except Exception as e:
+        logger.debug("annotate_single_cell> cell value: <"+cell_value+">")
+        logger.debug(str(e))
     logger.debug("annotate_single_cell> releasing lock")
     lock.release()
     logger.debug("cell: "+str(cell_value))
