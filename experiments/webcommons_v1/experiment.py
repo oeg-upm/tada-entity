@@ -82,7 +82,7 @@ def build_empty_models_from_meta():
     reader = csv.reader(f)
     for line in reader:
         file_name, concept = get_file_and_concept_from_line(line)
-        csv_fname = get_csv_file(concept, file_name)
+        csv_fname = get_csv_file(concept=concept, file_name=file_name)
         print("csv fname: "+csv_fname)
         if len(AnnRun.objects.filter(name=csv_fname)) == 0:
             annotation_run = AnnRun(name=csv_fname, status='Created')
@@ -95,21 +95,25 @@ def annotate_models():
     file_subject_idx_pairs = []
     for line in reader:
         fname, concept , subject_idx = get_file_concept_and_subject_idx_from_line(line)
-        model_name = get_csv_file(fname, concept)
+        model_name = get_csv_file(file_name=fname, concept=concept)
         file_subject_idx_pairs.append((model_name, subject_idx))
 
     # anns = AnnRun.objects.filter(status='Created')
     # for ann_run in anns:
     for model_name, subject_idx in file_subject_idx_pairs:
-        ann_run = AnnRun.objects.get(name=model_name, status='Created')
-        ann_run.status = "started"
-        ann_run.save()
-        csv_file_dir = os.path.join(proj_path, UPLOAD_DIR, ann_run.name)
-        prefix = "http://dbpedia.org/ontology/"
-        annotator.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=csv_file_dir,
-                               endpoint=commons.ENDPOINT, hierarchy=False, entity_col_id=subject_idx, onlyprefix=prefix,
-                               camel_case=True)
-        annotator.dotype(ann_run, commons.ENDPOINT, onlyprefix=None)
+        print("model name: "+model_name)
+        ann_run = AnnRun.objects.get(name=model_name)
+        if ann_run.status == 'Created':
+            ann_run.status = "started"
+            ann_run.save()
+            csv_file_dir = os.path.join(proj_path, UPLOAD_DIR, ann_run.name)
+            prefix = "http://dbpedia.org/ontology/"
+            annotator.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=csv_file_dir,
+                                   endpoint=commons.ENDPOINT, hierarchy=False, entity_col_id=subject_idx, onlyprefix=prefix,
+                                   camel_case=True)
+            annotator.dotype(ann_run, commons.ENDPOINT, onlyprefix=None)
+        elif ann_run.status != 'Annotation is complete':
+            raise Exception("An uncompleted annotation run is found")
 
 
 def workflow():
