@@ -10,3 +10,13 @@ wc_v2_incorrect*tsv
 wc_v2_notfound*tsv
 wc_v2_results*tsv
 wc_v2_correct*tsv
+
+wc_v1_correct.tsv
+wc_v1_incorrect.tsv
+wc_v1_notfound.tsv
+wc_v1_results.tsv
+
+og_correct.tsv
+og_incorrect.tsv
+og_notfound.tsv
+og_results.tsv

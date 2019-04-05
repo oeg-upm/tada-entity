@@ -27,7 +27,8 @@ pip install -r requirements.txt
 ```
 4. create a mysql.cfg file in the same folder (see below)
 5. Setup database and apply migrations 
-``` python manage.py makemigrations; python manage.py makemigrations tadae; python manage.py migrate
+``` 
+python manage.py makemigrations; python manage.py makemigrations tadae; python manage.py migrate
 ```
 
 
