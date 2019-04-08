@@ -62,8 +62,8 @@ def validate(ks):
                 results[fsid][k] = {}
             results[fsid][k] = {"correct": 0, "incorrect": 0, "notfound": 0}
     # if True:
-    #ccc = 20
-    ccc = -1
+    ccc = 20
+    #ccc = -1
     with click.progressbar(range(tot)) as bar:
         for line in reader:
             csv_fname, concept = line[0], line[1]
@@ -180,8 +180,8 @@ def validate_ent_ann(ent_ann, fsid, ks, correct_type):
     #     alphas = [0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
     # else:
     #     alphas = [alpha]
-    alphas = [0.1]
-    # alphas = [0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
+    #alphas = [0.1]
+    alphas = [0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
     k_id = len(ks)-1  # to start with the largest k
     k = ks[k_id]
     d = {}

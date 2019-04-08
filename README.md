@@ -63,6 +63,10 @@ wait_timeout = 28800
 6. Get the scores for the experiment. Note that this will run test with multiple values of alpha and k using the command:
 ```python validation.py```
 
+## Other tests
+Follow the same as in Web Commons v2
+
+
 # Environment
 ## Operating Systems
 * MacOS (tested with Mojave)
