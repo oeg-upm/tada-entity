@@ -63,8 +63,14 @@ wait_timeout = 28800
 6. Get the scores for the experiment. Note that this will run test with multiple values of alpha and k using the command:
 ```python validation.py```
 
+To report different alphas (note that it would take more time to compute it)
+```python validation.py alpha```
+
+To show the alphas for each k
+```python validation.py alphastat```
+
 ## Other tests
-Follow the same as in Web Commons v2
+Follow the same as in Web Commons v2 and change it to the corresponding name (e.g., webcommons_v1, olympic_games)
 
 
 # Environment

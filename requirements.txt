@@ -1,8 +1,12 @@
+backports.functools-lru-cache==1.5
 chardet==3.0.4
 Click==7.0
 coverage==4.5.2
+cycler==0.10.0
 Django==1.11.20
 isodate==0.6.0
+kiwisolver==1.1.0
+matplotlib==2.2.4
 mysqlclient==1.4.1
 numpy==1.16.1
 pandas==0.24.0
@@ -14,3 +18,4 @@ pytz==2018.9
 rdflib==4.2.2
 six==1.12.0
 SPARQLWrapper==1.8.2
+subprocess32==3.5.3

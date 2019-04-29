@@ -2,13 +2,21 @@ from experiment import *
 from tadae.models import AnnRun, EntityAnn
 from graph.type_graph import TypeGraph
 import click
+from commons import valpha
+from collections import Counter
+import pandas as pd
 import pprint
+import numpy as np
+# np.set_printoptions(suppress=True)
+# np.set_printoptions(suppress=True,
+#    formatter={'float_kind':'{:.10f}'.format})
 
 
 NOT_FOUND_FNAME = "og_notfound.tsv"
 INCORRECT_FNAME = "og_incorrect.tsv"
 CORRECT_FNAME = "og_correct.tsv"
 RESULTS_FNAME = "og_results.tsv"
+ALPHAS_FNAME = "og_alphas.tsv"
 
 
 def prepare_report_files():
@@ -20,6 +28,9 @@ def prepare_report_files():
     f.close()
     f = open(CORRECT_FNAME, "w")
     f.write("file name\tfs\tk\n")
+    f.close()
+    f = open(ALPHAS_FNAME, "w")
+    f.write("file name\tfs\tk\talpha\n")
     f.close()
 
 
@@ -45,7 +56,13 @@ def report_correct(fname, fsid, k):
     f.close()
 
 
-def validate(ks):
+def report_alphas(fname, fsid, k, alpha):
+    f = open(ALPHAS_FNAME, "a")
+    f.write("%s\t%s\t%s\t%f\n" % (fname, str(fsid), str(k), alpha))
+    f.close()
+
+
+def validate(ks, for_all_alphas):
     prepare_report_files()
     tg = TypeGraph()  # dummy
     fs_funcs = range(len(tg.fs_funcs))
@@ -84,7 +101,8 @@ def validate(ks):
             else:
                 ent_ann = ent_anns[0]
                 for fsid in fs_funcs:
-                    results_bool = validate_ent_ann(ent_ann=ent_ann, fsid=fsid, ks=kss, correct_type=correct_type)
+                    results_bool = validate_ent_ann(ent_ann=ent_ann, fsid=fsid, ks=kss, correct_type=correct_type,
+                                                    for_all_alphas=for_all_alphas)
                     for k in results_bool.keys():
                         if results_bool[k] == "CORRECT":
                             results[fsid][k]["correct"] += 1
@@ -163,12 +181,13 @@ def print_results(results, fs_funcs, kss):
                                                        f1))
 
 
-def validate_ent_ann(ent_ann, fsid, ks, correct_type):
+def validate_ent_ann(ent_ann, fsid, ks, correct_type, for_all_alphas):
     """
     :param ent_ann:
     :param fsid:
     :param ks: a list of k values that should be sorted in a ascending order
     :param correct_type:
+    :param for_all_alphas: bool (if true, then it will check alphas that yields a good score)
     :return:
         {
             "k_1": bool,
@@ -176,18 +195,17 @@ def validate_ent_ann(ent_ann, fsid, ks, correct_type):
             ....
         }
     """
-    # if alpha is None:
-    #     alphas = [0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
-    # else:
-    #     alphas = [alpha]
-    #alphas = [0.1]
     alphas = [0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
     k_id = len(ks)-1  # to start with the largest k
     k = ks[k_id]
     d = {}
     for alpha in alphas:
+        if for_all_alphas:
+            k_id = len(ks) - 1  # to start with the largest k
+            k = ks[k_id]
         graph = annotator.load_graph(entity_ann=ent_ann)
         results = annotator.score_graph(entity_ann=ent_ann, alpha=alpha, graph=graph, fsid=fsid)[0:k]
+
         if results == []:
             for k in ks:
                 d[k] = "NOTFOUND"
@@ -197,6 +215,8 @@ def validate_ent_ann(ent_ann, fsid, ks, correct_type):
         while correct_type in results:
             d[k] = "CORRECT"
             report_correct(fname=ent_ann.ann_run.name, fsid=fsid, k=k)
+            if for_all_alphas:
+                report_alphas(fname=ent_ann.ann_run.name, fsid=fsid, k=k, alpha=alpha)
             if k_id == 0:  # no more values of k left
                 k_id = -1
                 break
@@ -205,7 +225,7 @@ def validate_ent_ann(ent_ann, fsid, ks, correct_type):
                 k = ks[k_id]  # new k
                 results = results[0:k]
 
-        if k_id < 0:
+        if k_id < 0 and not for_all_alphas:
             break
 
     while k_id >= 0:  # there are some values of k that is smaller than k
@@ -216,5 +236,56 @@ def validate_ent_ann(ent_ann, fsid, ks, correct_type):
     return d
 
 
+# def alpha_stat(ks):
+#     df = pd.read_csv(ALPHAS_FNAME, sep='\t')
+#     # print df.columns.values
+#     d = dict()
+#     for k in ks:
+#         df_k = df[df.k==k]
+#         d_count = dict(Counter(df_k['alpha']))
+#         d[k] = d_count
+#     pp = pprint.PrettyPrinter(indent=4)
+#     pp.pprint(d)
+#     print d
+#     plot_alpha_stat(d)
+#
+#
+# def plot_alpha_stat(d):
+#     import matplotlib
+#     matplotlib.use('TkAgg')
+#     import matplotlib.pyplot as plt
+#
+#     ind = np.arange(len(d[d.keys()[-1]]))  # the x locations for the groups
+#     width = 0.20  # the width of the bars
+#     fig, ax = plt.subplots()
+#
+#
+#     custom_colors = [ 'royalblue', 'mediumpurple', 'mediumvioletred','hotpink' ,'greenyellow', 'dodgerblue', 'aquamarine' ,'deeppink', 'darkturquoise', 'skyblue']
+#
+#     for idx, k in enumerate(sorted(d.keys())):
+#         vals = []
+#         for a in sorted(d[k].keys()):
+#             vals.append(d[k][a])
+#
+#         _ = ax.bar(ind + width * idx - width/2, vals, width,
+#                    color=custom_colors[idx],
+#                    label=str(k))
+#
+#     ax.set_ylabel('Count')
+#     ax.set_title('Alphas for each k')
+#     ax.set_xticks(ind)
+#     ax.set_xticklabels(tuple(sorted(d[d.keys()[-1]].keys())))
+#     ax.legend()
+#     plt.show()
+
+
 if __name__ == "__main__":
-    validate(ks=[1, 3, 5, 10])
+    ks = [1, 3, 5, 10]
+    if len(sys.argv) == 2 and sys.argv[1] == 'alpha':
+        print("Note that all values of alphas will be reported")
+        validate(ks=ks, for_all_alphas=True)
+
+    elif len(sys.argv) == 2 and sys.argv[1] == 'alphastat':
+        valpha.alpha_stat(ks=ks, alphas_fname=ALPHAS_FNAME)
+    else:
+        validate(ks=ks, for_all_alphas=False)
