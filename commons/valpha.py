@@ -3,6 +3,16 @@ import pandas as pd
 import pprint
 import numpy as np
 
+import matplotlib.cm
+cmap = matplotlib.cm.jet
+cmap = matplotlib.cm.viridis
+#cmap = matplotlib.cm.plasma
+#cmap = matplotlib.cm.inferno
+# cmap = matplotlib.cm.magma
+# cmap = matplotlib.cm.GnBu
+# cmap = matplotlib.cm.winter
+# cmap = matplotlib.cm.hot
+
 
 def alpha_stat(ks, alphas_fname):
     df = pd.read_csv(alphas_fname, sep='\t')
@@ -27,8 +37,7 @@ def plot_alpha_stat(d):
     width = 0.20  # the width of the bars
     fig, ax = plt.subplots()
 
-
-    custom_colors = [ 'royalblue', 'mediumpurple', 'mediumvioletred','hotpink' ,'greenyellow', 'dodgerblue', 'aquamarine' ,'deeppink', 'darkturquoise', 'skyblue']
+    # custom_colors = [ 'royalblue', 'mediumpurple', 'mediumvioletred','hotpink' ,'greenyellow', 'dodgerblue', 'aquamarine' ,'deeppink', 'darkturquoise', 'skyblue']
 
     for idx, k in enumerate(sorted(d.keys())):
         vals = []
@@ -36,8 +45,9 @@ def plot_alpha_stat(d):
             vals.append(d[k][a])
 
         _ = ax.bar(ind + width * idx - width/2, vals, width,
-                   color=custom_colors[idx],
-                   label=str(k))
+                   color=cmap(idx*1.0/len(d.keys())),
+                   #color=custom_colors[idx],
+                   label="k="+str(k))
 
     ax.set_ylabel('Count')
     ax.set_title('Alphas for each k')
