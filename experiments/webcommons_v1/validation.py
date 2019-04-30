@@ -2,6 +2,7 @@ from experiment import *
 from tadae.models import AnnRun, EntityAnn
 from graph.type_graph import TypeGraph
 import click
+from commons import valpha
 import pprint
 
 
@@ -9,18 +10,8 @@ NOT_FOUND_FNAME = "wc_v1_notfound.tsv"
 INCORRECT_FNAME = "wc_v1_incorrect.tsv"
 CORRECT_FNAME = "wc_v1_correct.tsv"
 RESULTS_FNAME = "wc_v1_results.tsv"
+ALPHAS_FNAME = "wc_v1_alphas.tsv"
 
-
-def prepare_report_files():
-    f = open(NOT_FOUND_FNAME, "w")
-    f.write("file name\n")
-    f.close()
-    f = open(INCORRECT_FNAME, "w")
-    f.write("file name\tfs\tk\n")
-    f.close()
-    f = open(CORRECT_FNAME, "w")
-    f.write("file name\tfs\tk\n")
-    f.close()
 
 
 def report_incorrect(fname, fsid, k):
@@ -45,8 +36,15 @@ def report_correct(fname, fsid, k):
     f.close()
 
 
-def validate(ks):
-    prepare_report_files()
+def report_alphas(fname, fsid, k, alpha):
+    f = open(ALPHAS_FNAME, "a")
+    f.write("%s\t%s\t%s\t%f\n" % (fname, str(fsid), str(k), alpha))
+    f.close()
+
+
+def validate(ks, for_all_alphas):
+    valpha.prepare_report_files(not_found_fname=NOT_FOUND_FNAME, incorrect_fname=INCORRECT_FNAME,
+                                correct_fname=CORRECT_FNAME, alphas_fname=ALPHAS_FNAME)
     tg = TypeGraph()  # dummy
     fs_funcs = range(len(tg.fs_funcs))
     f = open(meta_dir)
@@ -62,7 +60,7 @@ def validate(ks):
                 results[fsid][k] = {}
             results[fsid][k] = {"correct": 0, "incorrect": 0, "notfound": 0}
     # if True:
-    #ccc = 20
+    #ccc = 5
     ccc = 10000
     with click.progressbar(range(tot)) as bar:
         for line in reader:
@@ -86,7 +84,12 @@ def validate(ks):
             else:
                 ent_ann = ent_anns[0]
                 for fsid in fs_funcs:
-                    results_bool = validate_ent_ann(ent_ann=ent_ann, fsid=fsid, ks=kss, correct_type=correct_type)
+                    results_bool = valpha.validate_ent_ann(ent_ann=ent_ann, fsid=fsid, ks=kss,
+                                                           correct_type=correct_type,
+                                                           for_all_alphas=for_all_alphas,
+                                                           not_found_fname=NOT_FOUND_FNAME,
+                                                           correct_fname=CORRECT_FNAME, incorrect_fname=INCORRECT_FNAME,
+                                                           alphas_fname=ALPHAS_FNAME)
                     for k in results_bool.keys():
                         if results_bool[k] == "CORRECT":
                             results[fsid][k]["correct"] += 1
@@ -165,53 +168,13 @@ def print_results(results, fs_funcs, kss):
                                                        f1))
 
 
-def validate_ent_ann(ent_ann, fsid, ks, correct_type):
-    """
-    :param ent_ann:
-    :param fsid:
-    :param ks: a list of k values that should be sorted in a ascending order
-    :param correct_type:
-    :return:
-        {
-            "k_1": bool,
-            "k_2": bool,
-            ....
-        }
-    """
-    alphas = [0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
-    k_id = len(ks)-1  # to start with the largest k
-    k = ks[k_id]
-    d = {}
-    for alpha in alphas:
-        graph = annotator.load_graph(entity_ann=ent_ann)
-        results = annotator.score_graph(entity_ann=ent_ann, alpha=alpha, graph=graph, fsid=fsid)[0:k]
-        if results == []:
-            for k in ks:
-                d[k] = "NOTFOUND"
-                report_not_found(fname=ent_ann.ann_run.name)
-            return d
-
-        while correct_type in results:
-            d[k] = "CORRECT"
-            report_correct(fname=ent_ann.ann_run.name, fsid=fsid, k=k)
-            if k_id == 0:  # no more values of k left
-                k_id = -1
-                break
-            else:
-                k_id -= 1
-                k = ks[k_id]  # new k
-                results = results[0:k]
-
-        if k_id < 0:
-            break
-
-    while k_id >= 0:  # there are some values of k that is smaller than k
-        d[k] = "INCORRECT"
-        report_incorrect(fname=ent_ann.ann_run.name, fsid=fsid, k=k)
-        k_id -= 1
-        k = ks[k_id]
-    return d
-
-
 if __name__ == "__main__":
-    validate(ks=[1, 3, 5, 10])
+    ks = [1, 3, 5, 10]
+    if len(sys.argv) == 2 and sys.argv[1] == 'alpha':
+        print("Note that all values of alphas will be reported")
+        validate(ks=ks, for_all_alphas=True)
+        valpha.alpha_stat(ks=ks, alphas_fname=ALPHAS_FNAME)
+    elif len(sys.argv) == 2 and sys.argv[1] == 'alphastat':
+        valpha.alpha_stat(ks=ks, alphas_fname=ALPHAS_FNAME)
+    else:
+        validate(ks=ks, for_all_alphas=False)
