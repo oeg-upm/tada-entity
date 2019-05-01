@@ -1,26 +1,30 @@
 {%extends "base.html"%}
 {%block content%}
-<table class="w3-table w3-striped">
-    <thead>
-    <tr>
-        <th>Cell</th>
-        <th>Entity</th>
-        <th>Class</th>
-    </tr>
-    </thead>
-    <tbody>
-    {%for cell in entity_ann.cells%}
-        {%for entity in cell.entities%}
-            {%for cclass in entity.classes%}
-                <tr>
-                    <td>{{cell.text_value}}</td>
-                    <td>{{entity.entity}}</td>
-                    <td>{{cclass.cclass}}</td>
-                </tr>
+<p>Note: for small and medium screen sizes, you can scroll horizontally</p>
+<div class="w3-responsive">
+    <table class="w3-table w3-striped">
+        <thead>
+        <tr class="w3-black">
+            <th>Cell</th>
+            <th>Entity</th>
+            <th>Class</th>
+        </tr>
+        </thead>
+        <tbody>
+        {%for cell in entity_ann.cells%}
+            {%for entity in cell.entities%}
+                {%for cclass in entity.classes%}
+                    <tr>
+                        <td>{{cell.text_value}}</td>
+                        <td>{{entity.entity}}</td>
+                        <td>{{cclass.cclass}}</td>
+                    </tr>
+                {%endfor%}
             {%endfor%}
-        {%endfor%}
 
-    {%endfor%}
-    </tbody>
-</table>
+        {%endfor%}
+        </tbody>
+    </table>
+</div>
+
 {%endblock%}
