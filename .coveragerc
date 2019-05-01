@@ -3,3 +3,4 @@ omit =
     .venv/*
     experiments/*
     tadae/migrations/*
+    commons/valpha.py
