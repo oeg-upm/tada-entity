@@ -13,7 +13,6 @@ from models import AnnRun
 ENDPOINT = "http://dbpedia.org/sparql"
 
 
-
 def about(request):
     return render(request, 'about.html')
 
@@ -34,8 +33,8 @@ def ent_ann_raw_results(request):
 
 def ent_ann_recompute(request):
     eanns = EntityAnn.objects.all()
-    alpha = 0.1
-
+    alpha = 0.01
+    default_fsid = 3
     if 'alpha' in request.GET and 'ann' in request.GET:
         # from annotator import load_graph, score_graph, get_nodes, get_edges
         alpha = float(request.GET['alpha'])
@@ -58,7 +57,9 @@ def ent_ann_recompute(request):
             if 'ann' in request.GET:
                 entity_ann = EntityAnn.objects.get(id=request.GET['ann'].strip())
                 selected = entity_ann.id
-        return render(request, 'ent_ann_recompute.html', {'anns': eanns, 'alpha': alpha, 'selected': selected})
+        return render(request, 'ent_ann_recompute.html', {'anns': eanns, 'alpha': alpha, 'selected': selected,
+                                                          'fsid': default_fsid,
+                                                          })
 
 
 def handle_uploaded_file(f, dest):

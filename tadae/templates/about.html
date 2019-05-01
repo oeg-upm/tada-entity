@@ -1,11 +1,25 @@
 {%extends "base.html"%}
 {%block content%}
-<h2></h2>
+<!--<h2></h2>-->
+<!--<p>-->
+    <!--This work is under-submission.-->
+<!--</p>-->
+<!--<p class="w3-wide">Web Design</p>-->
+    <!--<div class="w3-white">-->
+      <!--<div class="w3-dark-grey" style="height:28px;width:85%"></div>-->
+    <!--</div>-->
+
+<h2>Welcome to tada-entity</h2>
 <p>
-    This work is under-submission.
+    An online tool to automatically guess the class (the meaning) of the entity column in a give table.
 </p>
-<p class="w3-wide">Web Design</p>
-    <div class="w3-white">
-      <div class="w3-dark-grey" style="height:28px;width:85%"></div>
-    </div>
+
+<h4>Input and Output</h4>
+The system takes as an input a tabule (e.g., a CSV file) and output the most probable classes ordered by the likelihood.
+
+<h4>How to use it?</h4>
+<i>To annotate your data:</i>click on "Annotate" (in the sidebar),
+it will redirect you to go to the page to upload your data.<br>
+<i>To see the results (the annotations guessed by the system):</i> click on "Annotations" in the sidebar,
+look for your data and click on the corresponding "results" link.
 {%endblock%}
