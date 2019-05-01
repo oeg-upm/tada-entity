@@ -201,7 +201,6 @@ def alpha_stat(ks, alphas_fname, k_filter):
         print(msg)
         return
     df = pd.read_csv(alphas_fname, sep='\t')
-    # print df.columns.values
     d = dict()
     for fs in range(1, 6):
         for k in ks:
@@ -213,127 +212,7 @@ def alpha_stat(ks, alphas_fname, k_filter):
             d[fs][k] = d_count
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(d)
-    #print d
     plot_alpha_stat(d=d, k=k_filter)
-
-# This is a different matplotlib example not related to the code
-# def plot_alpha_stat(d):
-#     men_means, men_std = (20, 35, 30, 35, 27), (2, 3, 4, 1, 2)
-#     women_means, women_std = (25, 32, 34, 20, 25), (3, 5, 2, 3, 3)
-#
-#     ind = np.arange(len(men_means))  # the x locations for the groups
-#     width = 0.35  # the width of the bars
-#
-#     fig, ax = plt.subplots()
-#     rects1 = ax.bar(ind - width / 2, men_means, width, yerr=men_std,
-#                     color='SkyBlue', label='Men')
-#     rects2 = ax.bar(ind + width / 2, women_means, width, yerr=women_std,
-#                     color='IndianRed', label='Women')
-#
-#     # Add some text for labels, title and custom x-axis tick labels, etc.
-#     ax.set_ylabel('Scores')
-#     ax.set_title('Scores by group and gender')
-#     ax.set_xticks(ind)
-#     ax.set_xticklabels(('G1', 'G2', 'G3', 'G4', 'G5'))
-#     ax.legend()
-#     #plt.savefig("secret_fig.png")
-#     plt.show(block=True)
-
-# The correct one (multiple k values but it is not very clear)
-# def plot_alpha_stat(d, ks):
-#     import matplotlib
-#     matplotlib.use('TkAgg')
-#     import matplotlib.pyplot as plt
-#
-#     import matplotlib.cm
-#
-#     # cmap = matplotlib.cm.jet
-#     cmap = matplotlib.cm.viridis
-#     # cmap = matplotlib.cm.plasma
-#     # cmap = matplotlib.cm.inferno
-#     # cmap = matplotlib.cm.magma
-#     # cmap = matplotlib.cm.GnBu
-#     # cmap = matplotlib.cm.winter
-#     # cmap = matplotlib.cm.hot
-#
-#     hatches = ['+','///', 'OO', '--',  '...', 'xxx']
-#     markers = [ "*", "v" ,"o","s","P","X",]
-#
-#     global alphas
-#     ind = np.arange(len(alphas))  # the x locations for the groups
-#     width = 0.16  # the width of the bars
-#     fig, ax = plt.subplots()
-#     # for k in [ks[0], ks[-1]]:
-#     # for k in ks[1::-1]:  # get k=3 then k=1
-#     for k in ks:  # get k=3 then k=1
-#         for idx, fs in enumerate(sorted(d.keys())):
-#             vals = []
-#             for a in alphas:
-#                 if a in d[fs][k]:
-#                     vals.append(d[fs][k][a])
-#                 else:
-#                     vals.append(0)
-#             if k ==1:
-#                 _ = ax.bar(ind + width * idx - width/2, vals, width,
-#                            # edgecolor="black",
-#                            color=cmap(fs*1.0/len(d.keys())),
-#                            fill=True,
-#                            # hatch=hatches[fs],
-#                            # label="fs=" + str(fs)
-#                            # hatch=hatches[fs],
-#                            )
-#
-#                 # _ = ax.plot(ind + width * idx - width / 2, vals,
-#                 #             color=cmap((fs * 1.0) / len(d.keys())),
-#                 #             marker=markers[fs],
-#                 #             markeredgecolor="black",
-#                 #             markerfacecolor="white",
-#                 #             markeredgewidth=1,
-#                 #             label="fs"+str(fs)+"(k="+str(k)+")"
-#                 #             )
-#             else:
-#                 _ = ax.bar(ind + width * idx - width / 2, vals, width,
-#                            color=cmap((fs * 1.0) / len(d.keys())),
-#                            fill=True,
-#                            # hatch=hatches[fs],
-#                            #label="fs=" + str(fs)
-#                            # hatch=hatches[fs],
-#                            # label="fs=" + str(fs)
-#                            )
-#                 # _ = ax.bar(ind + width * idx - width/2, vals, width,
-#                 #            edgecolor=cmap(fs*1.0/len(d.keys())),
-#                 #            fill=False,
-#                 #            )
-#
-#             # _ = ax.bar(ind + width * idx - width/2, vals, width,
-#             #            color=cmap(fs*1.0/len(d.keys())),
-#             #            edgecolor=cmap(fs*1.0/len(d.keys())),
-#             #            fill=True if k == 1 else False,
-#             #            label="fs="+str(fs) if k == 1 else ""
-#             #            )
-#
-#
-#     # original (k=1)
-#     # for idx, fs in enumerate(sorted(d.keys())):
-#     #     vals = []
-#     #     for a in alphas:
-#     #         if a in d[fs][1]:
-#     #             vals.append(d[fs][1][a])
-#     #         else:
-#     #             vals.append(0)
-#     #
-#     #     _ = ax.bar(ind + width * idx - width/2, vals, width,
-#     #                color=cmap(fs*1.0/len(d.keys())),
-#     #                edgecolor=cmap(fs*1.0/len(d.keys())),
-#     #                fill=False,
-#     #                label="fs="+str(fs)
-#     #                )
-#     ax.set_ylabel('Count')
-#     ax.set_title('Alphas for different fs')
-#     ax.set_xticks(ind)
-#     ax.set_xticklabels(tuple(alphas))
-#     ax.legend()
-#     plt.show()
 
 
 def plot_alpha_stat(d, k, with_plot=False):
