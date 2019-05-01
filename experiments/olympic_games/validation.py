@@ -194,8 +194,9 @@ if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == 'alpha':
         print("Note that all values of alphas will be reported")
         validate(ks=ks, for_all_alphas=True)
-
-    elif len(sys.argv) == 2 and sys.argv[1] == 'alphastat':
-        valpha.alpha_stat(ks=ks, alphas_fname=ALPHAS_FNAME)
+        valpha.alpha_stat(ks=ks, alphas_fname=ALPHAS_FNAME, k_filter=1)
+    elif len(sys.argv) == 3 and sys.argv[1] == 'astat':
+        k = int(sys.argv[2])
+        valpha.alpha_stat(ks=ks, alphas_fname=ALPHAS_FNAME, k_filter=k)
     else:
         validate(ks=ks, for_all_alphas=False)

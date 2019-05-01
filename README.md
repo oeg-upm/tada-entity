@@ -66,8 +66,8 @@ wait_timeout = 28800
 To report different alphas (note that it would take more time to compute it)
 ```python validation.py alpha```
 
-To show the alphas for each k
-```python validation.py alphastat```
+To show the alphas for each k (where k can be 1,3,5, or 10).
+```python validation.py astat k```
 
 ## Other tests
 Follow the same as in Web Commons v2 and change it to the corresponding name (e.g., webcommons_v1, olympic_games)

@@ -40,7 +40,8 @@ NOTFOUND = "NOTFOUND"
 INCORRECT = "INCORRECT"
 
 # alphas = [0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
-alphas = [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]
+alphas = [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001,
+          0.000005, 0.000001,  0.0000005, 0.0000001, 0.00000005, 0.00000001]
 
 
 def prepare_report_files(not_found_fname, incorrect_fname, correct_fname, alphas_fname):
@@ -190,7 +191,7 @@ def validate_ent_ann(ent_ann, fsid, ks, correct_type, for_all_alphas, not_found_
     return d
 
 
-def alpha_stat(ks, alphas_fname):
+def alpha_stat(ks, alphas_fname, k_filter):
     alpha_file_exists = os.path.isfile(alphas_fname)
     if not alpha_file_exists:
         msg = """
@@ -213,7 +214,7 @@ def alpha_stat(ks, alphas_fname):
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(d)
     #print d
-    plot_alpha_stat(d)
+    plot_alpha_stat(d=d, k=k_filter)
 
 # This is a different matplotlib example not related to the code
 # def plot_alpha_stat(d):
@@ -238,8 +239,104 @@ def alpha_stat(ks, alphas_fname):
 #     #plt.savefig("secret_fig.png")
 #     plt.show(block=True)
 
-# The correct one
-def plot_alpha_stat(d):
+# The correct one (multiple k values but it is not very clear)
+# def plot_alpha_stat(d, ks):
+#     import matplotlib
+#     matplotlib.use('TkAgg')
+#     import matplotlib.pyplot as plt
+#
+#     import matplotlib.cm
+#
+#     # cmap = matplotlib.cm.jet
+#     cmap = matplotlib.cm.viridis
+#     # cmap = matplotlib.cm.plasma
+#     # cmap = matplotlib.cm.inferno
+#     # cmap = matplotlib.cm.magma
+#     # cmap = matplotlib.cm.GnBu
+#     # cmap = matplotlib.cm.winter
+#     # cmap = matplotlib.cm.hot
+#
+#     hatches = ['+','///', 'OO', '--',  '...', 'xxx']
+#     markers = [ "*", "v" ,"o","s","P","X",]
+#
+#     global alphas
+#     ind = np.arange(len(alphas))  # the x locations for the groups
+#     width = 0.16  # the width of the bars
+#     fig, ax = plt.subplots()
+#     # for k in [ks[0], ks[-1]]:
+#     # for k in ks[1::-1]:  # get k=3 then k=1
+#     for k in ks:  # get k=3 then k=1
+#         for idx, fs in enumerate(sorted(d.keys())):
+#             vals = []
+#             for a in alphas:
+#                 if a in d[fs][k]:
+#                     vals.append(d[fs][k][a])
+#                 else:
+#                     vals.append(0)
+#             if k ==1:
+#                 _ = ax.bar(ind + width * idx - width/2, vals, width,
+#                            # edgecolor="black",
+#                            color=cmap(fs*1.0/len(d.keys())),
+#                            fill=True,
+#                            # hatch=hatches[fs],
+#                            # label="fs=" + str(fs)
+#                            # hatch=hatches[fs],
+#                            )
+#
+#                 # _ = ax.plot(ind + width * idx - width / 2, vals,
+#                 #             color=cmap((fs * 1.0) / len(d.keys())),
+#                 #             marker=markers[fs],
+#                 #             markeredgecolor="black",
+#                 #             markerfacecolor="white",
+#                 #             markeredgewidth=1,
+#                 #             label="fs"+str(fs)+"(k="+str(k)+")"
+#                 #             )
+#             else:
+#                 _ = ax.bar(ind + width * idx - width / 2, vals, width,
+#                            color=cmap((fs * 1.0) / len(d.keys())),
+#                            fill=True,
+#                            # hatch=hatches[fs],
+#                            #label="fs=" + str(fs)
+#                            # hatch=hatches[fs],
+#                            # label="fs=" + str(fs)
+#                            )
+#                 # _ = ax.bar(ind + width * idx - width/2, vals, width,
+#                 #            edgecolor=cmap(fs*1.0/len(d.keys())),
+#                 #            fill=False,
+#                 #            )
+#
+#             # _ = ax.bar(ind + width * idx - width/2, vals, width,
+#             #            color=cmap(fs*1.0/len(d.keys())),
+#             #            edgecolor=cmap(fs*1.0/len(d.keys())),
+#             #            fill=True if k == 1 else False,
+#             #            label="fs="+str(fs) if k == 1 else ""
+#             #            )
+#
+#
+#     # original (k=1)
+#     # for idx, fs in enumerate(sorted(d.keys())):
+#     #     vals = []
+#     #     for a in alphas:
+#     #         if a in d[fs][1]:
+#     #             vals.append(d[fs][1][a])
+#     #         else:
+#     #             vals.append(0)
+#     #
+#     #     _ = ax.bar(ind + width * idx - width/2, vals, width,
+#     #                color=cmap(fs*1.0/len(d.keys())),
+#     #                edgecolor=cmap(fs*1.0/len(d.keys())),
+#     #                fill=False,
+#     #                label="fs="+str(fs)
+#     #                )
+#     ax.set_ylabel('Count')
+#     ax.set_title('Alphas for different fs')
+#     ax.set_xticks(ind)
+#     ax.set_xticklabels(tuple(alphas))
+#     ax.legend()
+#     plt.show()
+
+
+def plot_alpha_stat(d, k, with_plot=False):
     import matplotlib
     matplotlib.use('TkAgg')
     import matplotlib.pyplot as plt
@@ -255,27 +352,62 @@ def plot_alpha_stat(d):
     # cmap = matplotlib.cm.winter
     # cmap = matplotlib.cm.hot
 
+    hatches = ['+','///', 'OO', '--',  '...', 'xxx']
+    markers = [ "*", "v" ,"o","s","P","X",]
+
     global alphas
     ind = np.arange(len(alphas))  # the x locations for the groups
-    width = 0.18  # the width of the bars
+    width = 0.16  # the width of the bars
     fig, ax = plt.subplots()
-
+    # for k in [ks[0], ks[-1]]:
+    # for k in ks[1::-1]:  # get k=3 then k=1
     for idx, fs in enumerate(sorted(d.keys())):
         vals = []
         for a in alphas:
-            if a in d[fs][1]:
-                vals.append(d[fs][1][a])
+            print("alpha: "+str(a))
+            print("fs: "+str(fs))
+            print("k: "+str(k))
+            print("d[fs]"+str(d[fs]))
+            print("d[fs][k]"+str(d[fs][k]))
+            if a in d[fs][k]:
+                print("in alpha: "+str(a)+"   - "+str(d[fs][k][a]))
+                vals.append(d[fs][k][a])
             else:
+                print("not in alpha: "+str(a))
                 vals.append(0)
 
-        _ = ax.bar(ind + width * idx - width/2, vals, width,
-                   color=cmap(fs*1.0/len(d.keys())),
-                   label="fs="+str(fs)
-                   )
+        if with_plot:
+            _ = ax.bar(ind + width * idx - width / 2, vals, width,
+                       # edgecolor="black",
+                       color=cmap(fs * 1.0 / len(d.keys())),
+                       fill=True,
+                       # hatch=hatches[fs],
+                       # label="fs=" + str(fs)
+                       )
+
+            _ = ax.plot(ind + width * idx - width / 2, vals,
+                        color=cmap((fs * 1.0) / len(d.keys())),
+                        marker=markers[fs],
+                        markeredgecolor="black",
+                        markerfacecolor="white",
+                        markeredgewidth=1,
+                        label="fs"+str(fs)+"(k="+str(k)+")"
+                        )
+        else:
+            print "vals: "
+            print vals
+
+            _ = ax.bar(ind + width * idx - width / 2, vals, width,
+                       # edgecolor="black",
+                       color=cmap(fs * 1.0 / len(d.keys())),
+                       fill=True,
+                       # hatch=hatches[fs],
+                       label="fs=" + str(fs)
+                       )
+
     ax.set_ylabel('Count')
-    ax.set_title('Alphas for each k')
+    ax.set_title('Alphas for different fs with k='+str(k))
     ax.set_xticks(ind)
     ax.set_xticklabels(tuple(alphas))
     ax.legend()
     plt.show()
-
