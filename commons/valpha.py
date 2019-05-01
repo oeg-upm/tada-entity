@@ -2,7 +2,6 @@ from collections import Counter
 import pandas as pd
 import pprint
 import numpy as np
-import matplotlib.cm
 
 
 import os
@@ -36,14 +35,7 @@ import annotator
 
 #################################################################
 
-#cmap = matplotlib.cm.jet
-cmap = matplotlib.cm.viridis
-#cmap = matplotlib.cm.plasma
-#cmap = matplotlib.cm.inferno
-# cmap = matplotlib.cm.magma
-# cmap = matplotlib.cm.GnBu
-# cmap = matplotlib.cm.winter
-# cmap = matplotlib.cm.hot
+
 
 
 # alphas = [0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
@@ -227,60 +219,69 @@ def alpha_stat(ks, alphas_fname):
     #print d
     plot_alpha_stat(d)
 
+# This is a different matplotlib example not related to the code
+# def plot_alpha_stat(d):
+#     men_means, men_std = (20, 35, 30, 35, 27), (2, 3, 4, 1, 2)
+#     women_means, women_std = (25, 32, 34, 20, 25), (3, 5, 2, 3, 3)
+#
+#     ind = np.arange(len(men_means))  # the x locations for the groups
+#     width = 0.35  # the width of the bars
+#
+#     fig, ax = plt.subplots()
+#     rects1 = ax.bar(ind - width / 2, men_means, width, yerr=men_std,
+#                     color='SkyBlue', label='Men')
+#     rects2 = ax.bar(ind + width / 2, women_means, width, yerr=women_std,
+#                     color='IndianRed', label='Women')
+#
+#     # Add some text for labels, title and custom x-axis tick labels, etc.
+#     ax.set_ylabel('Scores')
+#     ax.set_title('Scores by group and gender')
+#     ax.set_xticks(ind)
+#     ax.set_xticklabels(('G1', 'G2', 'G3', 'G4', 'G5'))
+#     ax.legend()
+#     #plt.savefig("secret_fig.png")
+#     plt.show(block=True)
 
+# The correct one
 def plot_alpha_stat(d):
     import matplotlib
     matplotlib.use('TkAgg')
     import matplotlib.pyplot as plt
-    men_means, men_std = (20, 35, 30, 35, 27), (2, 3, 4, 1, 2)
-    women_means, women_std = (25, 32, 34, 20, 25), (3, 5, 2, 3, 3)
 
-    ind = np.arange(len(men_means))  # the x locations for the groups
-    width = 0.35  # the width of the bars
+    import matplotlib.cm
 
+    # cmap = matplotlib.cm.jet
+    cmap = matplotlib.cm.viridis
+    # cmap = matplotlib.cm.plasma
+    # cmap = matplotlib.cm.inferno
+    # cmap = matplotlib.cm.magma
+    # cmap = matplotlib.cm.GnBu
+    # cmap = matplotlib.cm.winter
+    # cmap = matplotlib.cm.hot
+
+    global alphas
+    ind = np.arange(len(alphas))  # the x locations for the groups
+    width = 0.18  # the width of the bars
     fig, ax = plt.subplots()
-    rects1 = ax.bar(ind - width / 2, men_means, width, yerr=men_std,
-                    color='SkyBlue', label='Men')
-    rects2 = ax.bar(ind + width / 2, women_means, width, yerr=women_std,
-                    color='IndianRed', label='Women')
 
-    # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel('Scores')
-    ax.set_title('Scores by group and gender')
+    for idx, fs in enumerate(sorted(d.keys())):
+        vals = []
+        for a in alphas:
+            if a in d[fs][1]:
+                vals.append(d[fs][1][a])
+            else:
+                vals.append(0)
+
+        _ = ax.bar(ind + width * idx - width/2, vals, width,
+                   color=cmap(fs*1.0/len(d.keys())),
+                   label="fs="+str(fs)
+                   )
+    ax.set_ylabel('Count')
+    ax.set_title('Alphas for each k')
     ax.set_xticks(ind)
-    ax.set_xticklabels(('G1', 'G2', 'G3', 'G4', 'G5'))
+    ax.set_xticklabels(tuple(alphas))
     ax.legend()
-    #plt.savefig("secret_fig.png")
-    #plt.show()
-
-# The correct one
-# def plot_alpha_stat(d):
-#     import matplotlib
-#     matplotlib.use('TkAgg')
-#     import matplotlib.pyplot as plt
-#     global alphas
-#     ind = np.arange(len(alphas))  # the x locations for the groups
-#     width = 0.18  # the width of the bars
-#     fig, ax = plt.subplots()
-#
-#     for idx, fs in enumerate(sorted(d.keys())):
-#         vals = []
-#         for a in alphas:
-#             if a in d[fs][1]:
-#                 vals.append(d[fs][1][a])
-#             else:
-#                 vals.append(0)
-#
-#         _ = ax.bar(ind + width * idx - width/2, vals, width,
-#                    color=cmap(fs*1.0/len(d.keys())),
-#                    label="fs="+str(fs)
-#                    )
-#     ax.set_ylabel('Count')
-#     ax.set_title('Alphas for each k')
-#     ax.set_xticks(ind)
-#     ax.set_xticklabels(tuple(alphas))
-#     ax.legend()
-#     plt.show()
+    plt.show()
 
 
 

@@ -13,7 +13,6 @@ RESULTS_FNAME = "wc_v1_results.tsv"
 ALPHAS_FNAME = "wc_v1_alphas.tsv"
 
 
-
 def report_incorrect(fname, fsid, k):
     f = open(INCORRECT_FNAME, "a")
     f.write("%s\t%s\t%s\n" % (fname, str(fsid), str(k)))
