@@ -232,29 +232,55 @@ def plot_alpha_stat(d):
     import matplotlib
     matplotlib.use('TkAgg')
     import matplotlib.pyplot as plt
-    global alphas
-    ind = np.arange(len(alphas))  # the x locations for the groups
-    width = 0.18  # the width of the bars
+    men_means, men_std = (20, 35, 30, 35, 27), (2, 3, 4, 1, 2)
+    women_means, women_std = (25, 32, 34, 20, 25), (3, 5, 2, 3, 3)
+
+    ind = np.arange(len(men_means))  # the x locations for the groups
+    width = 0.35  # the width of the bars
+
     fig, ax = plt.subplots()
+    rects1 = ax.bar(ind - width / 2, men_means, width, yerr=men_std,
+                    color='SkyBlue', label='Men')
+    rects2 = ax.bar(ind + width / 2, women_means, width, yerr=women_std,
+                    color='IndianRed', label='Women')
 
-    for idx, fs in enumerate(sorted(d.keys())):
-        vals = []
-        for a in alphas:
-            if a in d[fs][1]:
-                vals.append(d[fs][1][a])
-            else:
-                vals.append(0)
-
-        _ = ax.bar(ind + width * idx - width/2, vals, width,
-                   color=cmap(fs*1.0/len(d.keys())),
-                   label="fs="+str(fs)
-                   )
-    ax.set_ylabel('Count')
-    ax.set_title('Alphas for each k')
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel('Scores')
+    ax.set_title('Scores by group and gender')
     ax.set_xticks(ind)
-    ax.set_xticklabels(tuple(alphas))
+    ax.set_xticklabels(('G1', 'G2', 'G3', 'G4', 'G5'))
     ax.legend()
-    plt.show()
+    #plt.savefig("secret_fig.png")
+    #plt.show()
+
+# The correct one
+# def plot_alpha_stat(d):
+#     import matplotlib
+#     matplotlib.use('TkAgg')
+#     import matplotlib.pyplot as plt
+#     global alphas
+#     ind = np.arange(len(alphas))  # the x locations for the groups
+#     width = 0.18  # the width of the bars
+#     fig, ax = plt.subplots()
+#
+#     for idx, fs in enumerate(sorted(d.keys())):
+#         vals = []
+#         for a in alphas:
+#             if a in d[fs][1]:
+#                 vals.append(d[fs][1][a])
+#             else:
+#                 vals.append(0)
+#
+#         _ = ax.bar(ind + width * idx - width/2, vals, width,
+#                    color=cmap(fs*1.0/len(d.keys())),
+#                    label="fs="+str(fs)
+#                    )
+#     ax.set_ylabel('Count')
+#     ax.set_title('Alphas for each k')
+#     ax.set_xticks(ind)
+#     ax.set_xticklabels(tuple(alphas))
+#     ax.legend()
+#     plt.show()
 
 
 
