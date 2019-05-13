@@ -24,5 +24,6 @@ urlpatterns = [
     url(r'ent_ann_raw_results', views.ent_ann_raw_results, name="ent_ann_raw_results"),
     url(r'ent_ann_recompute', views.ent_ann_recompute, name="ent_ann_recompute"),
     url(r'ent_ann_add', views.EntAnnAddView.as_view(), name="ent_ann_add"),
+    url(r'sample_data', views.sample_data_view, name="sample_data"),
     url('', views.about, name="about"),
 ]

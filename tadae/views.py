@@ -12,6 +12,9 @@ from models import AnnRun
 
 ENDPOINT = "http://dbpedia.org/sparql"
 
+def sample_data_view(request):
+    return render(request, 'sample_data.html')
+
 
 def about(request):
     return render(request, 'about.html')
