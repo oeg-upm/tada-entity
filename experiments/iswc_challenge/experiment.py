@@ -1,4 +1,3 @@
-
 import os
 import sys
 import csv
@@ -31,33 +30,25 @@ import commons
 
 #################################################################
 
-curr_dir = os.path.join(BASE_DIR, 'experiments', 'olympic_games')
+curr_dir = os.path.join(BASE_DIR, 'experiments', 'iswc_challenge')
 meta_dir = os.path.join(curr_dir, "meta.csv")
 
 prefix = "http://dbpedia.org/ontology/"
 
 
-def olympic_games_to_csv():
-    input_folder = os.path.join(curr_dir, 'data')
-    f = open(meta_dir)
-    reader = csv.reader(f)
-    for line in reader:
-        fname, class_name = line[0], line[1]
-        output_file = os.path.join(BASE_DIR, UPLOAD_DIR, fname)
-        input_file = os.path.join(input_folder, fname)
-        comm = """ cp "%s" "%s" """ % (input_file, output_file)
-        print comm
-        subprocess.Popen(comm, shell=True)
+def get_model_name(file_name):
+    return "iswc_"+file_name
 
 
 def build_empty_models_from_meta():
     f = open(meta_dir)
     reader = csv.reader(f)
     for line in reader:
-        file_name, concept = line[0], line[1]
+        file_name = line[0]
         print("csv fname: "+file_name)
-        if len(AnnRun.objects.filter(name=file_name)) == 0:
-            annotation_run = AnnRun(name=file_name, status='Created')
+        model_name = get_model_name(file_name)
+        if len(AnnRun.objects.filter(name=model_name)) == 0:
+            annotation_run = AnnRun(name=model_name, status='Created')
             annotation_run.save()
 
 
@@ -66,8 +57,10 @@ def annotate_models():
     reader = csv.reader(f)
     file_subject_idx_pairs = []
     for line in reader:
-        fname, concept, subject_idx = line[0], line[1], 0
-        file_subject_idx_pairs.append((fname, subject_idx))
+        fname, subject_idx = line[0], 0
+        # fname, concept, subject_idx = line[0], line[1], 0
+        # file_subject_idx_pairs.append((fname, subject_idx))
+        file_subject_idx_pairs.append((get_model_name(fname), subject_idx))
 
     for model_name, subject_idx in file_subject_idx_pairs:
         print("model name: "+model_name)
@@ -75,13 +68,15 @@ def annotate_models():
         if ann_run.status == 'Created':
             ann_run.status = "started"
             ann_run.save()
-            csv_file_dir = os.path.join(proj_path, UPLOAD_DIR, ann_run.name)
+            fname = model_name[5:]
+            csv_file_dir = os.path.join(curr_dir, "data", fname)
+            # csv_file_dir = os.path.join(proj_path, UPLOAD_DIR, fname)
             annotator.annotate_csv(ann_run_id=ann_run.id, csv_file_dir=csv_file_dir,
-                                   endpoint=commons.ENDPOINT, hierarchy=False, entity_col_id=subject_idx, onlyprefix=prefix,
-                                   camel_case=False)
+                                   endpoint=commons.ENDPOINT, hierarchy=False, entity_col_id=subject_idx,
+                                   onlyprefix=prefix, camel_case=True)
             annotator.dotype(ann_run, commons.ENDPOINT, onlyprefix=None)
         elif ann_run.status != 'Annotation is complete':
-            raise Exception("An uncompleted annotation run is found")
+            raise Exception("An uncompleted annotation run is found: %s" % str(ann_run.id))
 
 
 def workflow():
@@ -91,8 +86,6 @@ def workflow():
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        if sys.argv[1] == 'tocsv':
-            olympic_games_to_csv()
-        elif sys.argv[1] == 'annotate':
+        if sys.argv[1] == 'annotate':
             workflow()
 
