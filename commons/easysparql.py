@@ -619,6 +619,23 @@ def get_parents_of_class(class_name, endpoint):
     return classes
 
 
+def get_children_of_class(class_name, endpoint):
+    """
+    get the children of a given class if any
+    :param class_name:
+    :param endpoint:
+    :return:
+    """
+    query = """
+    select distinct ?c where{
+    ?c rdfs:subClassOf <%s>.
+    }
+    """ % class_name
+    results = run_query(query=query, endpoint=endpoint)
+    classes = [r['c']['value'] for r in results]
+    return classes
+
+
 # iteration 8
 def get_classes_subjects_count(classes, endpoint):
     print "in get_classes_subjects_count"
