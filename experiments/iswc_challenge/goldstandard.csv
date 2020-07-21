@@ -24,7 +24,7 @@
 25404227_0_2240631045609013057.csv,1,"http://dbpedia.org/ontology/Film"
 25404227_0_2240631045609013057.csv,3,"http://dbpedia.org/ontology/Person"
 26310680_0_5150772059999313798.csv,0,"http://dbpedia.org/ontology/Country"
-26310680_0_5150772059999313798.csv,"http://dbpedia.org/ontology/Currency"
+26310680_0_5150772059999313798.csv,1,"http://dbpedia.org/ontology/Currency"
 28086084_0_3127660530989916727.csv,0,"http://dbpedia.org/ontology/Saint"
 29414811_12_251152470253168163.csv,1,"http://dbpedia.org/ontology/VideoGame"
 29414811_13_8724394428539174350.csv,1,"http://dbpedia.org/ontology/VideoGame"
