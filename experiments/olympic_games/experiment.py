@@ -36,6 +36,7 @@ meta_dir = os.path.join(curr_dir, "meta.csv")
 
 prefix = "http://dbpedia.org/ontology/"
 
+
 def olympic_games_to_csv():
     input_folder = os.path.join(curr_dir, 'data')
     f = open(meta_dir)

@@ -290,3 +290,33 @@ def plot_alpha_stat(d, k, with_plot=False):
     ax.set_xticklabels(tuple(alphas))
     ax.legend()
     plt.show()
+
+
+def compute_scores(correct, incorrect, notfound):
+    """
+    :param correct:
+    :param incorrect:
+    :param notfound:
+    :return:
+    """
+    # print("correct: %d, incorrect: %d, notfound: %d" % (correct, incorrect, notfound))
+
+    try:
+        precision_val = correct * 1.0 / (correct + incorrect)
+        precision = "%.4f" % precision_val
+    except Exception as e:
+        precision = "n/a"
+
+    try:
+        recall_val = correct * 1.0 / (correct + notfound)
+        recall = "%.4f" % recall_val
+    except Exception as e:
+        recall = "n/a"
+
+    try:
+        f1 = 2 * precision_val * recall_val / (precision_val + recall_val)
+        f1 = "%.4f" % f1
+    except Exception as e:
+        f1 = "n/a"
+
+    return precision, recall, f1
