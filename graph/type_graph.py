@@ -2,7 +2,7 @@ import os
 import subprocess
 import json
 import math
-from basic_graph import BasicGraph, Node
+from .basic_graph import BasicGraph, Node
 
 
 class TypeGraph(BasicGraph):
@@ -14,13 +14,13 @@ class TypeGraph(BasicGraph):
 
     def verify_roots(self):
         # just to test the roots
-        print "checking root"
+        print("checking root")
         for t in self.cache:
             node = self.index[t]
             if node.parents == [] and node not in self.roots:
-                print "checking root> %s" % node.title
-                print "parents: %s " % (str([p.title for p in node.parents]))
-                print "childs: %s" % (str([ch.title for ch in node.childs]))
+                print("checking root> %s" % node.title)
+                print("parents: %s " % (str([p.title for p in node.parents])))
+                print("childs: %s" % (str([ch.title for ch in node.childs])))
                 raise Exception("checking root error")
 
     # new specificity function
@@ -109,7 +109,7 @@ class TypeGraph(BasicGraph):
         :return: the coverage score
         """
         if m==0:
-            print "m is zero for node: %s" % (node.title)
+            print("m is zero for node: %s" % (node.title))
         return node.coverage_score/m
 
     def break_cycles(self, log_path=None):
@@ -120,11 +120,11 @@ class TypeGraph(BasicGraph):
         node = visited[-1]
         for ch in node.childs:
             if ch in visited:  # there is a cycle
-                print "\n\n******CYCLE*****"
-                print "%s -> %s\n\n\n" % (node.title, ch.title)
+                print("\n\n******CYCLE*****")
+                print("%s -> %s\n\n\n" % (node.title, ch.title))
                 if log_path is not None:
                     comm = 'echo "%s, %s" >> %s' % (node.title, ch.title, os.path.join(log_path, 'tadaa_cycles.txt'))
-                    print "comm: %s" % comm
+                    print("comm: %s" % comm)
                     subprocess.call(comm, shell=True)
                 # raise Exception("boom")
                 self.remove_edge(node, ch)
@@ -167,20 +167,20 @@ class TypeGraph(BasicGraph):
 
     def set_converage_score(self):
         for n in self.roots:
-            print 'set coverage root: %s' % n.title
+            print('set coverage root: %s' % n.title)
             self.compute_coverage_score_for_node(n)
 
     def compute_coverage_score_for_node(self, node):
-        print 'enter in %s' % node.title
+        print('enter in %s' % node.title)
         if node._coverage_computed:
             return node.coverage_score
         for child in node.childs:
             node.coverage_score += self.compute_coverage_score_for_node(child)
         if len(node.childs) == 0:
-            print 'leave score of %s: %g' % (node.title, node.coverage_score)
+            print('leave score of %s: %g' % (node.title, node.coverage_score))
         else:
-            print 'mid score of %s: %g' % (node.title, node.coverage_score)
-        print 'leaving %s' % node.title
+            print('mid score of %s: %g' % (node.title, node.coverage_score))
+        print('leaving %s' % node.title)
         node._coverage_computed = True
         return node.coverage_score
 
@@ -265,8 +265,8 @@ class TypeGraph(BasicGraph):
                 "childs": [n.title for n in node.childs]
             }
         s = json.dumps(j)
-        print "graph in str: "
-        print s
+        print("graph in str: ")
+        print(s)
         return s
 
     def save(self, abs_file_dir):

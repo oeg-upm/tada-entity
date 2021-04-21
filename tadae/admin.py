@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import AnnRun, EntityAnn, Cell, Entity, CClass
+from .models import AnnRun, EntityAnn, Cell, Entity, CClass
 
 admin.site.register(AnnRun)
 admin.site.register(EntityAnn)

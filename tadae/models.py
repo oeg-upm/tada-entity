@@ -1,10 +1,5 @@
-import os
 from datetime import datetime
-
 from django.db import models
-from django.contrib.auth.models import User
-
-from settings import MODELS_DIR
 
 
 class AnnRun(models.Model):

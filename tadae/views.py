@@ -1,13 +1,13 @@
 from django.views.generic import TemplateView
 from django.views import View
 from django.shortcuts import render, redirect
-from models import EntityAnn
+from .models import EntityAnn
 import annotator
 import os
 import subprocess
-from settings import UPLOAD_DIR, BASE_DIR
+from .settings import UPLOAD_DIR, BASE_DIR
 from commons import random_string
-from models import AnnRun
+from .models import AnnRun
 
 
 ENDPOINT = "http://dbpedia.org/sparql"

@@ -38,7 +38,7 @@ class BasicGraph(object):
         :return:
         """
         if title in self.cache:
-            print "%s already in the graph" % title
+            print("%s already in the graph" % title)
             return
 
         node = Node(title=title)
@@ -110,7 +110,7 @@ class BasicGraph(object):
             node = self.index[title]
             if len(node.parents) == 0 and node not in self.roots:
                 self.roots.append(node)
-                print "fixing root %s" % node.title
+                print("fixing root %s" % node.title)
 
     def find_v(self, title):
         if title in self.index:

@@ -26,7 +26,7 @@ def run_query_with_datatype(query=None, endpoint=None, datatype=None):
                 wrong_type_results = [r[k]["value"] for r in results if r[k]["datatype"] != datatype]
             return correct_type_results, wrong_type_results
         else:
-            print "a query that results in multiple columns is not allowed"
+            print("a query that results in multiple columns is not allowed")
             # Because, if we allow having multiple columns, and the number of values in the first column
             # that matches the given datatype might not be the same as the one in the second column
             # which would results in unbalanced results
@@ -40,7 +40,7 @@ def run_query(query=None, endpoint=None, raiseexception=False):
     :return: query result as a dict
     """
     if endpoint is None:
-        print "endpoints cannot be None"
+        print("endpoints cannot be None")
         return []
     sparql = SPARQLWrapper(endpoint=endpoint)
     sparql.setQuery(query=query)
@@ -52,14 +52,14 @@ def run_query(query=None, endpoint=None, raiseexception=False):
         if len(results["results"]["bindings"]) > 0:
             return results["results"]["bindings"]
         else:
-            print "returns 0 rows"
-            print "endpoint: "+endpoint
-            print "query: <%s>" % str(query).strip()
+            print("returns 0 rows")
+            print("endpoint: "+endpoint)
+            print("query: <%s>" % str(query).strip())
             return []
     except Exception as e:
         print(str(e))
-        print "sparql error: $$<%s>$$" % str(e)
-        print "query: $$<%s>$$" % str(query)
+        print("sparql error: $$<%s>$$" % str(e))
+        print("query: $$<%s>$$" % str(query))
         if raiseexception:
             raise e
         return []
@@ -121,7 +121,7 @@ def get_objects(endpoint=None, class_uri=None, property_uri=None, isnumericfilte
             objects = run_query(query=query, endpoint=endpoint, raiseexception=True)
         except Exception as e:
             if failbacknofilter:
-                print "fail back ... "
+                print("fail back ... ")
                 query = """
                     select ?o where{ ?s  a <%s>. ?s <%s> ?o} %s
                 """ % (class_uri_stripped, property_uri_stripped, QUERY_LIMIT)
@@ -140,7 +140,7 @@ def get_objects_as_list(endpoint=None, class_uri=None, property_uri=None, isnume
                           isnumericfilter=isnumericfilter)
     clean_objects = [o['o'] for o in objects]
     if len(clean_objects) == 0:
-        print "no objects found for class %s property %s in endpoint %s" % (class_uri, property_uri, endpoint)
+        print("no objects found for class %s property %s in endpoint %s" % (class_uri, property_uri, endpoint))
         col_mat = pd.DataFrame([]).as_matrix()
         col_mat.shape = (0, 0)
         return col_mat
@@ -189,10 +189,10 @@ def split_upper_lower_bound(upper_bound=None, lower_bound=None, class_uri=None, 
         raise Exception("split_upper_lower_bound> raiseexception should not be None")
     if isnumericfilter is None:
         raise Exception("split_upper_lower_bound> isnumericfilter should not be None")
-    print "-----------  split_upper_lower_bound -----------"
-    print "upper_bound: %d" % upper_bound
-    print "lower_bound: %d" % lower_bound
-    print "\n"
+    print("-----------  split_upper_lower_bound -----------")
+    print("upper_bound: %d" % upper_bound)
+    print("lower_bound: %d" % lower_bound)
+    print("\n")
     if upper_bound - lower_bound > 2:
         split_point = int((upper_bound - lower_bound) / 2) + lower_bound
         upper_results = get_numerical_properties_for_class_abox_using_half_split(endpoint=endpoint,
@@ -227,20 +227,20 @@ def get_numerical_properties_for_class_abox_using_half_split(endpoint=None, clas
     :return:
     """
     if class_uri is None:
-        print "get_numerical_properties_for_class_abox_using_half_split> class_uri should not be None"
+        print("get_numerical_properties_for_class_abox_using_half_split> class_uri should not be None")
         return []
     if upper_bound is None:
-        print "get_numerical_properties_for_class_abox_using_half_split> upper_bound should not be None"
+        print("get_numerical_properties_for_class_abox_using_half_split> upper_bound should not be None")
         return []
     if first_time is None:
-        print "get_numerical_properties_for_class_abox_using_half_split> first_time should not be None"
+        print("get_numerical_properties_for_class_abox_using_half_split> first_time should not be None")
         return []
     # just to see what is going on
-    print "==========  get_numerical_properties_for_class_abox_using_half_split ========="
-    print "first time: %s" % str(first_time)
-    print "upper_bound: %d" % upper_bound
-    print "lower_bound: %d" % lower_bound
-    print "\n"
+    print("==========  get_numerical_properties_for_class_abox_using_half_split =========")
+    print("first time: %s" % str(first_time))
+    print("upper_bound: %d" % upper_bound)
+    print("lower_bound: %d" % lower_bound)
+    print("\n")
 
     class_uri_stripped = get_url_stripped(class_uri)
     if first_time:
@@ -325,18 +325,18 @@ def get_numerical_properties_for_class_abox_using_half_split(endpoint=None, clas
             order by desc(?num)
             """ % (lower_bound, upper_bound, class_uri_stripped)
     try:
-        print "will run the query"
+        print("will run the query")
         results = run_query(query=query, endpoint=endpoint, raiseexception=True)
-        print "query returned"
+        print("query returned")
         properties = [r['p']['value'] for r in results]
-        print "fetching"
+        print("fetching")
         if not first_time:
-            print "returning properties"
-            print "properties"
-            print properties
+            print("returning properties")
+            print("properties")
+            print(properties)
             return properties
         else:  # first time
-            print "returning firsttime"
+            print("returning firsttime")
             return properties + split_upper_lower_bound(upper_bound=upper_bound, lower_bound=lower_bound,
                                                         class_uri=class_uri_stripped, endpoint=endpoint,
                                                         raiseexception=raiseexception, isnumericfilter=isnumericfilter)
@@ -352,7 +352,7 @@ def get_numerical_properties_for_class_abox_using_half_split(endpoint=None, clas
                     if raiseexception:
                         raise Exception("reached iteration limit and the timeout still occurs")
                     else:
-                        print "reached iteration limit and the timeout still occurs"
+                        print("reached iteration limit and the timeout still occurs")
                         return []
 
                 return get_numerical_properties_for_class_abox_using_half_split(endpoint=endpoint, class_uri=class_uri_stripped
@@ -365,7 +365,7 @@ def get_numerical_properties_for_class_abox_using_half_split(endpoint=None, clas
                 # split_upper_lower_bound(upper_bound=upper_bound, lower_bound=lower_bound, class_uri=class_uri_stripped,
                 #                         endpoint=endpoint, raiseexception=raiseexception)
         elif "'isNumeric'" in str(e) and first_time:
-            print "get_numerical_properties_for_class_abox_using_half_split> isNumeric is not supported, so we gonna ignore it"
+            print("get_numerical_properties_for_class_abox_using_half_split> isNumeric is not supported, so we gonna ignore it")
             return get_numerical_properties_for_class_abox_using_half_split(endpoint=endpoint, class_uri=class_uri,
                                                                             upper_bound=upper_bound,
                                                                             lower_bound=lower_bound,
@@ -374,10 +374,10 @@ def get_numerical_properties_for_class_abox_using_half_split(endpoint=None, clas
                                                                             isnumericfilter=False)
         else:
             if raiseexception:
-                print "captured %s" % str(e)
+                print("captured %s" % str(e))
                 raise e
             else:
-                print "get_numerical_properties_for_class_abox_using_half_split> an exception occurred: %s" % str(e)
+                print("get_numerical_properties_for_class_abox_using_half_split> an exception occurred: %s" % str(e))
                 return []
 
 
@@ -390,7 +390,7 @@ def get_numerical_properties_for_class_abox(endpoint=None, class_uri=None, raise
     """
 
     if class_uri is None:
-        print "get_numerical_properties_for_class_abox> class_uri should not be None"
+        print("get_numerical_properties_for_class_abox> class_uri should not be None")
         return []
     class_uri_stripped = get_url_stripped(class_uri)
     query = """
@@ -416,7 +416,7 @@ def get_properties_for_class_abox(endpoint=None, class_uri=None, raiseexception=
     """
 
     if class_uri is None:
-        print "get_numerical_properties_for_class_abox> class_uri should not be None"
+        print("get_numerical_properties_for_class_abox> class_uri should not be None")
         return []
     class_uri_stripped = get_url_stripped(class_uri)
     query = """
@@ -446,7 +446,7 @@ def get_numerical_properties_for_class_tbox(endpoint=None, class_uri=None):
     :return: properties
     """
     if class_uri is None:
-        print "get_numerical_properties_for_class_tbox> class_uri should not be None"
+        print("get_numerical_properties_for_class_tbox> class_uri should not be None")
         return []
     class_uri_stripped = get_url_stripped(class_uri)
     query = """
@@ -483,7 +483,7 @@ def get_all_classes_properties_numerical(endpoint=None):
     :return: a list of class/property combinations. in case of no results or error, it will return []
     """
     if endpoint is None:
-        print "get_all_classes_properties_numerical> endpoint should not be None"
+        print("get_all_classes_properties_numerical> endpoint should not be None")
         return []
     query = """
     select distinct ?pt ?c where{
@@ -508,8 +508,8 @@ def get_all_classes_properties_numerical(endpoint=None):
     """
     results = run_query(query=query, endpoint=endpoint)
     class_property_uris = [(r['c']['value'], r['pt']['value']) for r in results]
-    print "get_all_classes_properties_numerical> class_property_uris:"
-    print class_property_uris
+    print("get_all_classes_properties_numerical> class_property_uris:")
+    print(class_property_uris)
     return class_property_uris
 
 
@@ -638,7 +638,7 @@ def get_children_of_class(class_name, endpoint):
 
 # iteration 8
 def get_classes_subjects_count(classes, endpoint):
-    print "in get_classes_subjects_count"
+    print("in get_classes_subjects_count")
     d = {}
     for c in classes:
         num = get_num_class_subjects(c, endpoint)
@@ -647,7 +647,7 @@ def get_classes_subjects_count(classes, endpoint):
 
 
 def get_num_class_subjects(class_uri, endpoint):
-    print "count subject for class %s" % class_uri
+    print("count subject for class %s" % class_uri)
     query = """
     select count(?s) as ?num
     where {

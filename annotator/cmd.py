@@ -4,6 +4,7 @@ import logging
 import traceback
 import sys
 
+
 #################################################################
 #           TO make this app compatible with Django             #
 #################################################################
@@ -36,7 +37,7 @@ application = get_wsgi_application()
 
 
 from tadae.settings import LOG_DIR
-from workflow import dotype, annotate_csv
+from .workflow import dotype, annotate_csv
 
 from tadae.models import AnnRun
 

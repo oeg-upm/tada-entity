@@ -13,7 +13,10 @@ from tadae.models import AnnRun, EntityAnn, Cell, CClass, Entity
 
 
 from multiprocessing import Process, Lock, Pipe
-from PPool.Pool import Pool
+# from PPool.Pool import Pool
+# from PPool.Pool import Pool
+from TPool.TPool import Pool
+
 
 from graph.type_graph import TypeGraph
 from commons.logger import set_config
@@ -23,7 +26,7 @@ from commons.easysparql import get_classes_subjects_count
 
 logger = set_config(logging.getLogger(__name__), logdir=os.path.join(LOG_DIR, 'tadae.log'))
 
-MAX_NUM_PROCESSES = 5
+MAX_NUM_PROCESSES = 1
 
 
 # This is not inuse at the moment
@@ -113,7 +116,8 @@ def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, o
     #progress_process = Process(target=update_ent_ann_progress_func, args=(len(params_list), pipe_rec, entity_ann))
     #progress_process.start()
     logger.debug("annotate_csv> number of total processes to run: "+str(len(params_list)))
-    pool = Pool(max_num_of_processes=MAX_NUM_PROCESSES, func=annotate_single_cell, params_list=params_list)
+    pool = Pool(max_num_of_threads=MAX_NUM_PROCESSES, func=annotate_single_cell, params_list=params_list)
+    # pool = Pool(max_num_of_processes=MAX_NUM_PROCESSES, func=annotate_single_cell, params_list=params_list)
     pool.run()
     logger.debug("annotate_csv> annotated all cells")
     pipe_send.send(0)  # to stop the process
@@ -185,7 +189,7 @@ def build_graph_while_traversing(class_name, endpoint, v_lock, v_pipe, depth, on
     :param onlyprefix: filter to only classes that starts with it
     :return:
     """
-    print "class_name: %s depth: %d" % (class_name, depth)
+    print("class_name: %s depth: %d" % (class_name, depth))
     v_lock.acquire()
     v_pipe.send(1)
     visited = v_pipe.recv()
@@ -279,7 +283,7 @@ def compute_coverage_score_for_graph(entity_ann, graph):
             curi_cov = sum(d[curi])*1.0/len(d[curi])
             n = graph.find_v(curi)
             if n is None:
-                print "couldn't find %s" % curi
+                print("couldn't find %s" % curi)
             n.coverage_score += curi_cov
         del d
 
@@ -319,28 +323,29 @@ def count_classes(classes, endpoint):
     :param endpoint:
     :return:
     """
-    print "in count classes"
+    print("in count classes")
     from multiprocessing import Process, Lock, Pipe
 
     lock = Lock()
     a_end, b_end = Pipe()
 
-    print "in count classes> the writer process"
+    print("in count classes> the writer process")
     writer_process = Process(target=count_classes_writer_func, args=(a_end,))
     writer_process.start()
 
-    print "in count classes> preparing the pool"
+    print("in count classes> preparing the pool")
     param_list = [([c], endpoint, lock, b_end) for c in classes]
-    pool = Pool(max_num_of_processes=MAX_NUM_PROCESSES, func=count_classes_func, params_list=param_list)
+    pool = Pool(max_num_of_threads=MAX_NUM_PROCESSES, func=count_classes_func, params_list=param_list)
+    # pool = Pool(max_num_of_processes=MAX_NUM_PROCESSES, func=count_classes_func, params_list=param_list)
     pool.run()
-    print "pool run if finished"
-    print "sending 1"
+    print("pool run if finished")
+    print("sending 1")
     b_end.send(1)
-    print "waiting to receive"
+    print("waiting to receive")
     d = b_end.recv()
-    print "received"
+    print("received")
     writer_process.terminate()
-    print "in count classes> returns :%s" % str(d)
+    print("in count classes> returns :%s" % str(d))
     return d
 
 
@@ -349,7 +354,7 @@ def remove_nodes(entity_ann, classes):
         for entity in cell.entities:
             for cclass in entity.classes:
                 if cclass.cclass in classes:
-                    print "removing lonely node: %s" % cclass.cclass
+                    print("removing lonely node: %s" % cclass.cclass)
                     CClass.objects.get(cclass=cclass.cclass, entity=entity).delete()
 
 
@@ -427,7 +432,8 @@ def dotype(ann_run, endpoint, onlyprefix):
                         collected_classes.append(cclass.cclass)
 
     start = time.time()
-    pool = Pool(max_num_of_processes=MAX_NUM_PROCESSES, func=build_graph_while_traversing, params_list=params)
+    pool = Pool(max_num_of_threads=MAX_NUM_PROCESSES, func=build_graph_while_traversing, params_list=params)
+    # pool = Pool(max_num_of_processes=MAX_NUM_PROCESSES, func=build_graph_while_traversing, params_list=params)
     logger.debug("will run the pool")
     pool.run()
     logger.debug("the pool is done")
@@ -493,11 +499,11 @@ def dotype(ann_run, endpoint, onlyprefix):
 
     latest_scores = graph.get_scores()
     store_scores(ann_run, [n.title for n in latest_scores])
-    print "scores: "
+    print("scores: ")
     for n in latest_scores:
-        print "%f %s" % (n.score, n.title)
+        print("%f %s" % (n.score, n.title))
     for te in timed_events:
-        print "event: %s took: %.2f seconds" % (te[0], te[1])
+        print("event: %s took: %.2f seconds" % (te[0], te[1]))
     graph_file_name = "%d %s.json" % (ann_run.id, ann_run.name)
     graph_file_name = graph_file_name.replace(' ', '_')
     graph_file_dir = os.path.join(MODELS_DIR, graph_file_name)
