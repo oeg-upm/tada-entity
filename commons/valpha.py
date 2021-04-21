@@ -273,8 +273,8 @@ def plot_alpha_stat(d, k, with_plot=False):
                         label="fs"+str(fs)+"(k="+str(k)+")"
                         )
         else:
-            print "vals: "
-            print vals
+            print("vals: ")
+            print(vals)
 
             _ = ax.bar(ind + width * idx - width / 2, vals, width,
                        # edgecolor="black",

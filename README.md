@@ -1,6 +1,8 @@
 # tada-entity
 [![Build Status](https://semaphoreci.com/api/v1/ahmad88me/tada-entity/branches/master/badge.svg)](https://semaphoreci.com/ahmad88me/tada-entity)
 [![codecov](https://codecov.io/gh/oeg-upm/tada-entity/branch/master/graph/badge.svg)](https://codecov.io/gh/oeg-upm/tada-entity)
+[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+
 
 Tabular Data Annotation of entity columns
 
@@ -10,7 +12,7 @@ http://tada-entity.linkeddata.es
 
 ## Requirements
 * `virtualenv`
-* `python2.7`
+* `python3`
 * `mysql`
 
 ## Installation steps (Linux and MacOS)
@@ -80,8 +82,7 @@ Follow the same as in Web Commons v2 and change it to the corresponding name (e.
 * Linux (tested with Ubuntu)
 * Windows (not tested but let us know if it works for you)
 
-## Python
-v2.7
+
 
 ## Database
 Having a database accessible by the application is a must. The file `mysql.cnf` should include the credential.

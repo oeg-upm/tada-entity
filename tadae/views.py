@@ -10,7 +10,10 @@ from commons import random_string
 from .models import AnnRun
 
 
-ENDPOINT = "http://dbpedia.org/sparql"
+# ENDPOINT = "http://dbpedia.org/sparql"
+# ENDPOINT = "https://en-dbpedia.oeg.fi.upm.es/sparql"
+ENDPOINT = os.environ['endpoint']
+
 
 def sample_data_view(request):
     return render(request, 'sample_data.html')
