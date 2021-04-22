@@ -1,5 +1,7 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
 
+import certifi
+
 # from __init__ import QUERY_LIMIT
 QUERY_LIMIT=""
 
@@ -42,9 +44,12 @@ def run_query(query=None, endpoint=None, raiseexception=False):
     if endpoint is None:
         print("endpoints cannot be None")
         return []
-    sparql = SPARQLWrapper(endpoint=endpoint)
+    print("endpoint <%s>" % endpoint)
+
+    sparql = SPARQLWrapper(endpoint=endpoint, custom_cert_filename=certifi.where())
+    # sparql = SPARQLWrapper(endpoint=endpoint)
     sparql.setQuery(query=query)
-    sparql.setMethod("POST")
+    #sparql.setMethod("POST")
     sparql.setReturnFormat(JSON)
     #sparql.setTimeout(300)
     try:
@@ -516,6 +521,41 @@ def get_all_classes_properties_numerical(endpoint=None):
 #####################################################################
 #                    Online Text Annotation                         #
 #####################################################################
+
+
+def get_entities_and_classes(subject_name, attributes, endpoint):
+    """
+    :param subject_name:
+    :param attributes:
+    :param endpoint: the SPARQL endpoint
+    :return:
+    """
+    inner_qs = []
+    for attr in attributes:
+        q = """
+        {
+            ?s rdfs:label "%s"@en.
+            ?s ?p "%s"@en.
+            ?s a ?c.
+	    } UNION {
+            ?s rdfs:label "%s"@en.
+            ?s ?p ?e.
+            ?e rdfs:label "%s"@en.
+            ?s a ?c.
+	    }
+        """ % (subject_name, attr, subject_name, attr)
+        inner_qs.append(q)
+
+    inner_q = "UNION".join(inner_qs)
+
+    query = """
+        select distinct ?s ?c where{
+            %s
+        }
+    """ % (inner_q)
+    results = run_query(query=query, endpoint=endpoint)
+    entity_class_pair = [(r['s']['value'], r['c']['value']) for r in results]
+    return entity_class_pair
 
 
 def get_entities(subject_name, endpoint):

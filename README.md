@@ -14,6 +14,8 @@ http://tada-entity.linkeddata.es
 * `virtualenv`
 * `python3`
 * `mysql`
+* `SPARQLWrapper` (using [this fork](https://github.com/syats/sparqlwrapper) as it supports self-signed certificates).
+
 
 ## Installation steps (Linux and MacOS)
 1. Download the project 

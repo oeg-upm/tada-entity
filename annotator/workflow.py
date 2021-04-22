@@ -7,6 +7,7 @@ import random
 import traceback
 import string
 import math
+import pandas as pd
 
 from tadae.settings import MODELS_DIR, LOG_DIR
 from tadae.models import AnnRun, EntityAnn, Cell, CClass, Entity
@@ -14,19 +15,25 @@ from tadae.models import AnnRun, EntityAnn, Cell, CClass, Entity
 
 from multiprocessing import Process, Lock, Pipe
 # from PPool.Pool import Pool
-# from PPool.Pool import Pool
 from TPool.TPool import Pool
 
 
 from graph.type_graph import TypeGraph
 from commons.logger import set_config
-from commons.easysparql import get_entities, get_classes
+from commons.easysparql import get_entities, get_classes, get_entities_and_classes
 from commons.easysparql import get_parents_of_class
 from commons.easysparql import get_classes_subjects_count
+from commons.tgraph import TGraph
 
 logger = set_config(logging.getLogger(__name__), logdir=os.path.join(LOG_DIR, 'tadae.log'))
 
 MAX_NUM_PROCESSES = 1
+
+USE_DB = True
+tgraph = None
+
+cell_ent_class = dict()
+
 
 
 # This is not inuse at the moment
@@ -74,7 +81,12 @@ def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, o
     :param entity_col_id: the id the column id
     :return:
     """
-    import pandas as pd
+    global tgraph
+    if tgraph is not None:
+        del tgraph
+
+    tgraph = TGraph
+
     if entity_col_id is None:
         entity_column_id = detect_entity_col(csv_file_dir)
     else:
@@ -100,17 +112,17 @@ def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, o
     mat = mat.astype(str)
     lock = Lock()
     params_list = []
-    pipe_send, pipe_rec = Pipe()
     # print("types: ")
     # print(mat[entity_column_id])
     for r in mat:
-        if camel_case:
-            cell_val = r[entity_column_id].title()
-        else:
-            cell_val = r[entity_column_id]
-        cell_val = cell_val.strip()
-        logger.debug('entity_column_id check: '+str((entity_column_id, cell_val)))
-        params_list.append((entity_ann, cell_val, endpoint, hierarchy, onlyprefix, lock, pipe_send))
+        # if camel_case:
+        #     cell_val = r[entity_column_id].title()
+        # else:
+        #     cell_val = r[entity_column_id]
+        # cell_val = cell_val.strip()
+        row = r
+        logger.debug('entity_column_id check: '+str((entity_column_id, row[entity_col_id])))
+        params_list.append((entity_ann, row, entity_column_id, endpoint, onlyprefix, lock))
         # So the connection is not copied to each thread, instead each will have its own
         #params_list.append((entity_ann.id, r[entity_column_id], endpoint, hierarchy, onlyprefix))
     #progress_process = Process(target=update_ent_ann_progress_func, args=(len(params_list), pipe_rec, entity_ann))
@@ -120,7 +132,6 @@ def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, o
     # pool = Pool(max_num_of_processes=MAX_NUM_PROCESSES, func=annotate_single_cell, params_list=params_list)
     pool.run()
     logger.debug("annotate_csv> annotated all cells")
-    pipe_send.send(0)  # to stop the process
     logger.debug("annotate_csv> all processes are stopped now")
     #progress_process.join()
     end = time.time()
@@ -129,14 +140,18 @@ def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, o
     ann_run.save()
 
 
-def annotate_single_cell(entity_ann, cell_value, endpoint, hierarchy, onlyprefix, lock, pipe):
+def annotate_single_cell(entity_ann, row, entity_column_id, endpoint, onlyprefix, lock):
     logger.debug("annotate_single_cell> start")
     logger.debug("entity_ann parent name: "+entity_ann.ann_run.name)
+    cell_value = row[entity_column_id]
     lock.acquire()
     logger.debug("annotate_single_cell> cell lock acquired")
     try:
-        cell = Cell(text_value=cell_value, entity_ann=entity_ann)
-        cell.save()
+        if cell_value in cell_ent_class:
+            return
+        if USE_DB:
+            cell = Cell(text_value=cell_value, entity_ann=entity_ann)
+            cell.save()
     except Exception as ex:
         logger.debug("annotate_single_cell> cell value: <"+cell_value+">")
         logger.debug(str(ex))
@@ -145,36 +160,73 @@ def annotate_single_cell(entity_ann, cell_value, endpoint, hierarchy, onlyprefix
     logger.debug("annotate_single_cell> releasing lock")
     lock.release()
     logger.debug("cell: "+str(cell_value))
-    entities = get_entities(subject_name=cell.text_value, endpoint=endpoint)
-    for entity in entities:
-        logger.debug("entity: "+str(entity))
+    attrs = []
+    for i in range(len(row)):
+        if i!=entity_column_id:
+            attrs.append(row[i])
+    entity_class_pairs = get_entities_and_classes(subject_name=cell.text_value, attributes=attrs, endpoint=endpoint)
+    # entities = get_entities(subject_name=cell.text_value, endpoint=endpoint)
+
+    d = dict()
+    for ent_class in entity_class_pairs:
+        ent, class_uri = ent_class
+        if ent not in d:
+            d[ent] = []
+        d[ent].append(class_uri)
+
+    lock.acquire()
+    cell_ent_class[cell_value] = d
+    lock.release()
+
+    build_class_graph(cell_value, lock, endpoint)
+
+    lock.acquire()
+    # remove ancestor classes
+    ## TO WRITE IT
+    lock.release()
+
+
+
+    if USE_DB:
         lock.acquire()
-        try:
-            e = Entity(cell=cell, entity=entity)
-            e.save()
-        except Exception as ex:
-            logger.debug("annotate_single_cell> entity value: <" + entity + ">")
-            logger.debug(str(ex))
-            lock.release()
-            continue
-        lock.release()
-        logger.debug("will get classes of: " + entity)
-        classes = get_classes(entity=entity, endpoint=endpoint, hierarchy=hierarchy)
-        for c in classes:
-            if onlyprefix is None or (c.startswith(onlyprefix)):
-                lock.acquire()
-                try:
-                    ccclass = CClass(entity=e, cclass=c)
-                    ccclass.save()
-                except Exception as ex:
-                    logger.debug("annotate_single_cell> class: <" + c + ">")
-                    logger.debug(str(ex))
-                    lock.release()
-                    continue
+        for ent in d:
+            try:
+                e = Entity(cell=cell, entity=ent)
+                e.save()
+
+                for class_uri in d[ent]:
+                    if onlyprefix is None or (class_uri.startswith(onlyprefix)):
+                        ccclass = CClass(entity=e, cclass=class_uri)
+                        ccclass.save()
+
+            except Exception as ex:
+                logger.debug("annotate_single_cell> entity value: <" + ent + ">")
+                logger.debug("annotate_single_cell> class value: <" + class_uri + ">")
+                logger.debug(str(ex))
                 lock.release()
-    # lock.acquire()
-    # pipe.send(1)
-    # lock.release()
+                return
+        lock.release()
+
+
+def build_class_graph(cell_value, lock, endpoint):
+    """
+    :param cell_value:
+    :param lock: lock
+    :param endpoint: sparql url
+    :return:
+    """
+
+    lock.acquire()
+    for ent in cell_ent_class[cell_value]:
+        for class_uri in cell_ent_class[cell_value][ent]:
+            added = tgraph.add_class(class_uri)
+            if added:
+                parents = get_parents_of_class(class_uri, endpoint=endpoint)
+                for p in parents:
+                    added = tgraph.add_class(p)
+                    if added:
+                        tgraph.add_parent(class_uri, p)
+    lock.release()
 
 
 def build_graph_while_traversing(class_name, endpoint, v_lock, v_pipe, depth, onlyprefix):
@@ -305,7 +357,11 @@ def count_classes_writer_func(pipe):
         if v == 1:
             pipe.send(d)
         else:
-            k = v.keys()[0]
+            print("count_classes_writer_func: ")
+            print(v)
+            l = list(v.keys())
+            k = l[0]
+            # k = v.keys()[0]
             d[k] = v[k]
 
 
@@ -541,5 +597,5 @@ def get_edges(graph):
 
 
 def random_string(length=4):
-    return ''.join(random.choice(string.lowercase) for i in range(length))
+    return ''.join(random.choice(string.ascii_lowercase) for i in range(length))
 

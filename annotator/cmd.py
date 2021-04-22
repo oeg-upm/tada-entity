@@ -37,7 +37,7 @@ application = get_wsgi_application()
 
 
 from tadae.settings import LOG_DIR
-from .workflow import dotype, annotate_csv
+from annotator.workflow import dotype, annotate_csv
 
 from tadae.models import AnnRun
 
@@ -46,7 +46,7 @@ from commons.logger import set_config
 logger = set_config(logging.getLogger(__name__), logdir=os.path.join(LOG_DIR, 'tadae.log'))
 
 if __name__ == '__main__':
-    global logger
+    # global logger
     #endpoint = "http://dbpedia.org/sparql"
     endpoint = os.environ['endpoint']
     parser = argparse.ArgumentParser(description='Annotation module to annotate a given annotation run')
