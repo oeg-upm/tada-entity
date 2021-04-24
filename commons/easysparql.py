@@ -44,7 +44,7 @@ def run_query(query=None, endpoint=None, raiseexception=False):
     if endpoint is None:
         print("endpoints cannot be None")
         return []
-    print("endpoint <%s>" % endpoint)
+    # print("endpoint <%s>" % endpoint)
 
     sparql = SPARQLWrapper(endpoint=endpoint, custom_cert_filename=certifi.where())
     # sparql = SPARQLWrapper(endpoint=endpoint)
@@ -557,7 +557,10 @@ def get_entities_and_classes(subject_name, attributes, endpoint):
         }
     """ % (inner_q)
     results = run_query(query=query, endpoint=endpoint)
-    entity_class_pair = [(r['s']['value'], r['c']['value']) for r in results]
+    try:
+        entity_class_pair = [(r['s']['value'], r['c']['value']) for r in results]
+    except:
+        entity_class_pair = []
     return entity_class_pair
 
 
@@ -574,7 +577,12 @@ def get_entities_and_classes_naive(subject_name, endpoint):
         }
     """ % subject_name
     results = run_query(query=query, endpoint=endpoint)
-    entity_class_pair = [(r['s']['value'], r['c']['value']) for r in results]
+    # entity_class_pair = [(r['s']['value'], r['c']['value']) for r in results]
+    try:
+        entity_class_pair = [(r['s']['value'], r['c']['value']) for r in results]
+    except:
+        entity_class_pair = []
+
     return entity_class_pair
 
 

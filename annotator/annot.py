@@ -1,3 +1,4 @@
+from annotator import cmd
 import argparse
 import json
 import os
@@ -7,9 +8,9 @@ import random
 import traceback
 import string
 import math
+import sys
 import pandas as pd
 
-from tadae.settings import MODELS_DIR, LOG_DIR
 from tadae.models import AnnRun, EntityAnn, Cell, CClass, Entity
 
 
@@ -24,8 +25,6 @@ from commons.easysparql import get_entities, get_classes, get_entities_and_class
 from commons.easysparql import get_parents_of_class
 from commons.easysparql import get_classes_subjects_count
 from commons.tgraph import TGraph
-
-# logger = set_config(logging.getLogger(__name__), logdir=os.path.join(LOG_DIR, 'tadae.log'))
 
 
 class Annotator:
@@ -53,14 +52,12 @@ class Annotator:
                 ann_run = AnnRun.objects.get(id=ann_run_id)
             except:
                 ann_run = AnnRun(name=random_string(5), status='started')
+
             ann_run.status = 'adding dataset: ' + str(file_dir.split(os.path.sep)[-1])
             ann_run.save()
-        logger.debug("ann_run: " + str(ann_run.id))
-        logger.debug("how many entityAnns: " + str(len(EntityAnn.objects.filter(ann_run=ann_run))))
-        logger.debug("on reverse: " + str(len(ann_run.entityann_set.all())))
-        if self.use_db:
             entity_ann = EntityAnn(ann_run=ann_run, col_id=subject_col_id, status="cell annotation")
             entity_ann.save()
+
         start = time.time()
         logger.info('annotating: ' + file_dir)
         df = pd.read_csv(file_dir)
@@ -74,15 +71,14 @@ class Annotator:
 
         logger.debug("annotate_csv> number of total processes to run: " + str(len(params_list)))
         pool = Pool(max_num_of_threads=self.num_of_threads, func=self.annotate_single_cell, params_list=params_list)
-        # pool = Pool(max_num_of_processes=MAX_NUM_PROCESSES, func=annotate_single_cell, params_list=params_list)
         pool.run()
         logger.debug("annotate_csv> annotated all cells")
         logger.debug("annotate_csv> all processes are stopped now")
-        # progress_process.join()
         end = time.time()
         logger.debug("Time spent: %f" % (end - start))
-        ann_run.status = 'datasets are added'
-        ann_run.save()
+        if self.use_db:
+            ann_run.status = 'datasets are added'
+            ann_run.save()
 
     def annotate_single_cell(self, entity_ann, row, entity_column_id):
         logger = self.logger
@@ -102,6 +98,7 @@ class Annotator:
         except Exception as ex:
             logger.debug("annotate_single_cell> cell value: <" + cell_value + ">")
             logger.debug(str(ex))
+            traceback.print_exc()
             lock.release()
             return
 
@@ -149,6 +146,7 @@ class Annotator:
                     logger.debug("annotate_single_cell> entity value: <" + ent + ">")
                     logger.debug("annotate_single_cell> class value: <" + class_uri + ">")
                     logger.debug(str(ex))
+                    traceback.print_exc()
                     lock.release()
                     return
             lock.release()
@@ -221,5 +219,68 @@ class Annotator:
                     d[anc] = True  # The value true means nothing here. We just want to use dict for the fast lookup
                 self.ancestors[class_uri] = d
 
+    def type_subject_column(self, ann_run=None):
+        self.compute_coverage()
+        # latest_scores = graph.get_scores()
+        # store_scores(ann_run, [n.title for n in latest_scores])
+        # print("scores: ")
+        # for n in latest_scores:
+        #     print("%f %s" % (n.score, n.title))
+        # for te in timed_events:
+        #     print("event: %s took: %.2f seconds" % (te[0], te[1]))
+        # graph_file_name = "%d %s.json" % (ann_run.id, ann_run.name)
+        # graph_file_name = graph_file_name.replace(' ', '_')
+        # graph_file_dir = os.path.join(MODELS_DIR, graph_file_name)
+        # logger.debug("graph_file_dir: " + graph_file_dir)
+        # graph.save(graph_file_dir)
+        # # entity_ann.graph_file.name = graph_file_name
+        # # entity_ann.graph_dir = graph_file_dir
+        # entity_ann.graph_dir = graph_file_name
+        # entity_ann.save()
+        # ann_run.status = 'Annotation is complete'
+        # ann_run.save()
+
+    # New coverage
+    def compute_coverage(self):
+        cov = dict()
+        m = 0
+        for cell in self.cell_ent_class:
+            entities = self.cell_ent_class[cell]
+            if len(entities) == 0:
+                continue
+
+            e_score = 1.0 / len(entities)
+            found_one_class_at_least = False
+            for entity in entities:
+                classes = entities[entity]
+                if len(classes) == 0:
+                    continue
+
+                found_one_class_at_least = True
+                c_score = 1.0 / len(classes)
+                for class_uri in classes:
+                    if class_uri not in cov:
+                        cov[class_uri] = 0
+
+                    cov[class_uri] += c_score * e_score
+
+            if found_one_class_at_least:
+                m += 1
+
+        self.tgraph.m = m
+        for class_uri in cov:
+            self.tgraph.nodes[class_uri].Ic = cov[class_uri]
+
+    # def compute_coverage_ls(self):
+    #     for node in self.tgraph.nodes:
+
+
 # a = Annotator()
 # a.test_threads()
+
+
+if __name__ == '__main__':
+    file_dir = sys.argv[1]
+    a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql")
+    a.annotate_table(file_dir=file_dir)
+
