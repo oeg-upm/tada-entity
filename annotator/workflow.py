@@ -30,37 +30,12 @@ logger = set_config(logging.getLogger(__name__), logdir=os.path.join(LOG_DIR, 't
 MAX_NUM_PROCESSES = 1
 
 USE_DB = True
-tgraph = None
-
-cell_ent_class = dict()
-
-
-
-# This is not inuse at the moment
-# def update_ent_ann_progress(ent_ann, prog, lock):
-#     lock.acquire()
-#     ent_ann.progress = prog
-#     ent_ann.save()
-#     lock.release()
+g_tgraph = None
+g_cell_ent_class = None
+g_class_ancestors = None
 
 
-# def update_ent_ann_progress_func(tot, pipe, ent_ann):
-#     # a = pipe.recv()
-#     # curr = 0
-#     # old_prog = ent_ann.progress
-#     # while a is not 0:
-#     #     curr += 1
-#     #     new_prog = curr*100.0 / tot
-#     #     if new_prog - old_prog > 0.5:
-#     #         ent_ann.progress = new_prog
-#     #         ent_ann.save()
-#     #         old_prog = new_prog
-#     #     a = pipe.recv()
-#     # print("will stop: ")
-#     pass
-
-
-def detect_entity_col(csv_file_dir):
+def detect_subject_col(csv_file_dir):
     """
     :param csv_file_dir:
     :return: the index of the entity column, or -1 if it is can't be found
@@ -68,29 +43,34 @@ def detect_entity_col(csv_file_dir):
     return 0  # at the moment we assume that the entity column is the first column
 
 
-def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, onlyprefix, camel_case):
+def annotate_csv(ann_run_id, csv_file_dir, endpoint, subject_col_id, onlyprefix, tgraph=None):
     """
     This function annotate the cells, but doesn't result in the annotation of the whole column
     Assumptions:
         * Only one entity column i.e. not considering the case of multiple columns for the entity (e.g. the case of
         first name column and last name column).
+
     :param ann_run_id:
     :param csv_file_dir:
     :param endpoint:
-    :param hierarchy:
-    :param entity_col_id: the id the column id
+    :param subject_col_id:
+    :param onlyprefix:
+    :param tgraph:
     :return:
     """
-    global tgraph
-    if tgraph is not None:
-        del tgraph
 
-    tgraph = TGraph
-
-    if entity_col_id is None:
-        entity_column_id = detect_entity_col(csv_file_dir)
+    global g_tgraph
+    global g_class_ancestors
+    global g_cell_ent_class
+    if tgraph is None:
+        if g_tgraph is None:
+            g_tgraph = TGraph()
+        tgraph = g_tgraph
     else:
-        entity_column_id = entity_col_id
+        g_tgraph = tgraph
+
+    if subject_col_id is None:
+        subject_col_id = detect_subject_col(csv_file_dir)
     try:
         ann_run = AnnRun.objects.get(id=ann_run_id)
     except:
@@ -101,7 +81,7 @@ def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, o
     logger.debug("how many entityAnns: "+str(len(EntityAnn.objects.filter(ann_run=ann_run))))
     logger.debug("on reverse: "+str(len(ann_run.entityann_set.all())))
     #EntityAnn.objects.filter(ann_run=ann_run).delete()
-    entity_ann = EntityAnn(ann_run=ann_run, col_id=entity_column_id, status="cell annotation")
+    entity_ann = EntityAnn(ann_run=ann_run, col_id=subject_col_id, status="cell annotation")
     entity_ann.save()
     start = time.time()
     logger.info('annotating: ' + csv_file_dir)
@@ -121,8 +101,8 @@ def annotate_csv(ann_run_id, csv_file_dir, endpoint, hierarchy, entity_col_id, o
         #     cell_val = r[entity_column_id]
         # cell_val = cell_val.strip()
         row = r
-        logger.debug('entity_column_id check: '+str((entity_column_id, row[entity_col_id])))
-        params_list.append((entity_ann, row, entity_column_id, endpoint, onlyprefix, lock))
+        logger.debug('entity_column_id check: '+str((subject_col_id, row[subject_col_id])))
+        params_list.append((entity_ann, row, subject_col_id, endpoint, onlyprefix, lock))
         # So the connection is not copied to each thread, instead each will have its own
         #params_list.append((entity_ann.id, r[entity_column_id], endpoint, hierarchy, onlyprefix))
     #progress_process = Process(target=update_ent_ann_progress_func, args=(len(params_list), pipe_rec, entity_ann))
@@ -144,6 +124,7 @@ def annotate_single_cell(entity_ann, row, entity_column_id, endpoint, onlyprefix
     logger.debug("annotate_single_cell> start")
     logger.debug("entity_ann parent name: "+entity_ann.ann_run.name)
     cell_value = row[entity_column_id]
+
     lock.acquire()
     logger.debug("annotate_single_cell> cell lock acquired")
     try:
@@ -159,10 +140,11 @@ def annotate_single_cell(entity_ann, row, entity_column_id, endpoint, onlyprefix
         return
     logger.debug("annotate_single_cell> releasing lock")
     lock.release()
+
     logger.debug("cell: "+str(cell_value))
     attrs = []
     for i in range(len(row)):
-        if i!=entity_column_id:
+        if i != entity_column_id:
             attrs.append(row[i])
     entity_class_pairs = get_entities_and_classes(subject_name=cell.text_value, attributes=attrs, endpoint=endpoint)
     # entities = get_entities(subject_name=cell.text_value, endpoint=endpoint)
@@ -174,18 +156,20 @@ def annotate_single_cell(entity_ann, row, entity_column_id, endpoint, onlyprefix
             d[ent] = []
         d[ent].append(class_uri)
 
+
+
+    build_class_graph(d, lock, endpoint)
+
+    # lock.acquire()
+    # # remove ancestor classes
+    # ## TO WRITE IT
+    # lock.release()
+    remove_unwanted_parent_classes_for_cell(d, lock)
+
+
     lock.acquire()
     cell_ent_class[cell_value] = d
     lock.release()
-
-    build_class_graph(cell_value, lock, endpoint)
-
-    lock.acquire()
-    # remove ancestor classes
-    ## TO WRITE IT
-    lock.release()
-
-
 
     if USE_DB:
         lock.acquire()
@@ -208,25 +192,71 @@ def annotate_single_cell(entity_ann, row, entity_column_id, endpoint, onlyprefix
         lock.release()
 
 
-def build_class_graph(cell_value, lock, endpoint):
+def remove_unwanted_parent_classes_for_cell(entities, lock):
     """
-    :param cell_value:
+    :param entities: a dict of entities as keys and the values are a list of classes uris
+    :param lock:
+    :return:
+    """
+    d = dict()
+    for ent in entities:
+        d[ent] = remove_unwanted_parent_classes_for_entity(entities[ent], lock)
+    return d
+
+
+def remove_unwanted_parent_classes_for_entity(classes, lock):
+    """
+    :param classes: a list of classes uris
+    :param lock:
+    :return:
+    """
+    class_anc = dict()
+    wanted_classes = dict()
+    lock.acquire()
+    for class_uri in classes:
+        class_anc[class_uri] = set(tgraph.get_ancestors(class_uri))
+
+
+
+
+
+
+
+
+
+def build_class_graph(entities, lock, endpoint):
+    """
+    :param entities: dict of entity uris as keys and the values are the list of classes
     :param lock: lock
     :param endpoint: sparql url
     :return:
     """
 
-    lock.acquire()
-    for ent in cell_ent_class[cell_value]:
-        for class_uri in cell_ent_class[cell_value][ent]:
+    for ent in entities:
+        for class_uri in entities[ent]:
+            lock.acquire()
             added = tgraph.add_class(class_uri)
+            lock.release()
             if added:
                 parents = get_parents_of_class(class_uri, endpoint=endpoint)
+                lock.acquire()
                 for p in parents:
                     added = tgraph.add_class(p)
                     if added:
                         tgraph.add_parent(class_uri, p)
-    lock.release()
+                lock.release()
+
+    # lock.acquire()
+    # for ent in cell_ent_class[cell_value]:
+    #     for class_uri in cell_ent_class[cell_value][ent]:
+    #         added = tgraph.add_class(class_uri)
+    #         if added:
+    #             parents = get_parents_of_class(class_uri, endpoint=endpoint)
+    #             for p in parents:
+    #                 added = tgraph.add_class(p)
+    #                 if added:
+    #                     tgraph.add_parent(class_uri, p)
+    # lock.release()
 
 
 def build_graph_while_traversing(class_name, endpoint, v_lock, v_pipe, depth, onlyprefix):

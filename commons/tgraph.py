@@ -13,6 +13,14 @@ class Node:
         self.parents = dict()  # to nodes
         self.childs = dict()  # to nodes
 
+    def clear(self):
+        self.Ic = None
+        self.Lc = None
+        self.fc = None
+        self.Is = None
+        self.Ls = None
+        self.fs = None
+
 
 class TGraph:
 
@@ -39,6 +47,7 @@ class TGraph:
         if class_uri in self.nodes:
             return list(self.nodes[class_uri].childs.keys())
         else:
+            print("get_childs: <%s> does not exists in the nodes " % class_uri)
             return None
 
     def add_parent(self, class_uri, parent_uri):
@@ -48,4 +57,22 @@ class TGraph:
                 self.nodes[parent_uri].childs[class_uri] = self.nodes[class_uri]
                 return True
             return False
-        raise Exception("parent uri: <%s> does not exists in the nodes " % parent_uri)
+        else:
+            print("parent uri: <%s> does not exists in the nodes " % parent_uri)
+            return None
+
+    def get_ancestors(self, class_uri):
+        ancestors = []
+        if class_uri in self.nodes:
+            for p in self.get_parents(class_uri):
+                ancestors.append(p)
+                ancestors += self.get_ancestors(p)
+            return ancestors
+            # return list(set(ancestors))
+        else:
+            print("get_ancestors: <%s> is not added" % class_uri)
+            return None
+
+    def clear_scores(self):
+        for node in self.nodes:
+            node.clear()

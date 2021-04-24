@@ -3,7 +3,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 import certifi
 
 # from __init__ import QUERY_LIMIT
-QUERY_LIMIT=""
+QUERY_LIMIT = ""
 
 import pandas as pd
 import numpy as np
@@ -49,16 +49,16 @@ def run_query(query=None, endpoint=None, raiseexception=False):
     sparql = SPARQLWrapper(endpoint=endpoint, custom_cert_filename=certifi.where())
     # sparql = SPARQLWrapper(endpoint=endpoint)
     sparql.setQuery(query=query)
-    #sparql.setMethod("POST")
+    # sparql.setMethod("POST")
     sparql.setReturnFormat(JSON)
-    #sparql.setTimeout(300)
+    # sparql.setTimeout(300)
     try:
         results = sparql.query().convert()
         if len(results["results"]["bindings"]) > 0:
             return results["results"]["bindings"]
         else:
             print("returns 0 rows")
-            print("endpoint: "+endpoint)
+            print("endpoint: " + endpoint)
             print("query: <%s>" % str(query).strip())
             return []
     except Exception as e:
@@ -174,6 +174,7 @@ def get_classes(endpoint=None):
     results = run_query(endpoint=endpoint, query=query, raiseexception=True)
     classes = [r['Concept']['value'] for r in results]
     return classes
+
 
 ################################################################
 #                  Property Extraction A-BOX                   #
@@ -360,17 +361,19 @@ def get_numerical_properties_for_class_abox_using_half_split(endpoint=None, clas
                         print("reached iteration limit and the timeout still occurs")
                         return []
 
-                return get_numerical_properties_for_class_abox_using_half_split(endpoint=endpoint, class_uri=class_uri_stripped
-                                                                                , upper_bound=upper_bound*2,
+                return get_numerical_properties_for_class_abox_using_half_split(endpoint=endpoint,
+                                                                                class_uri=class_uri_stripped
+                                                                                , upper_bound=upper_bound * 2,
                                                                                 lower_bound=lower_bound,
                                                                                 raiseexception=raiseexception,
                                                                                 first_time=True,
-                                                                                max_iter=max_iter-1,
+                                                                                max_iter=max_iter - 1,
                                                                                 isnumericfilter=isnumericfilter)
                 # split_upper_lower_bound(upper_bound=upper_bound, lower_bound=lower_bound, class_uri=class_uri_stripped,
                 #                         endpoint=endpoint, raiseexception=raiseexception)
         elif "'isNumeric'" in str(e) and first_time:
-            print("get_numerical_properties_for_class_abox_using_half_split> isNumeric is not supported, so we gonna ignore it")
+            print(
+                "get_numerical_properties_for_class_abox_using_half_split> isNumeric is not supported, so we gonna ignore it")
             return get_numerical_properties_for_class_abox_using_half_split(endpoint=endpoint, class_uri=class_uri,
                                                                             upper_bound=upper_bound,
                                                                             lower_bound=lower_bound,
@@ -533,16 +536,16 @@ def get_entities_and_classes(subject_name, attributes, endpoint):
     inner_qs = []
     for attr in attributes:
         q = """
-        {
-            ?s rdfs:label "%s"@en.
-            ?s ?p "%s"@en.
-            ?s a ?c.
-	    } UNION {
-            ?s rdfs:label "%s"@en.
-            ?s ?p ?e.
-            ?e rdfs:label "%s"@en.
-            ?s a ?c.
-	    }
+            {
+                ?s rdfs:label "%s"@en.
+                ?s ?p "%s"@en.
+                ?s a ?c.
+            } UNION {
+                ?s rdfs:label "%s"@en.
+                ?s ?p ?e.
+                ?e rdfs:label "%s"@en.
+                ?s a ?c.
+            }
         """ % (subject_name, attr, subject_name, attr)
         inner_qs.append(q)
 
@@ -553,6 +556,23 @@ def get_entities_and_classes(subject_name, attributes, endpoint):
             %s
         }
     """ % (inner_q)
+    results = run_query(query=query, endpoint=endpoint)
+    entity_class_pair = [(r['s']['value'], r['c']['value']) for r in results]
+    return entity_class_pair
+
+
+def get_entities_and_classes_naive(subject_name, endpoint):
+    """
+    assuming only in the form of name@en. To be extended to other languages and other types e.g. name^^someurltype
+    :param subject_name:
+    :return:
+    """
+    query = """
+        select distinct ?s ?c where{
+            ?s ?p "%s"@en.
+            ?s a ?c
+        }
+    """ % subject_name
     results = run_query(query=query, endpoint=endpoint)
     entity_class_pair = [(r['s']['value'], r['c']['value']) for r in results]
     return entity_class_pair
@@ -606,17 +626,17 @@ def get_classes_not_in(classes, endpoint):
     :param endpoint:
     :return:
     """
-    my_classes = ",".join(["<"+c+">" for c in classes])
+    my_classes = ",".join(["<" + c + ">" for c in classes])
     query = """
-    select ?ech where{
-    ?ech a [].
-    FILTER(?ech IN (%s)).
-    MINUS{
-	    ?ec a [].
-        FILTER (?ec NOT IN (%s)).
-        ?ec rdfs:subClassOf+ ?ech.
-    }
-    }
+        select ?ech where{
+        ?ech a [].
+        FILTER(?ech IN (%s)).
+            MINUS{
+                ?ec a [].
+                FILTER (?ec NOT IN (%s)).
+                ?ec rdfs:subClassOf+ ?ech.
+            }
+        }
     """ % (my_classes, my_classes)
     results = run_query(query=query, endpoint=endpoint)
     classes = [r['ech']['value'] for r in results]
@@ -630,7 +650,7 @@ def get_classes_with_parents(classes, endpoint):
     :param endpoint:
     :return:
     """
-    my_classes = ",".join(["<"+c+">" for c in classes])
+    my_classes = ",".join(["<" + c + ">" for c in classes])
     query = """
     select ?c where{
     ?c rdfs:subClassOf ?parent
@@ -715,12 +735,3 @@ def get_url_stripped(uri):
     if uri_stripped[-1] == ">":
         uri_stripped = uri_stripped[:-1]
     return uri_stripped
-
-
-
-
-
-
-
-
-
