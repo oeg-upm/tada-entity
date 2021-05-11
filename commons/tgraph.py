@@ -76,3 +76,4 @@ class TGraph:
     def clear_scores(self):
         for node in self.nodes:
             node.clear()
+

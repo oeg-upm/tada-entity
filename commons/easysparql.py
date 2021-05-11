@@ -35,7 +35,7 @@ def run_query_with_datatype(query=None, endpoint=None, datatype=None):
     return [], []
 
 
-def run_query(query=None, endpoint=None, raiseexception=False):
+def run_query(query=None, endpoint=None, raiseexception=False, printempty=False):
     """
     :param query: raw SPARQL query
     :param endpoint: endpoint source that hosts the data
@@ -57,9 +57,10 @@ def run_query(query=None, endpoint=None, raiseexception=False):
         if len(results["results"]["bindings"]) > 0:
             return results["results"]["bindings"]
         else:
-            print("returns 0 rows")
-            print("endpoint: " + endpoint)
-            print("query: <%s>" % str(query).strip())
+            if printempty:
+                print("returns 0 rows")
+                print("endpoint: " + endpoint)
+                print("query: <%s>" % str(query).strip())
             return []
     except Exception as e:
         print(str(e))

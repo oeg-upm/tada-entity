@@ -1,4 +1,4 @@
-from annotator import cmd
+#from annotator import cmd
 import argparse
 import json
 import os
@@ -10,10 +10,10 @@ import string
 import math
 import sys
 import pandas as pd
-
-from tadae.models import AnnRun, EntityAnn, Cell, CClass, Entity
-
-
+try:
+    from tadae.models import AnnRun, EntityAnn, Cell, CClass, Entity
+except Exception:
+    print("unable to load models")
 from multiprocessing import Process, Lock, Pipe
 # from PPool.Pool import Pool
 from TPool.TPool import Pool
@@ -36,7 +36,7 @@ class Annotator:
         self.onlyprefix = onlyprefix
         self.tgraph = TGraph()
         self.cell_ent_class = dict()
-        self.use_db = True
+        self.use_db = False #True
         self.lock = Lock()
         self.ancestors = dict()
 
@@ -47,6 +47,8 @@ class Annotator:
         logger = self.logger
         if subject_col_id is None:
             subject_col_id = self.detect_subject_col(file_dir)
+
+        entity_ann = None
         if self.use_db:
             try:
                 ann_run = AnnRun.objects.get(id=ann_run_id)
@@ -82,11 +84,12 @@ class Annotator:
 
     def annotate_single_cell(self, entity_ann, row, entity_column_id):
         logger = self.logger
+        lock = self.lock
+        cell = None
         logger.debug("annotate_single_cell> start")
         if self.use_db:
             logger.debug("entity_ann parent name: " + entity_ann.ann_run.name)
         cell_value = row[entity_column_id]
-        lock = self.lock
         lock.acquire()
         logger.debug("annotate_single_cell> cell lock acquired")
         try:
@@ -106,14 +109,20 @@ class Annotator:
         lock.release()
 
         logger.debug("cell: " + str(cell_value))
+        self._add_entities_and_classes_to_cell(row, entity_column_id, cell_value, cell)
+
+    def _add_entities_and_classes_to_cell(self, row, entity_column_id, cell_value, cell):
+        logger = self.logger
+        lock = self.lock
         attrs = []
+
         for i in range(len(row)):
             if i != entity_column_id:
                 attrs.append(row[i])
-        entity_class_pairs = get_entities_and_classes(subject_name=cell_value, attributes=attrs,
-                                                      endpoint=self.endpoint)
+        entity_class_pairs = get_entities_and_classes(subject_name=cell_value, attributes=attrs, endpoint=self.endpoint)
+
         if len(entity_class_pairs) == 0:
-            logger.debug("annotate_single_cell> no high quality  entity_class_pairs are found, hence trying the naive")
+            logger.debug("_add_entities_and> no high quality  entity_class_pairs are found, hence trying the naive")
             entity_class_pairs = get_entities_and_classes_naive(subject_name=cell_value, endpoint=self.endpoint)
 
         d = dict()
@@ -138,17 +147,17 @@ class Annotator:
                     e.save()
 
                     for class_uri in d[ent]:
-                        if self.onlyprefix is None or (class_uri.startswith(self.onlyprefix)):
+                        if self.onlyprefix is None or class_uri.startswith(self.onlyprefix):
                             ccclass = CClass(entity=e, cclass=class_uri)
                             ccclass.save()
 
                 except Exception as ex:
-                    logger.debug("annotate_single_cell> entity value: <" + ent + ">")
-                    logger.debug("annotate_single_cell> class value: <" + class_uri + ">")
+                    logger.debug("_add_entities_and> entity value: <" + ent + ">")
+                    logger.debug("_add_entities_and> class value: <" + class_uri + ">")
                     logger.debug(str(ex))
                     traceback.print_exc()
-                    lock.release()
-                    return
+                    # lock.release()
+                    # return
             lock.release()
 
     def remove_unwanted_parent_classes_for_cell(self, entities):
@@ -195,20 +204,24 @@ class Annotator:
         :param entities: dict of entity uris as keys and the values are the list of classes
         :return:
         """
-        lock = self.lock
+        # lock = self.lock
         for ent in entities:
             for class_uri in entities[ent]:
+                self.add_class_to_graph(class_uri)
+
+    def add_class_to_graph(self, class_uri):
+        lock = self.lock
+        lock.acquire()
+        newly_added = self.tgraph.add_class(class_uri)
+        lock.release()
+        if newly_added:
+            parents = get_parents_of_class(class_uri, endpoint=self.endpoint)
+            for p in parents:
+                self.add_class_to_graph(p)
                 lock.acquire()
-                added = self.tgraph.add_class(class_uri)
+                self.tgraph.add_parent(class_uri, p)
                 lock.release()
-                if added:
-                    parents = get_parents_of_class(class_uri, endpoint=self.endpoint)
-                    lock.acquire()
-                    for p in parents:
-                        added = self.tgraph.add_class(p)
-                        if added:
-                            self.tgraph.add_parent(class_uri, p)
-                    lock.release()
+        return newly_added
 
     def build_ancestors_lookup(self):
         for class_uri in self.tgraph.nodes:
@@ -261,7 +274,6 @@ class Annotator:
                 for class_uri in classes:
                     if class_uri not in cov:
                         cov[class_uri] = 0
-
                     cov[class_uri] += c_score * e_score
 
             if found_one_class_at_least:
@@ -271,6 +283,23 @@ class Annotator:
         for class_uri in cov:
             self.tgraph.nodes[class_uri].Ic = cov[class_uri]
 
+    def print_ann(self):
+        for c in self.cell_ent_class:
+            print(c)
+            for ent in self.cell_ent_class[c]:
+                print("\t"+ent)
+                for cl in self.cell_ent_class[c][ent]:
+                    print("\t\t"+cl)
+
+    def print_hierarchy(self):
+        print("\nprint_hierarchy: ")
+        for n in self.tgraph.nodes:
+            node = self.tgraph.nodes[n]
+            print(node.class_uri)
+            for ch in node.childs:
+                print("\t"+node.childs[ch].class_uri)
+            # for ch in node.parents:
+            #     print("\t=>"+node.parents[ch].class_uri)
     # def compute_coverage_ls(self):
     #     for node in self.tgraph.nodes:
 
@@ -282,5 +311,8 @@ class Annotator:
 if __name__ == '__main__':
     file_dir = sys.argv[1]
     a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql")
+    a.use_db = False
     a.annotate_table(file_dir=file_dir)
-
+    # a.print_ann()
+    # a.print_hierarchy()
+    #print(a.cell_ent_class)
