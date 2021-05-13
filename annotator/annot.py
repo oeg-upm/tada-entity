@@ -1,4 +1,4 @@
-#from annotator import cmd
+# from annotator import cmd
 import argparse
 import json
 import os
@@ -10,6 +10,7 @@ import string
 import math
 import sys
 import pandas as pd
+
 try:
     from tadae.models import AnnRun, EntityAnn, Cell, CClass, Entity
 except Exception:
@@ -22,7 +23,7 @@ from commons import random_string
 from graph.type_graph import TypeGraph
 from commons.logger import set_config
 from commons.easysparql import get_entities, get_classes, get_entities_and_classes, get_entities_and_classes_naive
-from commons.easysparql import get_parents_of_class
+from commons.easysparql import get_parents_of_class, get_num_class_subjects
 from commons.easysparql import get_classes_subjects_count
 from commons.tgraph import TGraph
 
@@ -36,9 +37,10 @@ class Annotator:
         self.onlyprefix = onlyprefix
         self.tgraph = TGraph()
         self.cell_ent_class = dict()
-        self.use_db = False #True
+        self.use_db = False  # True
         self.lock = Lock()
         self.ancestors = dict()
+        self.classes_counts = dict()
 
     def detect_subject_col(self, file_dir):
         return 0
@@ -253,8 +255,34 @@ class Annotator:
         # ann_run.status = 'Annotation is complete'
         # ann_run.save()
 
-    # New coverage
     def compute_coverage(self):
+        self.compute_Ic()
+        self.compute_Lc()
+        self.compute_fc()
+
+    def _compute_Lc_for_node(self, node):
+        if node.Lc is not None:
+            return node.Lc
+        curr_lc = 0
+        for ch_uri in node.childs:
+            ch = node.childs[ch_uri]
+            curr_lc += self._compute_Lc_for_node(ch)
+        if node.Ic is None:
+            node.Ic = 0
+        node.Lc = curr_lc + node.Ic
+        return node.Lc
+
+    def compute_Lc(self):
+        for class_uri in self.tgraph.nodes:
+            node = self.tgraph.nodes[class_uri]
+            self._compute_Lc_for_node(node)
+
+    def compute_fc(self):
+        for class_uri in self.tgraph.nodes:
+            node = self.tgraph.nodes[class_uri]
+            node.fc = node.Lc / self.tgraph.m
+
+    def compute_Ic(self):
         cov = dict()
         m = 0
         for cell in self.cell_ent_class:
@@ -283,13 +311,60 @@ class Annotator:
         for class_uri in cov:
             self.tgraph.nodes[class_uri].Ic = cov[class_uri]
 
+    def compute_specificity(self):
+        self._compute_classes_counts()
+        self.compute_Is()
+        self.compute_Ls()
+        self.compute_fs()
+
+    def compute_fs(self):
+        for class_uri in self.tgraph.nodes:
+            node = self.tgraph.nodes[class_uri]
+            node.fs = -1 * node.Ls + 1
+
+    def _compute_classes_counts(self):
+        for class_uri in self.tgraph.nodes:
+            num = get_num_class_subjects(class_uri, self.endpoint)
+            self.classes_counts[class_uri] = num
+
+    def compute_Is(self):
+        for class_uri in self.tgraph.nodes:
+            node = self.tgraph.nodes[class_uri]
+            par_classes = [p for p in node.parents]
+            if len(par_classes) == 0:
+                node.Is = 1
+            else:
+                pars = [self.classes_counts[pclass] for pclass in par_classes]
+                max_pr = max(pars)
+                node.Is = self.classes_counts[class_uri] / max_pr
+                if node.Is > 1:
+                    print("Error: count class <%s>: %d and parent: %d" % (
+                    class_uri, self.classes_counts[class_uri], max_pr))
+                    raise Exception("Exception in compute_Is. Too big Is")
+
+    def compute_Ls(self):
+        for class_uri in self.tgraph.nodes:
+            self._compute_Ls_for_node(self.tgraph.nodes[class_uri])
+
+    def _compute_Ls_for_node(self, node):
+        if node.Ls is None:
+            pars = []
+            for p in node.parents:
+                pars.append(self._compute_Ls_for_node(self.tgraph.nodes[p]))
+            if len(pars) == 0:
+                par_max = 1
+            else:
+                par_max = max(pars)
+            node.Ls = par_max * node.Is
+        return node.Ls
+
     def print_ann(self):
         for c in self.cell_ent_class:
             print(c)
             for ent in self.cell_ent_class[c]:
-                print("\t"+ent)
+                print("\t" + ent)
                 for cl in self.cell_ent_class[c][ent]:
-                    print("\t\t"+cl)
+                    print("\t\t" + cl)
 
     def print_hierarchy(self):
         print("\nprint_hierarchy: ")
@@ -297,7 +372,7 @@ class Annotator:
             node = self.tgraph.nodes[n]
             print(node.class_uri)
             for ch in node.childs:
-                print("\t"+node.childs[ch].class_uri)
+                print("\t" + node.childs[ch].class_uri)
             # for ch in node.parents:
             #     print("\t=>"+node.parents[ch].class_uri)
     # def compute_coverage_ls(self):
@@ -315,4 +390,4 @@ if __name__ == '__main__':
     a.annotate_table(file_dir=file_dir)
     # a.print_ann()
     # a.print_hierarchy()
-    #print(a.cell_ent_class)
+    # print(a.cell_ent_class)

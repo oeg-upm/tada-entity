@@ -716,7 +716,7 @@ def get_classes_subjects_count(classes, endpoint):
 
 
 def get_num_class_subjects(class_uri, endpoint):
-    print("count subject for class %s" % class_uri)
+    #print("count subject for class %s" % class_uri)
     query = """
     select count(?s) as ?num
     where {
