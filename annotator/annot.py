@@ -8,6 +8,7 @@ import random
 import traceback
 import string
 import math
+
 import sys
 import pandas as pd
 
@@ -339,7 +340,7 @@ class Annotator:
                 node.Is = self.classes_counts[class_uri] / max_pr
                 if node.Is > 1:
                     print("Error: count class <%s>: %d and parent: %d" % (
-                    class_uri, self.classes_counts[class_uri], max_pr))
+                        class_uri, self.classes_counts[class_uri], max_pr))
                     raise Exception("Exception in compute_Is. Too big Is")
 
     def compute_Ls(self):
@@ -357,6 +358,21 @@ class Annotator:
                 par_max = max(pars)
             node.Ls = par_max * node.Is
         return node.Ls
+
+    def compute_f(self, alpha):
+        for class_uri in self.tgraph.nodes:
+            node = self.tgraph.nodes[class_uri]
+            node.f = node.fc * alpha + node.fs * (1 - alpha)
+
+    def get_top_k(self, k=1):
+        scores = []
+        for class_uri in self.tgraph.nodes:
+            node = self.tgraph.nodes[class_uri]
+            pair = (node.class_uri, node.f)
+            scores.append(pair)
+        scores.sort(key=lambda x: x[1], reverse=True)
+        classes = [sc[0] for sc in scores[:k]]
+        return classes
 
     def print_ann(self):
         for c in self.cell_ent_class:
