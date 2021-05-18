@@ -1,13 +1,7 @@
-# from annotator import cmd
-import argparse
-import json
 import os
 import time
 import logging
-import random
 import traceback
-import string
-import math
 
 import sys
 import pandas as pd
@@ -17,21 +11,24 @@ try:
 except Exception:
     print("unable to load models")
 from multiprocessing import Process, Lock, Pipe
-# from PPool.Pool import Pool
 from TPool.TPool import Pool
-from commons import random_string
 
-from graph.type_graph import TypeGraph
-from commons.logger import set_config
-from commons.easysparql import get_entities, get_classes, get_entities_and_classes, get_entities_and_classes_naive
+from commons import random_string
+from commons.easysparql import get_entities_and_classes, get_entities_and_classes_naive
 from commons.easysparql import get_parents_of_class, get_num_class_subjects
-from commons.easysparql import get_classes_subjects_count
 from commons.tgraph import TGraph
 
 
 class Annotator:
+    def __init__(self, num_of_threads=10, logger=None, endpoint="", onlyprefix=None, alpha=None):
+        if logger is None:
+            logger = logging.getLogger(__name__)
+            logger.setLevel(logging.DEBUG)
+            # create console handler and set level to debug
+            handler = logging.StreamHandler()
+            handler.setLevel(logging.DEBUG)
+            logger.addHandler(handler)
 
-    def __init__(self, num_of_threads=10, logger=logging.getLogger(__name__), endpoint="", onlyprefix=None):
         self.logger = logger
         self.num_of_threads = num_of_threads
         self.endpoint = endpoint
@@ -42,9 +39,35 @@ class Annotator:
         self.lock = Lock()
         self.ancestors = dict()
         self.classes_counts = dict()
+        self.alpha = alpha
 
     def detect_subject_col(self, file_dir):
         return 0
+
+    def _setup_db_entry(self, ann_run_id, subject_col_id):
+        try:
+            ann_run = AnnRun.objects.get(id=ann_run_id)
+        except:
+            ann_run = AnnRun(name=random_string(5), status='started')
+
+        ann_run.status = 'adding dataset: ' + str(file_dir.split(os.path.sep)[-1])
+        ann_run.save()
+        entity_ann = EntityAnn(ann_run=ann_run, col_id=subject_col_id, status="cell annotation")
+        entity_ann.save()
+
+    def _load_table(self, file_dir):
+        df = pd.read_csv(file_dir)
+        mat = df.values
+        mat = mat.astype(str)
+        return mat
+
+    def _get_cell_ann_param_list(self, subject_col_id, entity_ann):
+        params_list = []
+        for r in self._load_table(file_dir):
+            row = r
+            self.logger.debug('entity_column_id check: ' + str((subject_col_id, row[subject_col_id])))
+            params_list.append((entity_ann, row, subject_col_id))
+        return params_list
 
     def annotate_table(self, ann_run_id=None, file_dir=None, subject_col_id=None):
         logger = self.logger
@@ -52,38 +75,28 @@ class Annotator:
             subject_col_id = self.detect_subject_col(file_dir)
 
         entity_ann = None
+        ann_run = None
         if self.use_db:
-            try:
-                ann_run = AnnRun.objects.get(id=ann_run_id)
-            except:
-                ann_run = AnnRun(name=random_string(5), status='started')
-
-            ann_run.status = 'adding dataset: ' + str(file_dir.split(os.path.sep)[-1])
-            ann_run.save()
-            entity_ann = EntityAnn(ann_run=ann_run, col_id=subject_col_id, status="cell annotation")
-            entity_ann.save()
+            ann_run = self._setup_db_entry(ann_run_id, subject_col_id)
 
         start = time.time()
         logger.info('annotating: ' + file_dir)
-        df = pd.read_csv(file_dir)
-        mat = df.values
-        mat = mat.astype(str)
-        params_list = []
-        for r in mat:
-            row = r
-            logger.debug('entity_column_id check: ' + str((subject_col_id, row[subject_col_id])))
-            params_list.append((entity_ann, row, subject_col_id))
+        params_list = self._get_cell_ann_param_list(subject_col_id, entity_ann)
 
         logger.debug("annotate_csv> number of total processes to run: " + str(len(params_list)))
         pool = Pool(max_num_of_threads=self.num_of_threads, func=self.annotate_single_cell, params_list=params_list)
         pool.run()
         logger.debug("annotate_csv> annotated all cells")
-        logger.debug("annotate_csv> all processes are stopped now")
         end = time.time()
-        logger.debug("Time spent: %f" % (end - start))
+        logger.debug("Time spent: %f seconds" % (end - start))
         if self.use_db:
             ann_run.status = 'datasets are added'
             ann_run.save()
+
+        self.compute_coverage()
+        self.compute_specificity()
+        if self.alpha:
+            self.compute_f(self.alpha)
 
     def annotate_single_cell(self, entity_ann, row, entity_column_id):
         logger = self.logger
@@ -235,27 +248,6 @@ class Annotator:
                     d[anc] = True  # The value true means nothing here. We just want to use dict for the fast lookup
                 self.ancestors[class_uri] = d
 
-    def type_subject_column(self, ann_run=None):
-        self.compute_coverage()
-        # latest_scores = graph.get_scores()
-        # store_scores(ann_run, [n.title for n in latest_scores])
-        # print("scores: ")
-        # for n in latest_scores:
-        #     print("%f %s" % (n.score, n.title))
-        # for te in timed_events:
-        #     print("event: %s took: %.2f seconds" % (te[0], te[1]))
-        # graph_file_name = "%d %s.json" % (ann_run.id, ann_run.name)
-        # graph_file_name = graph_file_name.replace(' ', '_')
-        # graph_file_dir = os.path.join(MODELS_DIR, graph_file_name)
-        # logger.debug("graph_file_dir: " + graph_file_dir)
-        # graph.save(graph_file_dir)
-        # # entity_ann.graph_file.name = graph_file_name
-        # # entity_ann.graph_dir = graph_file_dir
-        # entity_ann.graph_dir = graph_file_name
-        # entity_ann.save()
-        # ann_run.status = 'Annotation is complete'
-        # ann_run.save()
-
     def compute_coverage(self):
         self.compute_Ic()
         self.compute_Lc()
@@ -335,9 +327,9 @@ class Annotator:
             if len(par_classes) == 0:
                 node.Is = 1
             else:
-                pars = [self.classes_counts[pclass] for pclass in par_classes]
+                pars = [int(self.classes_counts[pclass]) for pclass in par_classes]
                 max_pr = max(pars)
-                node.Is = self.classes_counts[class_uri] / max_pr
+                node.Is = int(self.classes_counts[class_uri]) / max_pr
                 if node.Is > 1:
                     print("Error: count class <%s>: %d and parent: %d" % (
                         class_uri, self.classes_counts[class_uri], max_pr))
@@ -365,6 +357,9 @@ class Annotator:
             node.f = node.fc * alpha + node.fs * (1 - alpha)
 
     def get_top_k(self, k=1):
+        if self.alpha is None:
+            print("Error: alpha is missing. You need to call compute_f(alpha) function before")
+            return []
         scores = []
         for class_uri in self.tgraph.nodes:
             node = self.tgraph.nodes[class_uri]
@@ -389,21 +384,14 @@ class Annotator:
             print(node.class_uri)
             for ch in node.childs:
                 print("\t" + node.childs[ch].class_uri)
-            # for ch in node.parents:
-            #     print("\t=>"+node.parents[ch].class_uri)
-    # def compute_coverage_ls(self):
-    #     for node in self.tgraph.nodes:
-
-
-# a = Annotator()
-# a.test_threads()
 
 
 if __name__ == '__main__':
     file_dir = sys.argv[1]
-    a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql")
+    a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql", alpha=0.3)
     a.use_db = False
     a.annotate_table(file_dir=file_dir)
+    print(a.get_top_k(3))
     # a.print_ann()
     # a.print_hierarchy()
     # print(a.cell_ent_class)

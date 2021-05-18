@@ -10,6 +10,7 @@ class Node:
         self.Is = None
         self.Ls = None
         self.fs = None
+        self.f = None
         self.parents = dict()  # to nodes
         self.childs = dict()  # to nodes
 
@@ -20,6 +21,7 @@ class Node:
         self.Is = None
         self.Ls = None
         self.fs = None
+        self.f = None
 
 
 class TGraph:

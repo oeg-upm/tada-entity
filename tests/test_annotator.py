@@ -4,7 +4,7 @@ from tadae.models import *
 import annotator
 import commons
 from tadae.settings import BASE_DIR
-from annotator import Annotator
+from annotator.annot import Annotator
 
 
 class AnnotatorTest(TestCase):
