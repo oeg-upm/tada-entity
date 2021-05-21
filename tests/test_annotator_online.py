@@ -50,32 +50,6 @@ class AnnotatorOnlineTest(TestCase):
         self.assertNotIn("http://dbpedia.org/ontology/Agent", annotator.cell_ent_class[cell][ent])
         self.assertNotIn("http://www.w3.org/2002/07/owl#Thing", annotator.cell_ent_class[cell][ent])
 
-
-    # def test_build_class_graph(self):
-    #     annotator = Annotator(endpoint=commons.ENDPOINT)
-    #     d = {
-    #         "entityA": ["classA1", "classA2", "classA3"],
-    #         "entityB": ["classB1", "classB2"]
-    #     }
-    #     for ent in d:
-    #         for class_uri in d[ent]:
-    #             annotator.tgraph.add_class(class_uri)
-    #     annotator.tgraph.add_parent("classA3", "classA2")
-    #     annotator.tgraph.add_parent("classA2", "classA1")
-    #     annotator.tgraph.add_parent("classB2", "classB1")
-    #     annotator.tgraph.add_class("Thing")
-    #     annotator.tgraph.add_parent("classB1", "Thing")
-    #     annotator.tgraph.add_parent("classA1", "Thing")
-    #     annotator.build_class_graph(d)
-    #     annotator.build_ancestors_lookup()
-    #     annotator.remove_unwanted_parent_classes_for_cell(d)
-    #     self.assertCountEqual(annotator.ancestors["classA3"], ["classA1", "classA2", "Thing"])
-    #     self.assertCountEqual(annotator.ancestors["classA2"], ["classA1", "Thing"])
-    #     self.assertCountEqual(annotator.ancestors["classB2"], ["classB1", "Thing"])
-    #     # print("ancestors: ")
-    #     # print(annotator.ancestors.keys())
-    #     self.assertCountEqual(annotator.ancestors["Thing"], [])
-
     def test_coverage(self):
         annotator = Annotator(endpoint=commons.ENDPOINT, alpha=0.4,
             class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
@@ -103,14 +77,33 @@ class AnnotatorOnlineTest(TestCase):
         self.assertAlmostEqual(annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].fc,
                                annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].Lc/annotator.tgraph.m)
 
-    def test_specificity(self):
-        """
+        annotator.clear_for_reuse()
 
-swim 5299
-Athlete 720676
-Person 3386396
-        :return:
-        """
+        annotator.annotate_table(file_dir="tests/swimmers.csv", subject_col_id=0)
+        annotator.compute_coverage()
+        # Ic
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Person"].Ic, 3)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/MilitaryPerson"].Ic, 2)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Swimmer"].Ic, 5)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].Ic, 0)
+        # Lc
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Person"].Lc, 10)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/MilitaryPerson"].Lc, 2)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Swimmer"].Lc, 5)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].Lc, 10)
+        # m
+        self.assertEqual(annotator.tgraph.m, 10)
+        # fc
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Person"].fc,
+                               annotator.tgraph.nodes["http://dbpedia.org/ontology/Person"].Lc /annotator.tgraph.m)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/MilitaryPerson"].fc,
+                               annotator.tgraph.nodes["http://dbpedia.org/ontology/MilitaryPerson"].Lc/annotator.tgraph.m)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Swimmer"].fc,
+                               annotator.tgraph.nodes["http://dbpedia.org/ontology/Swimmer"].Lc/annotator.tgraph.m)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].fc,
+                               annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].Lc/annotator.tgraph.m)
+
+    def test_specificity(self):
         annotator = Annotator(endpoint=commons.ENDPOINT, alpha=0.4)
         annotator.annotate_table(file_dir="tests/swimmers.csv", subject_col_id=0)
 
@@ -150,6 +143,45 @@ Person 3386396
         # self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Agent"].fs, -50.0 / 112 + 1)
         self.assertAlmostEqual(annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].fs,
                                -annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].Ls + 1)
+
+        annotator.clear_for_reuse()
+
+        annotator.annotate_table(file_dir="tests/swimmers.csv", subject_col_id=0)
+
+        annotator.compute_Is()
+        annotator.compute_Ls()
+        annotator.compute_fs()
+
+        # Is
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Swimmer"].Is, num_swim/num_ath)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Athlete"].Is, num_ath/num_psn)
+        # self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Person"].Is, 30.0 / 40)
+        # self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Agent"].Is, 35.0 / 52)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].Is, 1.0)
+        # Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Swimmer"].Ls,
+                               annotator.tgraph.nodes["http://dbpedia.org/ontology/Swimmer"].Is *
+                               annotator.tgraph.nodes["http://dbpedia.org/ontology/Athlete"].Ls)
+
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Athlete"].Ls,
+                               annotator.tgraph.nodes["http://dbpedia.org/ontology/Athlete"].Is *
+                               annotator.tgraph.nodes["http://dbpedia.org/ontology/Person"].Ls)
+
+        # self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Person"].Ls, 50.0 / 112)
+        # self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Agent"].Ls, 35.0 / 52 * 52.0 / 112)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].Ls,
+                               annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].Is)
+        # fs
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Swimmer"].fs,
+                               -annotator.tgraph.nodes["http://dbpedia.org/ontology/Swimmer"].Ls + 1)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Athlete"].fs,
+                               -annotator.tgraph.nodes["http://dbpedia.org/ontology/Athlete"].Ls + 1)
+        # self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Person"].fs, -50.0 / 112 * 40.0 / 50 + 1)
+        # self.assertAlmostEqual(annotator.tgraph.nodes["http://dbpedia.org/ontology/Agent"].fs, -50.0 / 112 + 1)
+        self.assertAlmostEqual(annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].fs,
+                               -annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].Ls + 1)
+
+
 
 
     #

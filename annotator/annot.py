@@ -42,21 +42,11 @@ class Annotator:
 
     def clear_for_reuse(self):
         self.alpha = None
+        self.cell_ent_class = dict()
         self.tgraph.clear_for_reuse()
 
     def detect_subject_col(self, file_dir):
         return 0
-
-    def _setup_db_entry(self, ann_run_id, subject_col_id):
-        try:
-            ann_run = AnnRun.objects.get(id=ann_run_id)
-        except:
-            ann_run = AnnRun(name=random_string(5), status='started')
-
-        ann_run.status = 'adding dataset: ' + str(file_dir.split(os.path.sep)[-1])
-        ann_run.save()
-        entity_ann = EntityAnn(ann_run=ann_run, col_id=subject_col_id, status="cell annotation")
-        entity_ann.save()
 
     def _load_table(self, file_dir):
         df = pd.read_csv(file_dir)
@@ -97,26 +87,25 @@ class Annotator:
         logger.debug("Time spent: %f seconds" % (end - start))
 
     def annotate_single_cell(self, row, entity_column_id):
-        logger = self.logger
-        lock = self.lock
         # logger.debug("annotate_single_cell> start")
 
         cell_value = row[entity_column_id]
-        lock.acquire()
+        self.lock.acquire()
         # logger.debug("annotate_single_cell> cell lock acquired")
         try:
             if cell_value in self.cell_ent_class:  # already processed
+                self.lock.release()
                 return
 
         except Exception as ex:
-            logger.debug("annotate_single_cell> cell value: <" + cell_value + ">")
-            logger.debug(str(ex))
+            self.logger.debug("annotate_single_cell> cell value: <" + cell_value + ">")
+            self.logger.debug(str(ex))
             traceback.print_exc()
-            lock.release()
+            self.lock.release()
             return
 
         # logger.debug("annotate_single_cell> releasing lock")
-        lock.release()
+        self.lock.release()
 
         # logger.debug("cell: " + str(cell_value))
         self._add_entities_and_classes_to_cell(row, entity_column_id, cell_value)
