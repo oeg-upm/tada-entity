@@ -20,7 +20,7 @@ from commons.tgraph import TGraph
 
 
 class Annotator:
-    def __init__(self, num_of_threads=10, logger=None, endpoint="", onlyprefix=None, alpha=None):
+    def __init__(self, num_of_threads=10, logger=None, endpoint="", class_prefs=[], alpha=None):
         if logger is None:
             logger = logging.getLogger(__name__)
             logger.setLevel(logging.DEBUG)
@@ -32,14 +32,17 @@ class Annotator:
         self.logger = logger
         self.num_of_threads = num_of_threads
         self.endpoint = endpoint
-        self.onlyprefix = onlyprefix
+        self.class_prefs = class_prefs
         self.tgraph = TGraph()
         self.cell_ent_class = dict()
-        self.use_db = False  # True
         self.lock = Lock()
         self.ancestors = dict()
         self.classes_counts = dict()
         self.alpha = alpha
+
+    def clear_for_reuse(self):
+        self.alpha = None
+        self.tgraph.clear_for_reuse()
 
     def detect_subject_col(self, file_dir):
         return 0
@@ -61,59 +64,50 @@ class Annotator:
         mat = mat.astype(str)
         return mat
 
-    def _get_cell_ann_param_list(self, subject_col_id, entity_ann):
+    def _get_cell_ann_param_list(self, subject_col_id, file_dir):
         params_list = []
         for r in self._load_table(file_dir):
             row = r
-            self.logger.debug('entity_column_id check: ' + str((subject_col_id, row[subject_col_id])))
-            params_list.append((entity_ann, row, subject_col_id))
+            # self.logger.debug('entity_column_id check: ' + str((subject_col_id, row[subject_col_id])))
+            params_list.append((row, subject_col_id))
         return params_list
 
-    def annotate_table(self, ann_run_id=None, file_dir=None, subject_col_id=None):
+    def annotate_table(self, file_dir=None, subject_col_id=None):
         logger = self.logger
         if subject_col_id is None:
             subject_col_id = self.detect_subject_col(file_dir)
 
-        entity_ann = None
-        ann_run = None
-        if self.use_db:
-            ann_run = self._setup_db_entry(ann_run_id, subject_col_id)
-
         start = time.time()
         logger.info('annotating: ' + file_dir)
-        params_list = self._get_cell_ann_param_list(subject_col_id, entity_ann)
+        params_list = self._get_cell_ann_param_list(subject_col_id, file_dir)
 
         logger.debug("annotate_csv> number of total processes to run: " + str(len(params_list)))
         pool = Pool(max_num_of_threads=self.num_of_threads, func=self.annotate_single_cell, params_list=params_list)
         pool.run()
         logger.debug("annotate_csv> annotated all cells")
-        end = time.time()
-        logger.debug("Time spent: %f seconds" % (end - start))
-        if self.use_db:
-            ann_run.status = 'datasets are added'
-            ann_run.save()
 
+        self.build_ancestors_lookup()
+        self.remove_unwanted_parent_classes()
         self.compute_coverage()
         self.compute_specificity()
         if self.alpha:
             self.compute_f(self.alpha)
 
-    def annotate_single_cell(self, entity_ann, row, entity_column_id):
+        end = time.time()
+        logger.debug("Time spent: %f seconds" % (end - start))
+
+    def annotate_single_cell(self, row, entity_column_id):
         logger = self.logger
         lock = self.lock
-        cell = None
-        logger.debug("annotate_single_cell> start")
-        if self.use_db:
-            logger.debug("entity_ann parent name: " + entity_ann.ann_run.name)
+        # logger.debug("annotate_single_cell> start")
+
         cell_value = row[entity_column_id]
         lock.acquire()
-        logger.debug("annotate_single_cell> cell lock acquired")
+        # logger.debug("annotate_single_cell> cell lock acquired")
         try:
             if cell_value in self.cell_ent_class:  # already processed
                 return
-            if self.use_db:
-                cell = Cell(text_value=cell_value, entity_ann=entity_ann)
-                cell.save()
+
         except Exception as ex:
             logger.debug("annotate_single_cell> cell value: <" + cell_value + ">")
             logger.debug(str(ex))
@@ -121,15 +115,14 @@ class Annotator:
             lock.release()
             return
 
-        logger.debug("annotate_single_cell> releasing lock")
+        # logger.debug("annotate_single_cell> releasing lock")
         lock.release()
 
-        logger.debug("cell: " + str(cell_value))
-        self._add_entities_and_classes_to_cell(row, entity_column_id, cell_value, cell)
+        # logger.debug("cell: " + str(cell_value))
+        self._add_entities_and_classes_to_cell(row, entity_column_id, cell_value)
 
-    def _add_entities_and_classes_to_cell(self, row, entity_column_id, cell_value, cell):
+    def _add_entities_and_classes_to_cell(self, row, entity_column_id, cell_value):
         logger = self.logger
-        lock = self.lock
         attrs = []
 
         for i in range(len(row)):
@@ -138,43 +131,51 @@ class Annotator:
         entity_class_pairs = get_entities_and_classes(subject_name=cell_value, attributes=attrs, endpoint=self.endpoint)
 
         if len(entity_class_pairs) == 0:
-            logger.debug("_add_entities_and> no high quality  entity_class_pairs are found, hence trying the naive")
+            # logger.debug("_add_entities_and> no high quality  entity_class_pairs are found, hence trying the naive")
             entity_class_pairs = get_entities_and_classes_naive(subject_name=cell_value, endpoint=self.endpoint)
+        else:
+            logger.debug("_add_entities_and>  high quality")
 
         d = dict()
         for ent_class in entity_class_pairs:
             ent, class_uri = ent_class
+            if not self.class_prefix_match(class_uri):
+                continue
             if ent not in d:
                 d[ent] = []
             d[ent].append(class_uri)
 
         self.build_class_graph(d)
-        self.build_ancestors_lookup()
-        d = self.remove_unwanted_parent_classes_for_cell(d)
-        lock.acquire()
+        # To be moved
+        # self.build_ancestors_lookup()
+        # d = self.remove_unwanted_parent_classes_for_cell(d)
+        self.lock.acquire()
         self.cell_ent_class[cell_value] = d
-        lock.release()
+        self.lock.release()
 
-        if self.use_db:
-            lock.acquire()
-            for ent in d:
-                try:
-                    e = Entity(cell=cell, entity=ent)
-                    e.save()
+    # def remove_class_prefs(self):
+    #     if len(self.class_prefs) > 0:
+    #         for pref in self.class_prefs:
+    #             for cell in self.cell_ent_class:
+    #                 for ent in self.cell_ent_class[cell]:
+    #                     classes = []
+    #                     for class_uri in self.cell_ent_class[cell][ent]:
+    #                         if class_uri[:len(pref)] == pref:
+    #                             classes.append(class_uri)
+    #                     self.cell_ent_class[cell][ent] = classes
 
-                    for class_uri in d[ent]:
-                        if self.onlyprefix is None or class_uri.startswith(self.onlyprefix):
-                            ccclass = CClass(entity=e, cclass=class_uri)
-                            ccclass.save()
+    def class_prefix_match(self, class_uri):
+        if len(self.class_prefs) == 0:
+            return True
+        for pref in self.class_prefs:
+            if class_uri[:len(pref)] == pref:
+                return True
+        return False
 
-                except Exception as ex:
-                    logger.debug("_add_entities_and> entity value: <" + ent + ">")
-                    logger.debug("_add_entities_and> class value: <" + class_uri + ">")
-                    logger.debug(str(ex))
-                    traceback.print_exc()
-                    # lock.release()
-                    # return
-            lock.release()
+    def remove_unwanted_parent_classes(self):
+        for cell in self.cell_ent_class:
+            d = self.remove_unwanted_parent_classes_for_cell(self.cell_ent_class[cell])
+            self.cell_ent_class[cell] = d
 
     def remove_unwanted_parent_classes_for_cell(self, entities):
         """
@@ -192,6 +193,8 @@ class Annotator:
         :param classes: a list of classes uris
         :return: list
         """
+        # print("remove_unwanted_parent_classes_for_entity> ")
+        # print(classes)
         lock = self.lock
         lock.acquire()
         for class_uri in classes:
@@ -220,33 +223,44 @@ class Annotator:
         :param entities: dict of entity uris as keys and the values are the list of classes
         :return:
         """
-        # lock = self.lock
+        self.lock.acquire()
         for ent in entities:
             for class_uri in entities[ent]:
                 self.add_class_to_graph(class_uri)
+        self.lock.release()
 
     def add_class_to_graph(self, class_uri):
-        lock = self.lock
-        lock.acquire()
+        # lock = self.lock
+        # lock.acquire()
+        if not self.class_prefix_match(class_uri):
+            return False
         newly_added = self.tgraph.add_class(class_uri)
-        lock.release()
+        # lock.release()
         if newly_added:
             parents = get_parents_of_class(class_uri, endpoint=self.endpoint)
             for p in parents:
+                if not self.class_prefix_match(p):
+                    continue
                 self.add_class_to_graph(p)
-                lock.acquire()
+                # lock.acquire()
+                # print("%s has parent %s" % (class_uri, p))
                 self.tgraph.add_parent(class_uri, p)
-                lock.release()
+                # lock.release()
         return newly_added
 
     def build_ancestors_lookup(self):
+        self.lock.acquire()
         for class_uri in self.tgraph.nodes:
             if class_uri not in self.ancestors:
                 d = dict()
                 ancestors = self.tgraph.get_ancestors(class_uri)
+                # print("get ancestors of %s" % class_uri)
+                # print(ancestors)
                 for anc in ancestors:
                     d[anc] = True  # The value true means nothing here. We just want to use dict for the fast lookup
+
                 self.ancestors[class_uri] = d
+        self.lock.release()
 
     def compute_coverage(self):
         self.compute_Ic()
@@ -317,8 +331,9 @@ class Annotator:
 
     def _compute_classes_counts(self):
         for class_uri in self.tgraph.nodes:
-            num = get_num_class_subjects(class_uri, self.endpoint)
-            self.classes_counts[class_uri] = num
+            if class_uri not in self.classes_counts:  # to skip in case it was cleared for the reuse
+                num = get_num_class_subjects(class_uri, self.endpoint)
+                self.classes_counts[class_uri] = num
 
     def compute_Is(self):
         for class_uri in self.tgraph.nodes:
@@ -385,13 +400,24 @@ class Annotator:
             for ch in node.childs:
                 print("\t" + node.childs[ch].class_uri)
 
+    def print_ancestors(self):
+        print("\nprint_ancestors: ")
+        for class_uri in self.ancestors:
+            print(class_uri)
+            if self.ancestors[class_uri]:
+                for anc in self.ancestors[class_uri]:
+                    print("\t" + anc)
+
 
 if __name__ == '__main__':
     file_dir = sys.argv[1]
-    a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql", alpha=0.3)
-    a.use_db = False
+    # a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql", alpha=0.3)
+    a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql",
+                  class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
     a.annotate_table(file_dir=file_dir)
     print(a.get_top_k(3))
-    # a.print_ann()
-    # a.print_hierarchy()
+    a.print_ann()
+    a.print_ancestors()
+    print(a.ancestors)
+    a.print_hierarchy()
     # print(a.cell_ent_class)

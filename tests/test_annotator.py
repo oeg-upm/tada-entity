@@ -258,7 +258,3 @@ class AnnotatorTest(TestCase):
         annotator.compute_f(0.5)
 
         self.assertCountEqual(annotator.get_top_k(1), ["classA3"])
-
-    # def test_annotate_csv(self):
-    #     annotator = Annotator(endpoint=commons.ENDPOINT)
-    #     annotator.annotate_table(file_dir="tests/swimmers.csv")

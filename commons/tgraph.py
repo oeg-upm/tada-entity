@@ -31,10 +31,17 @@ class TGraph:
         self.roots = dict()  # to nodes
         self.m = 0
 
+    def clear_for_reuse(self):
+        self.m = 0
+        for class_uri in self.nodes:
+            node = self.nodes[class_uri]
+            node.Ic = node.Lc = node.fc = node.f = None
+
     def add_class(self, class_uri):
         if class_uri in self.nodes:
             return False
         else:
+            # print("add class: "+class_uri)
             self.nodes[class_uri] = Node()
             self.nodes[class_uri].class_uri = class_uri
             return True
@@ -53,6 +60,7 @@ class TGraph:
             return None
 
     def add_parent(self, class_uri, parent_uri):
+        # print("add to %s %s as a parent" % (class_uri, parent_uri))
         if class_uri in self.nodes and parent_uri in self.nodes:
             if parent_uri not in self.nodes[class_uri].parents:
                 self.nodes[class_uri].parents[parent_uri] = self.nodes[parent_uri]
@@ -66,9 +74,13 @@ class TGraph:
     def get_ancestors(self, class_uri):
         ancestors = []
         if class_uri in self.nodes:
+            # print("get_ancestors> parents of %s" % class_uri)
             for p in self.get_parents(class_uri):
+                # print("get_ancestors>: "+p)
                 ancestors.append(p)
-                ancestors += self.get_ancestors(p)
+                # ancestors += self.get_ancestors(p)
+                p_ancestors = self.get_ancestors(p)
+                ancestors += p_ancestors
             return ancestors
             # return list(set(ancestors))
         else:
