@@ -71,7 +71,7 @@ class Annotator:
         logger.info('annotating: ' + file_dir)
         params_list = self._get_cell_ann_param_list(subject_col_id, file_dir)
 
-        logger.debug("annotate_csv> number of total processes to run: " + str(len(params_list)))
+        logger.debug("annotate_csv> total numner of lines: " + str(len(params_list)))
         pool = Pool(max_num_of_threads=self.num_of_threads, func=self.annotate_single_cell, params_list=params_list)
         pool.run()
         logger.debug("annotate_csv> annotated all cells")
