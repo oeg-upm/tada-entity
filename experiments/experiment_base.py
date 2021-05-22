@@ -13,8 +13,8 @@ class ExperimentBase:
 
     def clear(self):
         self.not_founds = []
-        self.corrs = []
-        self.incorrs = []
+        self.fpath = None
+        self.k = dict()
 
     def annotate_single(self, fpath, col_id):
         self.annotator.clear_for_reuse()
@@ -28,22 +28,13 @@ class ExperimentBase:
             alpha += alpha_inc
             self.annotator.compute_f(alpha)
             candidates = self.annotator.get_top_k()
-            # if abs(alpha-0.1) < 0.0001:
-            #     print("candidates for alpha %f" % alpha)
-            #     print(candidates[:3])
-            #     print(correct_candidates)
-            # else:
-            #     print("alpha: ")
-            #     print(alpha)
-                # print("alpha: %f" % alpha)
+
             if len(candidates) == 0:
                 self.not_founds.append(self.fpath)
-                #self.k[self.fpath] = None
                 return
             for idx, c in enumerate(candidates):
                 k = idx + 1
                 if c in correct_candidates:
-                    # self.corrs.append(self.fpath)
                     if kmin is None or k < kmin:
                         kmin = k
                     if k == 1:
@@ -57,11 +48,8 @@ class ExperimentBase:
             self.not_founds.append(self.fpath)
             return
         self.k[self.fpath] = kmin
-        # self.incorrs.append(self.fpath)
 
     def get_scores(self, k):
-        # corr = len(self.corrs) * 1.0
-        # incorr = len(self.incorrs)
         corr = 0.0
         incorr = 0.0
         notf = len(self.not_founds)
@@ -74,7 +62,7 @@ class ExperimentBase:
         prec = corr/(corr+incorr)
         rec = corr/(corr+notf)
         f1 = 2.0 * prec * rec / (prec+rec)
-        print("precision: %.2f" % (prec))
-        print("recall: %.2f" % (rec))
-        print("F1: %.2f" % (f1))
+        print("precision: %.2f" % prec)
+        print("recall: %.2f" % rec)
+        print("F1: %.2f" % f1)
         return prec, rec, f1
