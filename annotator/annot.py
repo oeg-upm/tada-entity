@@ -6,10 +6,7 @@ import traceback
 import sys
 import pandas as pd
 
-try:
-    from tadae.models import AnnRun, EntityAnn, Cell, CClass, Entity
-except Exception:
-    print("unable to load models")
+
 from multiprocessing import Process, Lock, Pipe
 from TPool.TPool import Pool
 

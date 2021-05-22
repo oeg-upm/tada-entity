@@ -28,7 +28,5 @@ if __name__ == "__main__":
         meta_fdir, data_dir = sys.argv[1:]
         o = Olympic()
         o.workflow(meta_fdir=meta_fdir, data_dir=data_dir, ks=[1, 3, 5])
-        # o.workflow(meta_fdir=meta_fdir, data_dir=data_dir, ks=[1])
-
     else:
         print("Missing arguments: <meta file> <data directory>")
