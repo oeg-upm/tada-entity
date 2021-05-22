@@ -71,10 +71,10 @@ class Annotator:
         logger.info('annotating: ' + file_dir)
         params_list = self._get_cell_ann_param_list(subject_col_id, file_dir)
 
-        logger.debug("annotate_csv> total numner of lines: " + str(len(params_list)))
+        # logger.debug("annotate_csv> total number of lines: " + str(len(params_list)))
         pool = Pool(max_num_of_threads=self.num_of_threads, func=self.annotate_single_cell, params_list=params_list)
         pool.run()
-        logger.debug("annotate_csv> annotated all cells")
+        # logger.debug("annotate_csv> annotated all cells")
 
         self.build_ancestors_lookup()
         self.remove_unwanted_parent_classes()
@@ -84,7 +84,7 @@ class Annotator:
             self.compute_f(self.alpha)
 
         end = time.time()
-        logger.debug("Time spent: %f seconds" % (end - start))
+        logger.debug("Time spent: %f seconds\n" % (end - start))
 
     def annotate_single_cell(self, row, entity_column_id):
         # logger.debug("annotate_single_cell> start")
@@ -122,8 +122,8 @@ class Annotator:
         if len(entity_class_pairs) == 0:
             # logger.debug("_add_entities_and> no high quality  entity_class_pairs are found, hence trying the naive")
             entity_class_pairs = get_entities_and_classes_naive(subject_name=cell_value, endpoint=self.endpoint)
-        else:
-            logger.debug("_add_entities_and>  high quality")
+        # else:
+        #     logger.debug("_add_entities_and>  high quality")
 
         d = dict()
         for ent_class in entity_class_pairs:
@@ -356,11 +356,12 @@ class Annotator:
         return node.Ls
 
     def compute_f(self, alpha):
+        self.alpha = alpha
         for class_uri in self.tgraph.nodes:
             node = self.tgraph.nodes[class_uri]
             node.f = node.fc * alpha + node.fs * (1 - alpha)
 
-    def get_top_k(self, k=1):
+    def get_top_k(self, k=None):
         if self.alpha is None:
             print("Error: alpha is missing. You need to call compute_f(alpha) function before")
             return []
@@ -370,7 +371,9 @@ class Annotator:
             pair = (node.class_uri, node.f)
             scores.append(pair)
         scores.sort(key=lambda x: x[1], reverse=True)
-        classes = [sc[0] for sc in scores[:k]]
+        classes = [sc[0] for sc in scores]
+        if k:
+            classes = classes[:k]
         return classes
 
     def print_ann(self):
@@ -404,9 +407,10 @@ if __name__ == '__main__':
     a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql",
                   class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
     a.annotate_table(file_dir=file_dir)
+    a.compute_f(0.01)
     print(a.get_top_k(3))
-    a.print_ann()
-    a.print_ancestors()
-    print(a.ancestors)
-    a.print_hierarchy()
+    # a.print_ann()
+    # a.print_ancestors()
+    # print(a.ancestors)
+    # a.print_hierarchy()
     # print(a.cell_ent_class)

@@ -527,6 +527,13 @@ def get_all_classes_properties_numerical(endpoint=None):
 #####################################################################
 
 
+def clean_text(text):
+    ctext = text.replace('"', '')
+    ctext = ctext.replace("'", "")
+    ctext = ctext.strip()
+    return ctext
+
+
 def get_entities_and_classes(subject_name, attributes, endpoint):
     """
     :param subject_name:
@@ -535,7 +542,9 @@ def get_entities_and_classes(subject_name, attributes, endpoint):
     :return:
     """
     inner_qs = []
+    csubject = clean_text(subject_name)
     for attr in attributes:
+        cattr = clean_text(attr)
         q = """
             {
                 ?s rdfs:label "%s"@en.
@@ -547,7 +556,7 @@ def get_entities_and_classes(subject_name, attributes, endpoint):
                 ?e rdfs:label "%s"@en.
                 ?s a ?c.
             }
-        """ % (subject_name, attr, subject_name, attr)
+        """ % (csubject, cattr, csubject, cattr)
         inner_qs.append(q)
 
     inner_q = "UNION".join(inner_qs)
@@ -571,12 +580,13 @@ def get_entities_and_classes_naive(subject_name, endpoint):
     :param subject_name:
     :return:
     """
+    csubject = clean_text(subject_name)
     query = """
         select distinct ?s ?c where{
             ?s ?p "%s"@en.
             ?s a ?c
         }
-    """ % subject_name
+    """ % csubject
     results = run_query(query=query, endpoint=endpoint)
     # entity_class_pair = [(r['s']['value'], r['c']['value']) for r in results]
     try:
