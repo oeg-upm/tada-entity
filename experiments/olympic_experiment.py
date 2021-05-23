@@ -17,7 +17,7 @@ class Olympic(ExperimentBase):
             fdir = os.path.join(data_dir, fname)
             class_uri = "http://dbpedia.org/ontology/"+class_name
             self.annotate_single(fpath=fdir, col_id=0)
-            self.validate_with_opt_alpha(correct_candidates=[class_uri], alpha_inc=0.001)
+            self.validate_with_opt_alpha(correct_candidates=[class_uri])
         for k in ks:
             print("Scores for k=%d" % k)
             self.get_scores(k)

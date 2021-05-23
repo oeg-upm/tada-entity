@@ -36,7 +36,7 @@ class ExperimentBase:
         self.fpath = fpath
         self.annotator.annotate_table(file_dir=fpath, subject_col_id=col_id)
 
-    def validate_with_opt_alpha(self, correct_candidates, alpha_inc=0.01):
+    def validate_with_opt_alpha(self, correct_candidates, alpha_inc=0.001):
         print("\n")
         print("fpath: " + self.fpath)
         for i in range(1, 6):
