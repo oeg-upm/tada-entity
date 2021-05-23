@@ -2,6 +2,7 @@ import os
 import time
 import logging
 import traceback
+import math
 
 import sys
 import pandas as pd
@@ -108,7 +109,6 @@ class Annotator:
         self._add_entities_and_classes_to_cell(row, entity_column_id, cell_value)
 
     def _add_entities_and_classes_to_cell(self, row, entity_column_id, cell_value):
-        logger = self.logger
         attrs = []
 
         for i in range(len(row)):
@@ -132,23 +132,9 @@ class Annotator:
             d[ent].append(class_uri)
 
         self.build_class_graph(d)
-        # To be moved
-        # self.build_ancestors_lookup()
-        # d = self.remove_unwanted_parent_classes_for_cell(d)
         self.lock.acquire()
         self.cell_ent_class[cell_value] = d
         self.lock.release()
-
-    # def remove_class_prefs(self):
-    #     if len(self.class_prefs) > 0:
-    #         for pref in self.class_prefs:
-    #             for cell in self.cell_ent_class:
-    #                 for ent in self.cell_ent_class[cell]:
-    #                     classes = []
-    #                     for class_uri in self.cell_ent_class[cell][ent]:
-    #                         if class_uri[:len(pref)] == pref:
-    #                             classes.append(class_uri)
-    #                     self.cell_ent_class[cell][ent] = classes
 
     def class_prefix_match(self, class_uri):
         if len(self.class_prefs) == 0:
@@ -179,14 +165,11 @@ class Annotator:
         :param classes: a list of classes uris
         :return: list
         """
-        # print("remove_unwanted_parent_classes_for_entity> ")
-        # print(classes)
         lock = self.lock
         lock.acquire()
         for class_uri in classes:
             if class_uri not in self.ancestors:
                 d = dict()
-                # class_anc[class_uri] = dict()
                 ancestors = self.tgraph.get_ancestors(class_uri)
                 for anc in ancestors:
                     d[anc] = True  # The value true means nothing here. We just want to use dict for the fast lookup
@@ -216,22 +199,16 @@ class Annotator:
         self.lock.release()
 
     def add_class_to_graph(self, class_uri):
-        # lock = self.lock
-        # lock.acquire()
         if not self.class_prefix_match(class_uri):
             return False
         newly_added = self.tgraph.add_class(class_uri)
-        # lock.release()
         if newly_added:
             parents = get_parents_of_class(class_uri, endpoint=self.endpoint)
             for p in parents:
                 if not self.class_prefix_match(p):
                     continue
                 self.add_class_to_graph(p)
-                # lock.acquire()
-                # print("%s has parent %s" % (class_uri, p))
                 self.tgraph.add_parent(class_uri, p)
-                # lock.release()
         return newly_added
 
     def build_ancestors_lookup(self):
@@ -240,8 +217,6 @@ class Annotator:
             if class_uri not in self.ancestors:
                 d = dict()
                 ancestors = self.tgraph.get_ancestors(class_uri)
-                # print("get ancestors of %s" % class_uri)
-                # print(ancestors)
                 for anc in ancestors:
                     d[anc] = True  # The value true means nothing here. We just want to use dict for the fast lookup
 
@@ -363,7 +338,17 @@ class Annotator:
         self.alpha = alpha
         for class_uri in self.tgraph.nodes:
             node = self.tgraph.nodes[class_uri]
-            for fsid in range(1, 6)
+            for fsid in range(1, 6):
+                # print("class_uri")
+                # print(class_uri)
+                # print("node.f")
+                # print(node.f)
+                node.f[1] = 1
+                # print("updated node")
+                # print(node.f)
+                # print("if fsid in node.fs: ")
+                # print(fsid in node.fs)
+                # print(node.fs)
                 node.f[fsid] = node.fc * alpha + node.fs[fsid] * (1 - alpha)
 
     def get_top_k(self, fsid=None, k=None):
@@ -376,9 +361,12 @@ class Annotator:
         scores = []
         for class_uri in self.tgraph.nodes:
             node = self.tgraph.nodes[class_uri]
-            if node.f[fsid] == 0:
-                print("get_top_k> skip %s"% class_uri)
+            if node.fc == 0:
+                print("get_top_k> skip fc %s" % class_uri)
                 continue
+            # if node.f[fsid] == 0:
+            #     print("get_top_k> skip %s" % class_uri)
+
             pair = (node.class_uri, node.f[fsid])
             scores.append(pair)
         scores.sort(key=lambda x: x[1], reverse=True)

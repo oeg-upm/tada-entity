@@ -47,6 +47,16 @@ class Node:
         # self.f4 = None
         # self.f5 = None
 
+    def print(self):
+        print("fc: %s" % str(self.fc))
+        for i in range(1, 6):
+            if i in self.fs:
+                print("fs%d: %s" % (i, str(self.fs[i])))
+            else:
+                print("fs%d: does not exist" % i)
+        print("f: %s" % str(self.f))
+
+
 class TGraph:
 
     def __init__(self):
@@ -58,7 +68,8 @@ class TGraph:
         self.m = 0
         for class_uri in self.nodes:
             node = self.nodes[class_uri]
-            node.Ic = node.Lc = node.fc = node.f = None
+            node.Ic = node.Lc = node.fc = None
+            node.f = dict()
 
     def add_class(self, class_uri):
         if class_uri in self.nodes:
@@ -113,4 +124,10 @@ class TGraph:
     def clear_scores(self):
         for node in self.nodes:
             node.clear()
+
+    def print_scores(self):
+        for class_uri in self.nodes:
+            node = self.nodes[class_uri]
+            node.print()
+
 

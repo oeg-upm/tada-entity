@@ -5,7 +5,7 @@ import annotator
 import commons
 from tadae.settings import BASE_DIR
 from annotator.annot import Annotator
-
+import math
 
 class AnnotatorTest(TestCase):
     def setUp(self):
@@ -180,9 +180,7 @@ class AnnotatorTest(TestCase):
             }
         }
         annotator.compute_coverage()
-        print("m: ")
-        print(annotator.tgraph.m)
-        self.assertEqual(len(annotator.cell_ent_class), 0)
+        self.assertEqual(len(annotator.cell_ent_class), 2)
 
     def test_specificity(self):
         annotator = Annotator()
@@ -196,7 +194,6 @@ class AnnotatorTest(TestCase):
                 "EntityY": [],
             }
         }
-
         annotator.tgraph.add_class("Thing")
         annotator.tgraph.add_class("classA1")
         annotator.tgraph.add_class("classA2")
@@ -215,10 +212,6 @@ class AnnotatorTest(TestCase):
             d = annotator.cell_ent_class[cell]
             annotator.build_ancestors_lookup()
             new_d = annotator.remove_unwanted_parent_classes_for_cell(d)
-            # print("before")
-            # print(d)
-            # print("after")
-            # print(new_d)
             annotator.cell_ent_class[cell] = new_d
 
         annotator.classes_counts["classB2"] = 35
@@ -247,14 +240,70 @@ class AnnotatorTest(TestCase):
         self.assertAlmostEqual(annotator.tgraph.nodes["classA1"].Ls, 50.0 / 112)
         self.assertAlmostEqual(annotator.tgraph.nodes["classB2"].Ls, 35.0 / 52 * 52.0 / 112)
         self.assertAlmostEqual(annotator.tgraph.nodes["classB1"].Ls, 52.0 / 112)
-        # fs
-        self.assertAlmostEqual(annotator.tgraph.nodes["classX"].fs, -10.0 / 112 + 1)
-        self.assertAlmostEqual(annotator.tgraph.nodes["classA3"].fs, -50.0 / 112 * 40.0 / 50 * 30.0 / 40 + 1)
-        self.assertAlmostEqual(annotator.tgraph.nodes["classA2"].fs, -50.0 / 112 * 40.0 / 50 + 1)
-        self.assertAlmostEqual(annotator.tgraph.nodes["classA1"].fs, -50.0 / 112 + 1)
-        self.assertAlmostEqual(annotator.tgraph.nodes["classB2"].fs, -35.0 / 52 * 52.0 / 112 + 1)
-        self.assertAlmostEqual(annotator.tgraph.nodes["classB1"].fs, -52.0 / 112 + 1)
-        self.assertAlmostEqual(annotator.tgraph.nodes["Thing"].fs, 0)
+        # fs 3
+        self.assertAlmostEqual(annotator.tgraph.nodes["classX"].fs[3], -10.0 / 112 + 1)
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA3"].fs[3], -50.0 / 112 * 40.0 / 50 * 30.0 / 40 + 1)
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA2"].fs[3], -50.0 / 112 * 40.0 / 50 + 1)
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA1"].fs[3], -50.0 / 112 + 1)
+        self.assertAlmostEqual(annotator.tgraph.nodes["classB2"].fs[3], -35.0 / 52 * 52.0 / 112 + 1)
+        self.assertAlmostEqual(annotator.tgraph.nodes["classB1"].fs[3], -52.0 / 112 + 1)
+        self.assertAlmostEqual(annotator.tgraph.nodes["Thing"].fs[3], 0)
+        # fs 1
+        Ls = annotator.tgraph.nodes["classX"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classX"].fs[1], math.sqrt(1 - Ls*Ls))
+        Ls = annotator.tgraph.nodes["classA3"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA3"].fs[1], math.sqrt(1 - Ls*Ls))
+        Ls = annotator.tgraph.nodes["classA2"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA2"].fs[1], math.sqrt(1 - Ls*Ls))
+        Ls = annotator.tgraph.nodes["classA1"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA1"].fs[1], math.sqrt(1 - Ls*Ls))
+        Ls = annotator.tgraph.nodes["classB2"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classB2"].fs[1], math.sqrt(1 - Ls*Ls))
+        Ls = annotator.tgraph.nodes["classB1"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classB1"].fs[1], math.sqrt(1 - Ls*Ls))
+        self.assertAlmostEqual(annotator.tgraph.nodes["Thing"].fs[1], 0)
+        # fs 2
+        Ls = annotator.tgraph.nodes["classX"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classX"].fs[2], -1 * Ls * Ls + 1)
+        Ls = annotator.tgraph.nodes["classA3"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA3"].fs[2], -1 * Ls * Ls + 1)
+        Ls = annotator.tgraph.nodes["classA2"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA2"].fs[2], -1 * Ls * Ls + 1)
+        Ls = annotator.tgraph.nodes["classA1"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA1"].fs[2], -1 * Ls * Ls + 1)
+        Ls = annotator.tgraph.nodes["classB2"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classB2"].fs[2], -1 * Ls * Ls + 1)
+        Ls = annotator.tgraph.nodes["classB1"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classB1"].fs[2], -1 * Ls * Ls + 1)
+        self.assertAlmostEqual(annotator.tgraph.nodes["Thing"].fs[2], 0)
+        # fs 4
+        Ls = annotator.tgraph.nodes["classX"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classX"].fs[4], 1 - math.sqrt(Ls))
+        Ls = annotator.tgraph.nodes["classA3"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA3"].fs[4], 1 - math.sqrt(Ls))
+        Ls = annotator.tgraph.nodes["classA2"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA2"].fs[4], 1 - math.sqrt(Ls))
+        Ls = annotator.tgraph.nodes["classA1"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA1"].fs[4], 1 - math.sqrt(Ls))
+        Ls = annotator.tgraph.nodes["classB2"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classB2"].fs[4], 1 - math.sqrt(Ls))
+        Ls = annotator.tgraph.nodes["classB1"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classB1"].fs[4], 1 - math.sqrt(Ls))
+        self.assertAlmostEqual(annotator.tgraph.nodes["Thing"].fs[4], 0)
+        # fs 5
+        Ls = annotator.tgraph.nodes["classX"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classX"].fs[5], (1 - math.sqrt(Ls)) ** 2)
+        Ls = annotator.tgraph.nodes["classA3"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA3"].fs[5], (1 - math.sqrt(Ls)) ** 2)
+        Ls = annotator.tgraph.nodes["classA2"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA2"].fs[5], (1 - math.sqrt(Ls)) ** 2)
+        Ls = annotator.tgraph.nodes["classA1"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classA1"].fs[5], (1 - math.sqrt(Ls)) ** 2)
+        Ls = annotator.tgraph.nodes["classB2"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classB2"].fs[5], (1 - math.sqrt(Ls)) ** 2)
+        Ls = annotator.tgraph.nodes["classB1"].Ls
+        self.assertAlmostEqual(annotator.tgraph.nodes["classB1"].fs[5], (1 - math.sqrt(Ls)) ** 2)
+        self.assertAlmostEqual(annotator.tgraph.nodes["Thing"].fs[5], 0)
 
     def test_f(self):
         annotator = Annotator()
@@ -287,19 +336,82 @@ class AnnotatorTest(TestCase):
             d = annotator.cell_ent_class[cell]
             annotator.build_ancestors_lookup()
             new_d = annotator.remove_unwanted_parent_classes_for_cell(d)
-            # print("before")
-            # print(d)
-            # print("after")
-            # print(new_d)
             annotator.cell_ent_class[cell] = new_d
 
-        annotator.tgraph.nodes["classX"].fs = -10.0 / 112 + 1
-        annotator.tgraph.nodes["classA3"].fs = -50.0 / 112 * 40.0 / 50 * 30.0 / 40 + 1
-        annotator.tgraph.nodes["classA2"].fs = -50.0 / 112 * 40.0 / 50
-        annotator.tgraph.nodes["classA1"].fs = -50.0 / 112 + 1
-        annotator.tgraph.nodes["classB2"].fs = -35.0 / 52 * 52.0 / 112 + 1
-        annotator.tgraph.nodes["classB1"].fs = -52.0 / 112 + 1
-        annotator.tgraph.nodes["Thing"].fs = 0
+        annotator.classes_counts["classB2"] = 35
+        annotator.classes_counts["classB1"] = annotator.classes_counts["classB2"] + 17
+        annotator.classes_counts["classA3"] = 30
+        annotator.classes_counts["classA2"] = annotator.classes_counts["classA3"] + 10
+        annotator.classes_counts["classA1"] = annotator.classes_counts["classA2"] + 10
+        annotator.classes_counts["classX"] = 10
+        annotator.classes_counts["Thing"] = annotator.classes_counts["classX"] + annotator.classes_counts["classA1"] + \
+                                            annotator.classes_counts["classB1"]
+
+        annotator.compute_specificity()
+        annotator.tgraph.nodes["classX"].fs[3] = -10.0 / 112 + 1
+        annotator.tgraph.nodes["classA3"].fs[3] = -50.0 / 112 * 40.0 / 50 * 30.0 / 40 + 1
+        annotator.tgraph.nodes["classA2"].fs[3] = -50.0 / 112 * 40.0 / 50
+        annotator.tgraph.nodes["classA1"].fs[3] = -50.0 / 112 + 1
+        annotator.tgraph.nodes["classB2"].fs[3] = -35.0 / 52 * 52.0 / 112 + 1
+        annotator.tgraph.nodes["classB1"].fs[3] = -52.0 / 112 + 1
+        annotator.tgraph.nodes["Thing"].fs[3] = 0
+
+        # fs 1
+        Ls = annotator.tgraph.nodes["classX"].Ls
+        annotator.tgraph.nodes["classX"].fs[1] = math.sqrt(1 - Ls*Ls)
+        Ls = annotator.tgraph.nodes["classA3"].Ls
+        annotator.tgraph.nodes["classA3"].fs[1] = math.sqrt(1 - Ls*Ls)
+        Ls = annotator.tgraph.nodes["classA2"].Ls
+        annotator.tgraph.nodes["classA2"].fs[1] = math.sqrt(1 - Ls*Ls)
+        Ls = annotator.tgraph.nodes["classA1"].Ls
+        annotator.tgraph.nodes["classA1"].fs[1] = math.sqrt(1 - Ls*Ls)
+        Ls = annotator.tgraph.nodes["classB2"].Ls
+        annotator.tgraph.nodes["classB2"].fs[1] = math.sqrt(1 - Ls*Ls)
+        Ls = annotator.tgraph.nodes["classB1"].Ls
+        annotator.tgraph.nodes["classB1"].fs[1] = math.sqrt(1 - Ls*Ls)
+        annotator.tgraph.nodes["Thing"].fs[1] = 0
+        # fs 2
+        Ls = annotator.tgraph.nodes["classX"].Ls
+        annotator.tgraph.nodes["classX"].fs[2] = -1 * Ls * Ls + 1
+        Ls = annotator.tgraph.nodes["classA3"].Ls
+        annotator.tgraph.nodes["classA3"].fs[2] = -1 * Ls * Ls + 1
+        Ls = annotator.tgraph.nodes["classA2"].Ls
+        annotator.tgraph.nodes["classA2"].fs[2] = -1 * Ls * Ls + 1
+        Ls = annotator.tgraph.nodes["classA1"].Ls
+        annotator.tgraph.nodes["classA1"].fs[2] = -1 * Ls * Ls + 1
+        Ls = annotator.tgraph.nodes["classB2"].Ls
+        annotator.tgraph.nodes["classB2"].fs[2] = -1 * Ls * Ls + 1
+        Ls = annotator.tgraph.nodes["classB1"].Ls
+        annotator.tgraph.nodes["classB1"].fs[2] = -1 * Ls * Ls + 1
+        annotator.tgraph.nodes["Thing"].fs[2] = 0
+        # fs 4
+        Ls = annotator.tgraph.nodes["classX"].Ls
+        annotator.tgraph.nodes["classX"].fs[4] = 1 - math.sqrt(Ls)
+        Ls = annotator.tgraph.nodes["classA3"].Ls
+        annotator.tgraph.nodes["classA3"].fs[4] = 1 - math.sqrt(Ls)
+        Ls = annotator.tgraph.nodes["classA2"].Ls
+        annotator.tgraph.nodes["classA2"].fs[4] = 1 - math.sqrt(Ls)
+        Ls = annotator.tgraph.nodes["classA1"].Ls
+        annotator.tgraph.nodes["classA1"].fs[4] = 1 - math.sqrt(Ls)
+        Ls = annotator.tgraph.nodes["classB2"].Ls
+        annotator.tgraph.nodes["classB2"].fs[4] = 1 - math.sqrt(Ls)
+        Ls = annotator.tgraph.nodes["classB1"].Ls
+        annotator.tgraph.nodes["classB1"].fs[4] = 1 - math.sqrt(Ls)
+        annotator.tgraph.nodes["Thing"].fs[4] = 0
+        # fs 5
+        Ls = annotator.tgraph.nodes["classX"].Ls
+        annotator.tgraph.nodes["classX"].fs[5] = (1 - math.sqrt(Ls)) ** 2
+        Ls = annotator.tgraph.nodes["classA3"].Ls
+        annotator.tgraph.nodes["classA3"].fs[5] = (1 - math.sqrt(Ls)) ** 2
+        Ls = annotator.tgraph.nodes["classA2"].Ls
+        annotator.tgraph.nodes["classA2"].fs[5] = (1 - math.sqrt(Ls)) ** 2
+        Ls = annotator.tgraph.nodes["classA1"].Ls
+        annotator.tgraph.nodes["classA1"].fs[5] = (1 - math.sqrt(Ls)) ** 2
+        Ls = annotator.tgraph.nodes["classB2"].Ls
+        annotator.tgraph.nodes["classB2"].fs[5] = (1 - math.sqrt(Ls)) ** 2
+        Ls = annotator.tgraph.nodes["classB1"].Ls
+        annotator.tgraph.nodes["classB1"].fs[5] = (1 - math.sqrt(Ls)) ** 2
+        annotator.tgraph.nodes["Thing"].fs[5] = 0
 
         annotator.tgraph.nodes["classX"].fc = 0.25 / 2
         annotator.tgraph.nodes["classA3"].fc = 0.75 / 2
@@ -310,5 +422,16 @@ class AnnotatorTest(TestCase):
         annotator.tgraph.nodes["Thing"].fc = 1.5 / 2
 
         annotator.compute_f(0.5)
-
-        self.assertCountEqual(annotator.get_top_k(1), ["classA3"])
+        self.assertCountEqual(annotator.get_top_k(k=1, fsid=3), ["classA3"])
+        annotator.clear_for_reuse()
+        annotator.cell_ent_class = {
+            "CellAB": {
+            },
+            "CellX": {
+            }
+        }
+        annotator.compute_coverage()
+        annotator.compute_specificity()
+        annotator.compute_f(0.5)
+        self.assertEqual(annotator.tgraph.m, 0)
+        self.assertEqual(len(annotator.get_top_k(k=1, fsid=3)), 0)
