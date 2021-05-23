@@ -130,6 +130,60 @@ class AnnotatorTest(TestCase):
         self.assertAlmostEqual(annotator.tgraph.nodes["classB1"].fc, 0.5 / 2)
         self.assertAlmostEqual(annotator.tgraph.nodes["Thing"].fc, 1.5 / 2)
 
+    def test_coverage_no_annotation(self):
+        annotator = Annotator()
+
+        annotator.cell_ent_class = {
+            "CellAB": {
+                "entityA": ["classA1", "classA2", "classA3"],
+                "entityB": ["classB1", "classB2"]
+            },
+            "CellX": {
+                "EntityX": ["classX", "classA3"],
+                "EntityY": [],
+            }
+        }
+
+        annotator.tgraph.add_class("Thing")
+        annotator.tgraph.add_class("classA1")
+        annotator.tgraph.add_class("classA2")
+        annotator.tgraph.add_class("classA3")
+        annotator.tgraph.add_class("classB1")
+        annotator.tgraph.add_class("classB2")
+        annotator.tgraph.add_class("classX")
+
+        annotator.tgraph.add_parent("classA3", "classA2")
+        annotator.tgraph.add_parent("classA2", "classA1")
+        annotator.tgraph.add_parent("classB2", "classB1")
+        annotator.tgraph.add_parent("classB1", "Thing")
+        annotator.tgraph.add_parent("classA1", "Thing")
+        annotator.tgraph.add_parent("classX", "Thing")
+        for cell in annotator.cell_ent_class:
+            d = annotator.cell_ent_class[cell]
+            annotator.build_ancestors_lookup()
+            new_d = annotator.remove_unwanted_parent_classes_for_cell(d)
+            # print("before")
+            # print(d)
+            # print("after")
+            # print(new_d)
+            annotator.cell_ent_class[cell] = new_d
+
+        annotator.compute_coverage()
+        annotator.clear_for_reuse()
+
+        annotator.cell_ent_class = {
+            "CellAB": {
+
+            },
+            "CellX": {
+
+            }
+        }
+        annotator.compute_coverage()
+        print("m: ")
+        print(annotator.tgraph.m)
+        self.assertEqual(len(annotator.cell_ent_class), 0)
+
     def test_specificity(self):
         annotator = Annotator()
         annotator.cell_ent_class = {
