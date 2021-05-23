@@ -65,7 +65,7 @@ class Annotator:
             subject_col_id = self.detect_subject_col(file_dir)
 
         start = time.time()
-        logger.info('annotating: ' + file_dir)
+        logger.info('annotating: %s (col=%d)' % (file_dir, subject_col_id))
         params_list = self._get_cell_ann_param_list(subject_col_id, file_dir)
 
         # logger.debug("annotate_csv> total number of lines: " + str(len(params_list)))
@@ -273,7 +273,10 @@ class Annotator:
     def compute_fc(self):
         for class_uri in self.tgraph.nodes:
             node = self.tgraph.nodes[class_uri]
-            node.fc = node.Lc / self.tgraph.m
+            if self.tgraph.m == 0:  # this happens incase the previous run had some annotations, but this one no annotations
+                node.fc = 0
+            else:
+                node.fc = node.Lc / self.tgraph.m
 
     def compute_Ic(self):
         cov = dict()
@@ -400,13 +403,19 @@ class Annotator:
 
 if __name__ == '__main__':
     file_dir = sys.argv[1]
+    print("file dir: "+file_dir)
     # a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql", alpha=0.3)
     a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql",
                   class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
-    a.annotate_table(file_dir=file_dir)
+    if len(sys.argv) == 3:
+        col_id = int(sys.argv[2])
+    else:
+        col_id = 0
+    print("col id: %d " % col_id)
+    a.annotate_table(file_dir=file_dir, subject_col_id=col_id)
     a.compute_f(0.01)
     print(a.get_top_k(3))
-    # a.print_ann()
+    a.print_ann()
     # a.print_ancestors()
     # print(a.ancestors)
     # a.print_hierarchy()
