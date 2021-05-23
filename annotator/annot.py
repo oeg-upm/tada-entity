@@ -82,7 +82,7 @@ class Annotator:
             self.compute_f(self.alpha)
 
         end = time.time()
-        logger.debug("Time spent: %f seconds\n" % (end - start))
+        logger.debug("Time spent: %f seconds" % (end - start))
 
     def annotate_single_cell(self, row, entity_column_id):
         # logger.debug("annotate_single_cell> start")
@@ -291,7 +291,7 @@ class Annotator:
     def compute_fs(self):
         for class_uri in self.tgraph.nodes:
             node = self.tgraph.nodes[class_uri]
-            node.fs[1] = math.sqrt( 1 -  node.Ls * node.Ls)
+            node.fs[1] = math.sqrt(1 - node.Ls * node.Ls)
             node.fs[2] = -1 * node.Ls * node.Ls + 1
             node.fs[3] = -1 * node.Ls + 1
             node.fs[4] = 1 - math.sqrt(node.Ls)
@@ -339,16 +339,6 @@ class Annotator:
         for class_uri in self.tgraph.nodes:
             node = self.tgraph.nodes[class_uri]
             for fsid in range(1, 6):
-                # print("class_uri")
-                # print(class_uri)
-                # print("node.f")
-                # print(node.f)
-                node.f[1] = 1
-                # print("updated node")
-                # print(node.f)
-                # print("if fsid in node.fs: ")
-                # print(fsid in node.fs)
-                # print(node.fs)
                 node.f[fsid] = node.fc * alpha + node.fs[fsid] * (1 - alpha)
 
     def get_top_k(self, fsid=None, k=None):
@@ -362,7 +352,7 @@ class Annotator:
         for class_uri in self.tgraph.nodes:
             node = self.tgraph.nodes[class_uri]
             if node.fc == 0:
-                print("get_top_k> skip fc %s" % class_uri)
+                # print("get_top_k> skip fc %s" % class_uri)
                 continue
             # if node.f[fsid] == 0:
             #     print("get_top_k> skip %s" % class_uri)
