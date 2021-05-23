@@ -316,7 +316,11 @@ class Annotator:
     def compute_fs(self):
         for class_uri in self.tgraph.nodes:
             node = self.tgraph.nodes[class_uri]
-            node.fs = -1 * node.Ls + 1
+            node.fs[1] = math.sqrt( 1 -  node.Ls * node.Ls)
+            node.fs[2] = -1 * node.Ls * node.Ls + 1
+            node.fs[3] = -1 * node.Ls + 1
+            node.fs[4] = 1 - math.sqrt(node.Ls)
+            node.fs[5] = (1 - math.sqrt(node.Ls)) ** 2
 
     def _compute_classes_counts(self):
         for class_uri in self.tgraph.nodes:
@@ -359,16 +363,23 @@ class Annotator:
         self.alpha = alpha
         for class_uri in self.tgraph.nodes:
             node = self.tgraph.nodes[class_uri]
-            node.f = node.fc * alpha + node.fs * (1 - alpha)
+            for fsid in range(1, 6)
+                node.f[fsid] = node.fc * alpha + node.fs[fsid] * (1 - alpha)
 
-    def get_top_k(self, k=None):
+    def get_top_k(self, fsid=None, k=None):
         if self.alpha is None:
             print("Error: alpha is missing. You need to call compute_f(alpha) function before")
-            return []
+            return None
+        if fsid is None:
+            print("Error: expecting the fsid")
+            return None
         scores = []
         for class_uri in self.tgraph.nodes:
             node = self.tgraph.nodes[class_uri]
-            pair = (node.class_uri, node.f)
+            if node.f[fsid] == 0:
+                print("get_top_k> skip %s"% class_uri)
+                continue
+            pair = (node.class_uri, node.f[fsid])
             scores.append(pair)
         scores.sort(key=lambda x: x[1], reverse=True)
         classes = [sc[0] for sc in scores]

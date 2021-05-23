@@ -19,7 +19,9 @@ class WCV2(ExperimentBase):
         f.close()
 
         f = open(meta_fdir)
+        num_files = 0
         for line in f.readlines():
+            num_files +=1
             fname, class_name, class_uri = line.split(",")
             fname = fname.replace('"', '').strip()[:-6] + "csv"
             class_uri = class_uri.replace('"', '').strip()

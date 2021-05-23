@@ -9,8 +9,20 @@ class Node:
         self.fc = None
         self.Is = None
         self.Ls = None
-        self.fs = None
-        self.f = None
+        self.fs = dict()
+        self.f = dict()
+        # self.fs = None
+        # self.fs1 = None
+        # self.fs2 = None
+        # self.fs3 = None
+        # self.fs4 = None
+        # self.fs5 = None
+        # self.f = None
+        # self.f1 = None
+        # self.f2 = None
+        # self.f3 = None
+        # self.f4 = None
+        # self.f5 = None
         self.parents = dict()  # to nodes
         self.childs = dict()  # to nodes
 
@@ -20,9 +32,20 @@ class Node:
         self.fc = None
         self.Is = None
         self.Ls = None
-        self.fs = None
-        self.f = None
-
+        self.fs = dict()
+        self.f = dict()
+        # self.fs = None
+        # self.fs1 = None
+        # self.fs2 = None
+        # self.fs3 = None
+        # self.fs4 = None
+        # self.fs5 = None
+        # # self.f = None
+        # self.f1 = None
+        # self.f2 = None
+        # self.f3 = None
+        # self.f4 = None
+        # self.f5 = None
 
 class TGraph:
 
