@@ -21,13 +21,14 @@ class WCV2(ExperimentBase):
         f = open(meta_fdir)
         num_files = 0
         for line in f.readlines():
-            num_files +=1
+            num_files += 1
             fname, class_name, class_uri = line.split(",")
             fname = fname.replace('"', '').strip()[:-6] + "csv"
             class_uri = class_uri.replace('"', '').strip()
             fdir = os.path.join(data_dir, fname)
             self.annotate_single(fpath=fdir, col_id=d[fname])
-            self.validate_with_opt_alpha(correct_candidates=[class_uri])
+            self.validate_with_opt_alpha(correct_candidates=[class_uri], alpha_inc=0.001)
+        print("Total number of files: %d" % num_files)
         for k in ks:
             print("Scores for k=%d" % k)
             self.get_scores(k)
