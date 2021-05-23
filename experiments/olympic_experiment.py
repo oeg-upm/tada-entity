@@ -5,8 +5,8 @@ import sys
 
 class Olympic(ExperimentBase):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, log_fname=None):
+        super().__init__(log_fname)
 
     def workflow(self, meta_fdir, data_dir, ks):
         f = open(meta_fdir)
@@ -26,7 +26,7 @@ class Olympic(ExperimentBase):
 if __name__ == "__main__":
     if len(sys.argv) == 3:
         meta_fdir, data_dir = sys.argv[1:]
-        o = Olympic()
+        o = Olympic("olympic-results.csv")
         o.workflow(meta_fdir=meta_fdir, data_dir=data_dir, ks=[1, 3, 5])
     else:
         print("Missing arguments: <meta file> <data directory>")

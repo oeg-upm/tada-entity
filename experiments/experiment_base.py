@@ -4,14 +4,25 @@ from commons import ENDPOINT
 
 class ExperimentBase:
 
-    def __init__(self):
+    def __init__(self, log_fname=None):
         self.annotator = Annotator(endpoint=ENDPOINT,
-                      class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
+                                   class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
         self.not_founds = []
         self.fpath = None
         self.k = dict()
+        self.log_fname = log_fname
+        if log_fname:
+            f = open(log_fname, "w")
+            f.write(",".join(["fname", "fs", "alpha", "k"])+"\n")
+            f.close()
         for i in range(1, 6):
             self.k[i] = dict()
+
+    def append_line(self, line):
+        if self.log_fname:
+            f = open(self.log_fname, "a")
+            f.write(line+"\n")
+            f.close()
 
     def clear(self):
         self.not_founds = []
@@ -50,7 +61,8 @@ class ExperimentBase:
                         kmin = k
                         max_alpha = alpha
                     if k == 1:
-                        print("candidates (%d): %s" %(fsid, str(candidates[:3])))
+                        self.append_line(",".join([self.fpath.split("/")[-1], str(fsid), str(max_alpha), str(kmin)]))
+                        print("candidates (%d): %s" % (fsid, str(candidates[:3])))
                         self.k[fsid][self.fpath] = k
                         return
         # Ahmad check case
@@ -60,8 +72,10 @@ class ExperimentBase:
         if kmin is None:
             print("Special case: "+self.fpath)
             kmin = 999
+
         self.k[fsid][self.fpath] = kmin
-        print("max alpha: %f (fs%d)" % (max_alpha, fsid))
+        self.append_line(",".join([self.fpath.split("/")[-1], str(fsid), str(max_alpha), str(kmin)]))
+        print("max alpha: %s (fs%d)" % (str(max_alpha), fsid))
 
     def get_scores(self, k):
         for i in range(1, 6):

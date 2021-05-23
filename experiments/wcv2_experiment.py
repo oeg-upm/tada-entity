@@ -5,8 +5,8 @@ import sys
 
 class WCV2(ExperimentBase):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, log_fname=None):
+        super().__init__(log_fname)
 
     def workflow(self, meta_fdir, subject_col_dir, data_dir, ks):
         d = dict()

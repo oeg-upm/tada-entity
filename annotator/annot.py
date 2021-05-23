@@ -396,15 +396,15 @@ if __name__ == '__main__':
     # a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql", alpha=0.3)
     a = Annotator(endpoint="https://en-dbpedia.oeg.fi.upm.es/sparql",
                   class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
-    if len(sys.argv) == 3:
+    if len(sys.argv) >= 3:
         col_id = int(sys.argv[2])
     else:
         col_id = 0
     print("col id: %d " % col_id)
     a.annotate_table(file_dir=file_dir, subject_col_id=col_id)
-    a.compute_f(0.01)
+    a.compute_f(0.0001)
     print(a.get_top_k(3))
-    a.print_ann()
+    #a.print_ann()
     # a.print_ancestors()
     # print(a.ancestors)
     # a.print_hierarchy()
