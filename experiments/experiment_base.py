@@ -44,9 +44,11 @@ class ExperimentBase:
                         print(candidates[:3])
                         self.k[self.fpath] = k
                         return
-        if kmin is None:
-            self.not_founds.append(self.fpath)
-            return
+        # Ahmad check case
+        # if kmin is None:
+        #     self.not_founds.append(self.fpath)
+        #     return
+        kmin = 999
         self.k[self.fpath] = kmin
 
     def get_scores(self, k):
