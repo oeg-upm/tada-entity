@@ -37,7 +37,7 @@ class WCV2(ExperimentBase):
 if __name__ == "__main__":
     if len(sys.argv) == 4:
         meta_fdir, sc_dir, data_dir = sys.argv[1:]
-        o = WCV2()
+        o = WCV2("wc2-results.csv")
         o.workflow(meta_fdir=meta_fdir, subject_col_dir=sc_dir, data_dir=data_dir, ks=[1, 3, 5])
     else:
         print("Missing arguments: <meta file> <data directory>")
