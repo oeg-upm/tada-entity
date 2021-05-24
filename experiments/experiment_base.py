@@ -8,6 +8,7 @@ class ExperimentBase:
         self.annotator = Annotator(endpoint=ENDPOINT,
                                    class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
         self.not_founds = []
+        self.total_processed = 0
         self.fpath = None
         self.k = dict()
         self.log_fname = log_fname
@@ -52,7 +53,8 @@ class ExperimentBase:
             candidates = self.annotator.get_top_k(fsid=fsid)
 
             if len(candidates) == 0:
-                self.not_founds.append(self.fpath)
+                if self.fpath not in self.not_founds:
+                    self.not_founds.append(self.fpath)
                 return
             for idx, c in enumerate(candidates):
                 k = idx + 1
@@ -82,6 +84,7 @@ class ExperimentBase:
             self.get_scores_fsid(k, i)
         total_processed = len(self.not_founds)+len(self.k[1])
         print("total processed: %d\n\n" % total_processed)
+        self.total_processed = total_processed
 
     def get_scores_fsid(self, k, fsid):
         corr = 0.0
