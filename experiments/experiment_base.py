@@ -9,6 +9,7 @@ class ExperimentBase:
                                    class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
         self.not_founds = []
         self.total_processed = 0
+        self.col_id = None
         self.fpath = None
         self.k = dict()
         self.log_fname = log_fname
@@ -28,6 +29,7 @@ class ExperimentBase:
     def clear(self):
         self.not_founds = []
         self.fpath = None
+        self.col_id = None
         self.k = dict()
         for i in range(1, 6):
             self.k[i] = dict()
@@ -35,11 +37,12 @@ class ExperimentBase:
     def annotate_single(self, fpath, col_id):
         self.annotator.clear_for_reuse()
         self.fpath = fpath
+        self.col_id = col_id
         self.annotator.annotate_table(file_dir=fpath, subject_col_id=col_id)
 
     def validate_with_opt_alpha(self, correct_candidates, alpha_inc=0.001):
         print("\n")
-        print("fpath: " + self.fpath)
+        print("fpath: %s - col id: %d" %(self.fpath, self.col_id))
         for i in range(1, 6):
             self.validate_with_opt_alpha_fsid(correct_candidates, fsid=i, alpha_inc=alpha_inc)
 
@@ -65,7 +68,7 @@ class ExperimentBase:
                     if k == 1:
                         self.append_line(",".join([self.fpath.split("/")[-1], str(fsid), str(max_alpha), str(kmin)]))
                         print("candidates (%d): %s" % (fsid, str(candidates[:3])))
-                        self.k[fsid][self.fpath] = k
+                        self.k[fsid][self.fpath + str(self.col_id)] = k
                         return
         # Ahmad check case
         # if kmin is None:
@@ -75,8 +78,8 @@ class ExperimentBase:
             print("Special case: "+self.fpath)
             kmin = 999
 
-        self.k[fsid][self.fpath] = kmin
-        self.append_line(",".join([self.fpath.split("/")[-1], str(fsid), str(max_alpha), str(kmin)]))
+        self.k[fsid][self.fpath + str(self.col_id)] = kmin
+        self.append_line(",".join([self.fpath.split("/")[-1], str(self.col_id), str(fsid), str(max_alpha), str(kmin)]))
         print("max alpha: %s (fs%d)" % (str(max_alpha), fsid))
 
     def get_scores(self, k):

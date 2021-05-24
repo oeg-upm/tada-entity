@@ -29,8 +29,8 @@ aaagolfplayers.csv,2,0.001,1
 aaagolfplayers.csv,3,0.001,1
 aaagolfplayers.csv,4,0.010000000000000002,1
 aaagolfplayers.csv,5,0.02000000000000001,1
-aaarower.csv,1,0.001,2
-aaarower.csv,2,0.001,2
+aaarower.csv,0,1,0.001,2
+aaarower.csv,0,2,0.001,2
 aaarower.csv,3,0.001,1
 aaarower.csv,4,0.001,1
 aaarower.csv,5,0.001,1
