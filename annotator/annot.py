@@ -18,7 +18,7 @@ from commons.tgraph import TGraph
 
 
 class Annotator:
-    def __init__(self, num_of_threads=10, logger=None, endpoint="", class_prefs=[], alpha=None):
+    def __init__(self, num_of_threads=10, logger=None, endpoint="", class_prefs=[], alpha=None, title_case=False):
         if logger is None:
             logger = logging.getLogger(__name__)
             logger.setLevel(logging.DEBUG)
@@ -27,6 +27,7 @@ class Annotator:
             handler.setLevel(logging.DEBUG)
             logger.addHandler(handler)
 
+        self.title_case = title_case
         self.logger = logger
         self.num_of_threads = num_of_threads
         self.endpoint = endpoint
@@ -114,13 +115,30 @@ class Annotator:
         for i in range(len(row)):
             if i != entity_column_id:
                 attrs.append(row[i])
-        entity_class_pairs = get_entities_and_classes(subject_name=cell_value, attributes=attrs, endpoint=self.endpoint)
+
+        entity_class_pairs = []
+        if self.title_case:
+            possible_cell_values = [cell_value, cell_value.title()]
+        else:
+            possible_cell_values = [cell_value]
+        for cell_val in possible_cell_values:
+            entity_class_pairs = get_entities_and_classes(subject_name=cell_val, attributes=attrs,
+                                                          endpoint=self.endpoint)
+            if len(entity_class_pairs) > 0:
+                break
 
         if len(entity_class_pairs) == 0:
-            # logger.debug("_add_entities_and> no high quality  entity_class_pairs are found, hence trying the naive")
-            entity_class_pairs = get_entities_and_classes_naive(subject_name=cell_value, endpoint=self.endpoint)
-        # else:
-        #     logger.debug("_add_entities_and>  high quality")
+            for cell_val in possible_cell_values:
+                entity_class_pairs = get_entities_and_classes_naive(subject_name=cell_val, endpoint=self.endpoint)
+                if len(entity_class_pairs) > 0:
+                    break
+        # entity_class_pairs = get_entities_and_classes(subject_name=cell_value, attributes=attrs, endpoint=self.endpoint)
+        #
+        # if len(entity_class_pairs) == 0:
+        #     # logger.debug("_add_entities_and> no high quality  entity_class_pairs are found, hence trying the naive")
+        #     entity_class_pairs = get_entities_and_classes_naive(subject_name=cell_value, endpoint=self.endpoint)
+        # # else:
+        # #     logger.debug("_add_entities_and>  high quality")
 
         d = dict()
         for ent_class in entity_class_pairs:
