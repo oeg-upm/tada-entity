@@ -5,8 +5,8 @@ from datetime import datetime
 
 class ST19R1(ExperimentBase):
 
-    def __init__(self, log_fname=None):
-        super().__init__(log_fname)
+    def __init__(self, log_fname=None, title_case=False):
+        super().__init__(log_fname=log_fname, title_case=title_case)
         self.invalid_files = []
 
     def workflow(self, meta_fdir, data_dir, ks):
@@ -35,12 +35,28 @@ class ST19R1(ExperimentBase):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3:
-        meta_fdir,  data_dir = sys.argv[1:]
+    if len(sys.argv) >= 3:
+        results_fname_original = "st19-r1-results.csv"
+        results_fname_title = "st19-r1-results-title.csv"
+        results_fname = results_fname_original
+        title_case = False
+        meta_fdir,  data_dir = sys.argv[1:3]
+        if len(sys.argv) == 4:
+            if sys.argv[3]=="title":
+                print("Title case")
+                results_fname = results_fname_title
+                title_case = True
+            elif sys.argv[3]=="original":
+                print("original case")
+                results_fname = results_fname_original
+                title_case = False
+            else:
+                print("Error: expects the fourth paramerter to either be title or original")
+                raise Exception("Invalid case")
         start = datetime.now()
-        o = ST19R1("st19-r1-results.csv")
+        o = ST19R1(results_fname, title_case=title_case)
         o.workflow(meta_fdir=meta_fdir, data_dir=data_dir, ks=[1, 3, 5])
         end = datetime.now()
         print("time consumed: "+str(end-start))
     else:
-        print("Missing arguments: <meta file> <data directory>")
+        print("Missing arguments: <meta file> <data directory> [<title/original>]")

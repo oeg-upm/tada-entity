@@ -5,8 +5,8 @@ import sys
 
 class WCV1(ExperimentBase):
 
-    def __init__(self, log_fname=None):
-        super().__init__(log_fname)
+    def __init__(self, log_fname=None, title_case=False):
+        super().__init__(log_fname=log_fname, title_case=title_case)
 
     def workflow(self, meta_fdir, data_dir, ks):
         f = open(meta_fdir)
@@ -32,9 +32,26 @@ class WCV1(ExperimentBase):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3:
-        meta_fdir, data_dir = sys.argv[1:]
-        o = WCV1("wc1-results.csv")
+    if len(sys.argv) >= 3:
+        results_fname_original = "wc1-results.csv"
+        results_fname_title = "wc1-results-title.csv"
+        results_fname = results_fname_original
+        meta_fdir, data_dir = sys.argv[1:3]
+        title_case = False
+        print(sys.argv)
+        if len(sys.argv) == 4:
+            if sys.argv[3]=="title":
+                print("Title case")
+                results_fname = results_fname_title
+                title_case = True
+            elif sys.argv[3]=="original":
+                print("original case")
+                results_fname = results_fname_original
+                title_case = False
+            else:
+                print("Error: expects the fourth paramerter to either be title or original")
+                raise Exception("Invalid case")
+        o = WCV1(results_fname, title_case=title_case)
         o.workflow(meta_fdir=meta_fdir, data_dir=data_dir, ks=[1, 3, 5])
     else:
         print("Missing arguments: <meta file> <data directory>")
