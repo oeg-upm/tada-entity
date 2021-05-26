@@ -54,21 +54,37 @@ class EasySparql:
         """
         inner_qs = []
         csubject = self.clean_text(subject_name)
-        for attr in attributes:
-            cattr = self.clean_text(attr)
-            q = """
-                {
+
+        if self.sparql_flavor == "dbpedia":
+            for attr in attributes:
+                cattr = self.clean_text(attr)
+                q = """
+                    {
+                        ?s rdfs:label "%s"@en.
+                        ?s a ?c.                        
+                    } UNION {
+                        ?s rdfs:label "%s"@en.
+                        ?s ?p ?e.
+                        ?e rdfs:label "%s"@en.
+                        ?s a ?c.
+                    }
+                """ % (csubject, cattr, csubject, cattr)
+                inner_qs.append(q)
+        elif self.sparql_flavor == "wikidata":
+            for attr in attributes:
+                cattr = self.clean_text(attr)
+                q = """
+                    {
                     ?s rdfs:label "%s"@en.
-                    ?s ?p "%s"@en.
-                    ?s a ?c.
-                } UNION {
-                    ?s rdfs:label "%s"@en.
-                    ?s ?p ?e.
-                    ?e rdfs:label "%s"@en.
-                    ?s a ?c.
-                }
-            """ % (csubject, cattr, csubject, cattr)
-            inner_qs.append(q)
+                    ?s wdt:P31 ?c
+                    } UNION {
+                        ?s rdfs:label "%s"@en.
+                        ?s ?p ?e.
+                        ?e rdfs:label "%s"@en.
+                        ?s wdt:P31 ?c.
+                    }
+                """ % (csubject, cattr, csubject, cattr)
+                inner_qs.append(q)
 
         inner_q = "UNION".join(inner_qs)
 

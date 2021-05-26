@@ -181,63 +181,10 @@ class AnnotatorOnlineTest(TestCase):
         self.assertAlmostEqual(annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].fs[3],
                                -annotator.tgraph.nodes["http://www.w3.org/2002/07/owl#Thing"].Ls + 1)
 
+    def test_f(self):
+        annotator = Annotator(endpoint=commons.ENDPOINT, alpha=0.4)
+        annotator.annotate_table(file_dir="tests/swimmers.csv", subject_col_id=0)
 
+        annotator.compute_f(0.3)
 
-
-    #
-    # def test_f(self):
-    #     annotator = Annotator()
-    #     annotator.cell_ent_class = {
-    #         "CellAB": {
-    #             "entityA": ["classA1", "classA2", "classA3"],
-    #             "entityB": ["classB1", "classB2"]
-    #         },
-    #         "CellX": {
-    #             "EntityX": ["classX", "classA3"],
-    #             "EntityY": [],
-    #         }
-    #     }
-    #
-    #     annotator.tgraph.add_class("Thing")
-    #     annotator.tgraph.add_class("classA1")
-    #     annotator.tgraph.add_class("classA2")
-    #     annotator.tgraph.add_class("classA3")
-    #     annotator.tgraph.add_class("classB1")
-    #     annotator.tgraph.add_class("classB2")
-    #     annotator.tgraph.add_class("classX")
-    #
-    #     annotator.tgraph.add_parent("classA3", "classA2")
-    #     annotator.tgraph.add_parent("classA2", "classA1")
-    #     annotator.tgraph.add_parent("classB2", "classB1")
-    #     annotator.tgraph.add_parent("classB1", "Thing")
-    #     annotator.tgraph.add_parent("classA1", "Thing")
-    #     annotator.tgraph.add_parent("classX", "Thing")
-    #     for cell in annotator.cell_ent_class:
-    #         d = annotator.cell_ent_class[cell]
-    #         annotator.build_ancestors_lookup()
-    #         new_d = annotator.remove_unwanted_parent_classes_for_cell(d)
-    #         # print("before")
-    #         # print(d)
-    #         # print("after")
-    #         # print(new_d)
-    #         annotator.cell_ent_class[cell] = new_d
-    #
-    #     annotator.tgraph.nodes["classX"].fs = -10.0 / 112 + 1
-    #     annotator.tgraph.nodes["classA3"].fs = -50.0 / 112 * 40.0 / 50 * 30.0 / 40 + 1
-    #     annotator.tgraph.nodes["classA2"].fs = -50.0 / 112 * 40.0 / 50
-    #     annotator.tgraph.nodes["classA1"].fs = -50.0 / 112 + 1
-    #     annotator.tgraph.nodes["classB2"].fs = -35.0 / 52 * 52.0 / 112 + 1
-    #     annotator.tgraph.nodes["classB1"].fs = -52.0 / 112 + 1
-    #     annotator.tgraph.nodes["Thing"].fs = 0
-    #
-    #     annotator.tgraph.nodes["classX"].fc = 0.25 / 2
-    #     annotator.tgraph.nodes["classA3"].fc = 0.75 / 2
-    #     annotator.tgraph.nodes["classA2"].fc = 0.75 / 2
-    #     annotator.tgraph.nodes["classA1"].fc = 0.75 / 2
-    #     annotator.tgraph.nodes["classB2"].fc = 0.5 / 2
-    #     annotator.tgraph.nodes["classB1"].fc = 0.5 / 2
-    #     annotator.tgraph.nodes["Thing"].fc = 1.5 / 2
-    #
-    #     annotator.compute_f(0.5)
-    #
-    #     self.assertCountEqual(annotator.get_top_k(1), ["classA3"])
+        self.assertCountEqual(annotator.get_top_k(k=1, fsid=3), ["http://dbpedia.org/ontology/Swimmer"])
