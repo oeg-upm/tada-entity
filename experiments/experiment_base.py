@@ -4,8 +4,8 @@ from commons import ENDPOINT
 
 class ExperimentBase:
 
-    def __init__(self, log_fname=None):
-        self.annotator = Annotator(endpoint=ENDPOINT,
+    def __init__(self, log_fname=None, title_case=False):
+        self.annotator = Annotator(endpoint=ENDPOINT, title_case=title_case,
                                    class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
         self.not_founds = []
         self.total_processed = 0
@@ -15,7 +15,7 @@ class ExperimentBase:
         self.log_fname = log_fname
         if log_fname:
             f = open(log_fname, "w")
-            f.write(",".join(["fname", "fs", "alpha", "k"])+"\n")
+            f.write(",".join(["fname", "colid" , "fs", "alpha", "k"])+"\n")
             f.close()
         for i in range(1, 6):
             self.k[i] = dict()
@@ -66,7 +66,8 @@ class ExperimentBase:
                         kmin = k
                         max_alpha = alpha
                     if k == 1:
-                        self.append_line(",".join([self.fpath.split("/")[-1], str(fsid), str(max_alpha), str(kmin)]))
+                        self.append_line(",".join([self.fpath.split("/")[-1], str(self.col_id), str(fsid), str(max_alpha), str(kmin)]))
+                        # self.append_line(",".join([self.fpath.split("/")[-1], str(fsid), str(max_alpha), str(kmin)]))
                         print("candidates (%d): %s" % (fsid, str(candidates[:3])))
                         self.k[fsid][self.fpath + str(self.col_id)] = k
                         return
