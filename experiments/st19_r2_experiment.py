@@ -18,11 +18,11 @@ class ST19R2(ExperimentBase):
         for idx, row in df.iterrows():
         # for line in f.readlines():
             num_files += 1
-            fname = row[0]
+            fname = str(row[0])
             col_id = int(row[1])
             # attrs = line.split(",")
             # fname, col_id= attrs[:2]
-            classes = [class_uri.replace('"', '').replace("'", "").strip() for class_uri in row[2:] ]
+            classes = [str(class_uri).strip() for class_uri in row[2:] ]
             classes = [class_uri for class_uri in classes if class_uri != '']
             fname = fname.strip()+".csv"
             # fname = fname.replace('"', '').strip()+".csv"
