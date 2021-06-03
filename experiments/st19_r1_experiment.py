@@ -24,7 +24,7 @@ class ST19R1(ExperimentBase):
                 num_files -=1
                 continue
             self.annotate_single(fpath=fdir, col_id=col_id)
-            self.validate_with_opt_alpha(correct_candidates=[class_uri], alpha_inc=0.001)
+            self.validate_with_opt_alpha(correct_candidates=[class_uri])
         print("Total number of files: %d" % num_files)
         print("# of invalid files: %d" % len(self.invalid_files))
         for invf in self.invalid_files:

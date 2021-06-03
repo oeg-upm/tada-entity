@@ -46,7 +46,7 @@ class ExperimentBase:
         for i in range(1, 6):
             self.validate_with_opt_alpha_fsid(correct_candidates, fsid=i, alpha_inc=alpha_inc)
 
-    def validate_with_opt_alpha_fsid(self, correct_candidates, fsid, alpha_inc=0.01):
+    def validate_with_opt_alpha_fsid(self, correct_candidates, fsid, alpha_inc=0.001):
         alpha = 0.0
         kmin = None
         max_alpha = None

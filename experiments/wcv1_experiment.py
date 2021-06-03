@@ -24,7 +24,7 @@ class WCV1(ExperimentBase):
             class_uri = class_uri.replace('"', '').strip()
             fdir = os.path.join(data_dir, fname)
             self.annotate_single(fpath=fdir, col_id=col_id)
-            self.validate_with_opt_alpha(correct_candidates=[class_uri], alpha_inc=0.001)
+            self.validate_with_opt_alpha(correct_candidates=[class_uri])
         print("Total number of files: %d" % num_files)
         for k in ks:
             print("Scores for k=%d" % k)
