@@ -5,7 +5,9 @@
 
 **This is being re-written**
 
+# NEW
 ## Experiments
+* alpha inc `0.001`
 ### SemTab
 #### Invalid
 ```
@@ -22,6 +24,7 @@ Round 1/tables/55238374_0_3379409961751009152.csv
 Round 1/tables/57943722_0_8666078014685775876.csv
 ```
 
+# OLD
 
 Tabular Data Annotation of entity columns
 
