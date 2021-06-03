@@ -2,6 +2,7 @@ from experiments.experiment_base import ExperimentBase
 import os
 import sys
 from datetime import datetime
+import pandas as pd
 
 class ST19R2(ExperimentBase):
 
@@ -10,16 +11,22 @@ class ST19R2(ExperimentBase):
         self.invalid_files = []
 
     def workflow(self, meta_fdir, data_dir, ks):
-        f = open(meta_fdir)
+        df = pd.read_csv(meta_fdir)
+
+        # f = open(meta_fdir)
         num_files = 0
-        for line in f.readlines():
+        for idx, row in df.iterrows():
+        # for line in f.readlines():
             num_files += 1
-            attrs = line.split(",")
-            fname, col_id= attrs[:2]
-            classes = [class_uri.replace('"', '').replace("'", "").strip() for class_uri in attrs[2:] ]
+            fname = row[0]
+            col_id = int(row[1])
+            # attrs = line.split(",")
+            # fname, col_id= attrs[:2]
+            classes = [class_uri.replace('"', '').replace("'", "").strip() for class_uri in row[2:] ]
             classes = [class_uri for class_uri in classes if class_uri != '']
-            fname = fname.replace('"', '').strip()+".csv"
-            col_id = int(col_id.replace('"', ''))
+            fname = fname.strip()+".csv"
+            # fname = fname.replace('"', '').strip()+".csv"
+            # col_id = int(col_id.replace('"', ''))
             fdir = os.path.join(data_dir, fname)
             if not os.path.exists(fdir):
                 self.invalid_files.append(fdir)
@@ -27,7 +34,9 @@ class ST19R2(ExperimentBase):
                 continue
             self.annotate_single(fpath=fdir, col_id=col_id)
             self.validate_with_opt_alpha(correct_candidates=classes)
-            #break # for testing
+            # for testing
+            # if num_files == 3:
+            #     break # for testing
         print("Total number of files: %d" % num_files)
         print("# of invalid files: %d" % len(self.invalid_files))
         for invf in self.invalid_files:
