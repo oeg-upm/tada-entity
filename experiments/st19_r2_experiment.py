@@ -9,21 +9,37 @@ class ST19R2(ExperimentBase):
     def __init__(self, log_fname=None, title_case=False):
         super().__init__(log_fname=log_fname, title_case=title_case)
         self.invalid_files = []
+        self.notparsed_files = []
 
     def workflow(self, meta_fdir, data_dir, ks):
-        df = pd.read_csv(meta_fdir)
-
+        df = pd.read_csv(meta_fdir).fillna('')
         # f = open(meta_fdir)
         num_files = 0
+        # #test
+        # print(len(df.columns))
         for idx, row in df.iterrows():
         # for line in f.readlines():
             num_files += 1
             fname = str(row[0])
+            # test
+            # if fname != "List_of_tallest_buildings_in_Aurora,_Colorado#0":
+            #     continue
+            # if fname != "List_of_snack_foods_from_the_Indian_subcontinent#1":
+            #     continue
             col_id = int(row[1])
             # attrs = line.split(",")
             # fname, col_id= attrs[:2]
-            classes = [str(class_uri).strip() for class_uri in row[2:] ]
-            classes = [class_uri for class_uri in classes if class_uri != '']
+            classes = [row[2]]
+            # print("row[2] = ")
+            # print(row[2])
+            # print("row[3] = ")
+            # print(row[3])
+            ok_classes = [str(class_uri).strip() for class_uri in row[3].split(' ') if class_uri.strip()!='']
+            classes = classes + ok_classes
+            # print("ok classes: ")
+            # print(ok_classes)
+            # classes = [str(class_uri).strip() for class_uri in row[2:] ]
+            # classes = [class_uri for class_uri in classes if class_uri != '']
             fname = fname.strip()+".csv"
             # fname = fname.replace('"', '').strip()+".csv"
             # col_id = int(col_id.replace('"', ''))
@@ -32,6 +48,13 @@ class ST19R2(ExperimentBase):
                 self.invalid_files.append(fdir)
                 num_files -=1
                 continue
+            try:
+                _ = pd.read_csv(fdir)
+            except Exception as e:
+                self.notparsed_files.append(fdir)
+                num_files -=1
+                continue
+
             self.annotate_single(fpath=fdir, col_id=col_id)
             self.validate_with_opt_alpha(correct_candidates=classes)
             # for testing
@@ -39,8 +62,14 @@ class ST19R2(ExperimentBase):
             #     break # for testing
         print("Total number of files: %d" % num_files)
         print("# of invalid files: %d" % len(self.invalid_files))
+        print("# of files which are not parsed: %d" % len(self.notparsed_files))
+        print("invalid files: ")
         for invf in self.invalid_files:
             print(invf)
+        print("not parsed files: ")
+        for invf in self.notparsed_files:
+            print(invf)
+
         for k in ks:
             print("Scores for k=%d" % k)
             self.get_scores(k)
