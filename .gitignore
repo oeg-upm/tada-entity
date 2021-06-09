@@ -1,3 +1,4 @@
+nohup.out*
 iswc_results.csv*
 mysql.cnf
 tadae/migrations
