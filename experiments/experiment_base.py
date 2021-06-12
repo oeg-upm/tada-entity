@@ -5,7 +5,7 @@ from commons import ENDPOINT
 class ExperimentBase:
 
     def __init__(self, log_fname=None, title_case=False):
-        self.annotator = Annotator(endpoint=ENDPOINT, title_case=title_case,
+        self.annotator = Annotator(endpoint=ENDPOINT, title_case=title_case, num_of_threads=3,
                                    class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
         self.not_founds = []
         self.total_processed = 0
