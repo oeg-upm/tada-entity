@@ -4,7 +4,7 @@
 
 *In these tests, ok and perfect annotations are treated as perfect*
 
-|| | |
+|| Original Case | Title Case |
 |:-------------------------:|:-------------------------:|:-------------------------:|
 |Round 2|<img src="./st19-r2-original-k1.svg" width="300px">|<img src="./st19-r2-title-k1.svg" width="300px">|
 |Round 3|<img src="./st19-r3-original-k1.svg" width="300px">|<img src="./st19-r3-title-k1.svg" width="300px">|
