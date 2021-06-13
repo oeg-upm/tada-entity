@@ -4,7 +4,7 @@
 
 *In these tests, ok and perfect annotations are treated as perfect*
 
-<img src="./st19-r2-original-k1.svg">
+<img src="./st19-r2-original-k1.svg" width=50%>
 <img src="./st19-r2-title-k1.svg">
 <img src="./st19-r3-original-k1.svg">
 <img src="./st19-r3-title-k1.svg">
