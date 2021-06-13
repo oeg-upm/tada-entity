@@ -6,15 +6,15 @@
 
 | | |
 |:-------------------------:|:-------------------------:|
-|<img src="./st19-r2-original-k1.svg" width="300px" >|<img src="./st19-r2-title-k1.svg" width="250px">|
-|||
-|||
+|<img src="./st19-r2-original-k1.svg" width="300px">|<img src="./st19-r2-title-k1.svg" width="300px">|
+|<img src="./st19-r3-original-k1.svg" width="300px">|<img src="./st19-r3-title-k1.svg" width="300px">|
+|<img src="./st19-r4-original-k1.svg" width="300px">|<img src="./st19-r4-title-k1.svg" width="300px">|
 
 
-<img src="./st19-r3-original-k1.svg" width="100px">
-<img src="./st19-r3-title-k1.svg">
-<img src="./st19-r4-original-k1.svg">
-<img src="./st19-r4-title-k1.svg">
+
+
+
+
 
 
 
