@@ -6,7 +6,7 @@
 
 | | |
 |:-------------------------:|:-------------------------:|
-|<img src="./st19-r2-original-k1.svg" width="100px" >|<img src="./st19-r2-title-k1.svg" width="100px">|
+|<img src="./st19-r2-original-k1.svg" width="200px" >|<img src="./st19-r2-title-k1.svg" width="200px">|
 |||
 |||
 
