@@ -420,7 +420,7 @@ if __name__ == '__main__':
         col_id = 0
     print("col id: %d " % col_id)
     a.annotate_table(file_dir=file_dir, subject_col_id=col_id)
-    a.compute_f(0.0001)
+    a.compute_f(0.01)
     print(a.get_top_k(k=3, fsid=3))
     #a.print_ann()
     # a.print_ancestors()
