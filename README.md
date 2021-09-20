@@ -8,6 +8,17 @@
 # NEW
 ## Experiments
 * alpha inc `0.001`
+
+### WCv2
+
+meta_fdir, sc_dir, data_dir 
+To run the experiment
+`python experiments/wcv2_experiment.py <meta dir> <subject column dir> <data dir>`
+
+meta dir: the path to the file which contains the file names and their classes
+subject column dir: the path to the file which contains the subject column ids
+data dir: the path to the folder which contain the csv files
+
 ### SemTab
 #### Invalid
 ```

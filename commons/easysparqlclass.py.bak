@@ -1,6 +1,6 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
 
-import certifi
+# import certifi
 
 # from __init__ import QUERY_LIMIT
 QUERY_LIMIT = ""
@@ -8,10 +8,12 @@ QUERY_LIMIT = ""
 import pandas as pd
 import numpy as np
 
+
 class EasySparql:
 
     def __init__(self, endpoint=None, sparql_flavor="dbpedia"):
         self.endpoint = endpoint
+        self.sparql_flavor = sparql_flavor
 
     def run_query(self, query=None, raiseexception=False, printempty=False):
         """
@@ -22,7 +24,8 @@ class EasySparql:
         if self.endpoint is None:
             print("endpoints cannot be None")
             return []
-        sparql = SPARQLWrapper(endpoint=self.endpoint, custom_cert_filename=certifi.where())
+        sparql = SPARQLWrapper(endpoint=self.endpoint)
+        # sparql = SPARQLWrapper(endpoint=self.endpoint, custom_cert_filename=certifi.where())
         sparql.setQuery(query=query)
         # sparql.setMethod("POST")
         sparql.setReturnFormat(JSON)

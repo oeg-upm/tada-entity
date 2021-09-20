@@ -4,3 +4,5 @@ omit =
     experiments/*
     tadae/migrations/*
     commons/valpha.py
+    tadae/*
+    tests/*

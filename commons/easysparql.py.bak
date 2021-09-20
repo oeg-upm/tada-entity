@@ -1,6 +1,6 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
 
-import certifi
+# import certifi
 
 # from __init__ import QUERY_LIMIT
 QUERY_LIMIT = ""
@@ -45,8 +45,8 @@ def run_query(query=None, endpoint=None, raiseexception=False, printempty=False)
         print("endpoints cannot be None")
         return []
     # print("endpoint <%s>" % endpoint)
-    # sparql = SPARQLWrapper(endpoint=endpoint)
-    sparql = SPARQLWrapper(endpoint=endpoint, custom_cert_filename=certifi.where())
+    sparql = SPARQLWrapper(endpoint=endpoint)
+    # sparql = SPARQLWrapper(endpoint=endpoint, custom_cert_filename=certifi.where())
     # sparql = SPARQLWrapper(endpoint=endpoint)
     sparql.setQuery(query=query)
     # sparql.setMethod("POST")
