@@ -92,7 +92,7 @@ def analyse_alpha(alpha_per_class, draw_fname, midalpha):
     [t.set_rotation(80) for t in ax.get_xticklabels()]
     #plt.show()
     ax.figure.savefig('docs/%s.svg' % draw_fname)
-
+    ax.figure.clf()
 
 
 def aggregate_alpha_per_class(df, classes):
