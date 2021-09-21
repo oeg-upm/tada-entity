@@ -91,7 +91,8 @@ def analyse_alpha(alpha_per_class, draw_fname, midalpha):
     plt.setp(ax.lines, color='k')
     [t.set_rotation(80) for t in ax.get_xticklabels()]
     #plt.show()
-    ax.figure.savefig('docs/%s.svg' % draw_fname)
+    # ax.figure.savefig('docs/%s.svg' % draw_fname)
+    ax.figure.savefig('docs/%s.svg' % draw_fname, bbox_inches="tight")
     ax.figure.clf()
 
 
