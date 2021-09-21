@@ -11,6 +11,14 @@ To run alpha analysis
 
 `python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv --draw wcv2_alpha_mid_title --midalpha`
 
+
+`python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv --draw wcv2_alpha_mid_original --midalpha`
+
+
+`python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv --draw wcv2_alpha_from_to_title`
+
+
+`python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv --draw wcv2_alpha_from_to_original`
 # NEW
 ## Experiments
 * alpha inc `0.001`
