@@ -61,7 +61,17 @@ def analyse_alpha(alpha_per_class, draw_fname, midalpha):
                 print(r)
     # print(rows)
     data = pd.DataFrame(rows, columns=["Class", "Alpha", "Attr"])
-    ax = sns.boxplot(x="Class", y="Alpha",
+    # ax = sns.boxplot(x="Class", y="Alpha",
+    #                  hue="Attr",
+    #                  data=data, linewidth=1.0,
+    #                  # palette="colorblind",
+    #                  palette="Spectral",
+    #                  # palette="pastel",
+    #                  dodge=True,
+    #                  # palette="ch:start=.2,rot=-.3",
+    #                  orient="v",
+    #                  flierprops=dict(markerfacecolor='0.50', markersize=2), whiskerprops={'linestyle': '-'})
+    ax = sns.boxplot(x="Alpha", y="Class",
                      hue="Attr",
                      data=data, linewidth=1.0,
                      # palette="colorblind",
@@ -69,12 +79,23 @@ def analyse_alpha(alpha_per_class, draw_fname, midalpha):
                      # palette="pastel",
                      dodge=True,
                      # palette="ch:start=.2,rot=-.3",
-                     orient="v",
-                     flierprops=dict(markerfacecolor='0.50', markersize=2), whiskerprops={'linestyle': '-'})
+                     orient="h",
+                     flierprops=dict(markerfacecolor='0.50', markersize=2))
     if midalpha:
         # to remove legend
         ax.legend_.remove()
-        ax.set_ylim(0, 0.7)
+        ax.set_xlim(0, 0.7)
+        # ax.set_ylim(0, 0.7)
+    # Horizontal
+    ticks = ax.get_yticks()
+    new_ticks = [t for t in ticks]
+    texts = ax.get_yticklabels()
+    print(ax.get_yticklabels())
+    labels = [t.get_text() for t in texts]
+    ax.set_yticks(new_ticks)
+    ax.set_yticklabels(labels, fontsize=8)
+    print(ax.get_yticklabels())
+    # Vertical
     # ticks = ax.get_xticks()
     # new_ticks = [t-1 for t in ticks]
     # texts = ax.get_xticklabels()
@@ -89,7 +110,7 @@ def analyse_alpha(alpha_per_class, draw_fname, midalpha):
     # plt.setp(ax.artists, edgecolor='k', facecolor='w')
     # To make whiskers black
     plt.setp(ax.lines, color='k')
-    [t.set_rotation(80) for t in ax.get_xticklabels()]
+    # [t.set_rotation(70) for t in ax.get_xticklabels()]
     #plt.show()
     # ax.figure.savefig('docs/%s.svg' % draw_fname)
     ax.figure.savefig('docs/%s.svg' % draw_fname, bbox_inches="tight")
