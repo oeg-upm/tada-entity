@@ -24,7 +24,7 @@ def get_classes(fpath):
     return d
 
 
-def analyse_alpha_for_all(falpha, classes):
+def analyse_alpha_for_all(falpha, classes, draw_fname, midalpha):
     """
     :param fmeta: path to the meta file
     :param classes: a dict of fnames and their classes
@@ -35,15 +35,21 @@ def analyse_alpha_for_all(falpha, classes):
     for fsid in range(1, 6):
         df = df_all[df_all.fsid == fsid]
         al_per_cls = aggregate_alpha_per_class(df, classes)
-        # analyse_alpha(al_per_cls, "wcv2_alpha_from_to_original_fsid%d" % fsid)
+
+        analyse_alpha(al_per_cls, draw_fname+"_fsid%d" % (fsid), midalpha)
+        # analyse_alpha(al_per_cls, "wcv2_alpha_%s_original_fsid%d" % (fattr,fsid))
         # analyse_alpha(al_per_cls, "wcv2_alpha_fsid%d" % fsid)
 
         # break
 
 
-def analyse_alpha(alpha_per_class, draw_fname):
+def analyse_alpha(alpha_per_class, draw_fname, midalpha):
     rows = []
-    attrs = ['from_alpha', 'to_alpha', 'mid_alpha']
+    if midalpha:
+        attrs = ['mid_alpha']
+    else:
+        attrs = ['from_alpha', 'to_alpha']
+    # attrs = ['from_alpha', 'to_alpha', 'mid_alpha']
     # attrs = ['mid_alpha']
     for c in alpha_per_class:
         for a_attr in attrs:
@@ -65,9 +71,10 @@ def analyse_alpha(alpha_per_class, draw_fname):
                      # palette="ch:start=.2,rot=-.3",
                      orient="v",
                      flierprops=dict(markerfacecolor='0.50', markersize=2), whiskerprops={'linestyle': '-'})
-    # to remove legend
-    # ax.legend_.remove()
-    # ax.set_ylim(0, 0.7)
+    if midalpha:
+        # to remove legend
+        ax.legend_.remove()
+        ax.set_ylim(0, 0.7)
     # ticks = ax.get_xticks()
     # new_ticks = [t-1 for t in ticks]
     # texts = ax.get_xticklabels()
@@ -84,7 +91,7 @@ def analyse_alpha(alpha_per_class, draw_fname):
     plt.setp(ax.lines, color='k')
     [t.set_rotation(80) for t in ax.get_xticklabels()]
     #plt.show()
-    plt.savefig('docs/%s.svg' % draw_fname)
+    ax.figure.savefig('docs/%s.svg' % draw_fname)
 
 
 
@@ -109,9 +116,9 @@ def aggregate_alpha_per_class(df, classes):
     return d
 
 
-def workflow(falpha, fmeta):
+def workflow(falpha, fmeta, draw_fpath, midalpha):
     classes = get_classes(fmeta)
-    analyse_alpha_for_all(falpha, classes)
+    analyse_alpha_for_all(falpha, classes, draw_fpath, midalpha)
 
 
 def main():
@@ -123,11 +130,13 @@ def main():
     # parser.add_argument('--debug', action="store_true", default=False, help="Whether to enable debug messages.")
     parser.add_argument('falpha', help="The path to the alpha results file.")
     parser.add_argument('fmeta', help="The path to the meta file which contain the classes.")
-
+    parser.add_argument('--draw', default="test.svg", help="The filename prefix to draw (without the extension)")
+    parser.add_argument('--midalpha', action="store_true", default=False,
+                        help="Whether to report the mid ranges of the optimal alpha or just the ranges")
     parser.print_usage()
     parser.print_help()
     args = parser.parse_args()
-    workflow(args.falpha, args.fmeta)
+    workflow(args.falpha, args.fmeta, args.draw, args.midalpha)
 
 
 if __name__ == "__main__":

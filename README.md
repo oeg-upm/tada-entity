@@ -5,6 +5,12 @@
 
 **This is being re-written**
 
+## Alpha analysis
+
+To run alpha analysis
+
+`python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv --draw wcv2_alpha_mid_title --midalpha`
+
 # NEW
 ## Experiments
 * alpha inc `0.001`
