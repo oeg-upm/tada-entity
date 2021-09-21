@@ -2,6 +2,7 @@ import pandas as pd
 import argparse
 import seaborn as sns
 import matplotlib.pyplot as plt
+import itertools
 
 
 def shorten_uri(class_uri, base="http://dbpedia.org/ontology/", pref="dbo:"):
@@ -27,20 +28,25 @@ def analyse_alpha_for_all(falpha, classes):
     """
     :param fmeta: path to the meta file
     :param classes: a dict of fnames and their classes
+
     :return:
     """
     df_all = pd.read_csv(falpha)
     for fsid in range(1, 6):
         df = df_all[df_all.fsid == fsid]
         al_per_cls = aggregate_alpha_per_class(df, classes)
-        analyse_alpha(al_per_cls, "test-alpha.svg")
-        break
+        # analyse_alpha(al_per_cls, "wcv2_alpha_from_to_original_fsid%d" % fsid)
+        # analyse_alpha(al_per_cls, "wcv2_alpha_fsid%d" % fsid)
+
+        # break
 
 
 def analyse_alpha(alpha_per_class, draw_fname):
     rows = []
+    attrs = ['from_alpha', 'to_alpha', 'mid_alpha']
+    # attrs = ['mid_alpha']
     for c in alpha_per_class:
-        for a_attr in ['from_alpha', 'to_alpha']:
+        for a_attr in attrs:
             for a in alpha_per_class[c][a_attr]:
                 if a < 0:
                     continue
@@ -49,29 +55,37 @@ def analyse_alpha(alpha_per_class, draw_fname):
                 print(r)
     # print(rows)
     data = pd.DataFrame(rows, columns=["Class", "Alpha", "Attr"])
-    ax = sns.boxplot(x="Class", y="Alpha", hue="Attr", data=data, palette="pastel", orient="v")
-
-    ticks = ax.get_xticks()
-    new_ticks = [t for t in ticks]
-    texts = ax.get_xticklabels()
-    print(ax.get_xticklabels())
-    labels = [t.get_text() for t in texts]
-    ax.set_xticks(new_ticks)
-    ax.set_xticklabels(labels)
-    print(ax.get_xticklabels())
-    [t.set_rotation(60) for t in ax.get_xticklabels()]
-
-    # ax = sns.boxplot(y="Class", x="Alpha", hue="Attr", data=data, palette="pastel", width=2,  orient="h")
-    # ticks = ax.get_yticks()
-    # new_ticks = [t*2 + 1 for t in ticks]
-    # texts = ax.get_yticklabels()
-    # print(ax.get_yticklabels())
+    ax = sns.boxplot(x="Class", y="Alpha",
+                     hue="Attr",
+                     data=data, linewidth=1.0,
+                     # palette="colorblind",
+                     palette="Spectral",
+                     # palette="pastel",
+                     dodge=True,
+                     # palette="ch:start=.2,rot=-.3",
+                     orient="v",
+                     flierprops=dict(markerfacecolor='0.50', markersize=2), whiskerprops={'linestyle': '-'})
+    # to remove legend
+    # ax.legend_.remove()
+    # ax.set_ylim(0, 0.7)
+    # ticks = ax.get_xticks()
+    # new_ticks = [t-1 for t in ticks]
+    # texts = ax.get_xticklabels()
+    # print(ax.get_xticklabels())
     # labels = [t.get_text() for t in texts]
-    # ax.set_yticks(new_ticks[:3])
-    # ax.set_yticklabels(labels[:3])
-    # print(ax.get_yticklabels())
-    # [t.set_rotation(30) for t in ax.get_yticklabels()]
-    plt.show()
+    # ax.set_xticks(new_ticks)
+    # ax.set_xticklabels(labels)
+    # print(ax.get_xticklabels())
+    # for i, box in enumerate(ax.artists):
+    #     box.set_edgecolor('black')
+    # To change bar colors
+    # plt.setp(ax.artists, edgecolor='k', facecolor='w')
+    # To make whiskers black
+    plt.setp(ax.lines, color='k')
+    [t.set_rotation(80) for t in ax.get_xticklabels()]
+    #plt.show()
+    plt.savefig('docs/%s.svg' % draw_fname)
+
 
 
 def aggregate_alpha_per_class(df, classes):
@@ -88,9 +102,10 @@ def aggregate_alpha_per_class(df, classes):
         # print(classes)
         c = classes[row['fname']]
         if c not in d:
-            d[c] = {'from_alpha': [], 'to_alpha': []}
+            d[c] = {'from_alpha': [], 'to_alpha': [], 'mid_alpha': []}
         d[c]['from_alpha'].append(row['from_alpha'])
         d[c]['to_alpha'].append(row['to_alpha'])
+        d[c]['mid_alpha'].append((row['from_alpha'] + row['to_alpha'])/2)
     return d
 
 
