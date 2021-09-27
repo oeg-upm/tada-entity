@@ -10,14 +10,10 @@ import logging
 
 
 def validate_annotation(class_uri, fname, col_id, fpath, title_case, alphas_fsid):
+    # create empty logger to disable the logging
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
-    # # create console handler and set level to debug
-    # handler = logging.StreamHandler()
-    # handler.setLevel(logging.DEBUG)
-    # logger.addHandler(handler)
-
-
+    # logger = None
     annotator = Annotator(endpoint=ENDPOINT, title_case=title_case, num_of_threads=3, logger=logger,
                                class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
     annotator.annotate_table(file_dir=fpath, subject_col_id=col_id)
@@ -25,7 +21,7 @@ def validate_annotation(class_uri, fname, col_id, fpath, title_case, alphas_fsid
     for fsid in range(1, 6):
         d[fsid] = dict()
         for a_attr in ['alpha_mean', 'alpha_median']:
-            if fname in alphas_fsid[fsid][class_uri]:
+            if class_uri in alphas_fsid[fsid] and fname in alphas_fsid[fsid][class_uri]:
                 annotator.compute_f(alphas_fsid[fsid][class_uri][fname][a_attr])
                 candidates = annotator.get_top_k(fsid=fsid)
                 if len(candidates) > 0 and class_uri == candidates[0]:
@@ -50,8 +46,11 @@ def measure_class_accuracy(class_uri, data_dir, fnames_colid, alphas_fsid, title
                     'alpha_mean': [],
                     'alpha_median': []
                 }
-            acc[fsid]['alpha_mean'].append(fname_acc[fsid]['alpha_mean'])
-            acc[fsid]['alpha_median'].append(fname_acc[fsid]['alpha_median'])
+            if fsid in fname_acc and 'alpha_mean' in fname_acc[fsid]:
+                acc[fsid]['alpha_mean'].append(fname_acc[fsid]['alpha_mean'])
+                acc[fsid]['alpha_median'].append(fname_acc[fsid]['alpha_median'])
+            else:
+                print("No optimal alpha for fsid: %d, fname: %s" % (fsid, fname))
     # print("measure_class_accuracy> acc: ")
     # print(acc)
     return acc
@@ -69,9 +68,8 @@ def run_with_class(class_uri, alphas_per_file, title_case, data_dir):
         if len(fnames) < 2:
             del alphas_per_file[fsid][class_uri]
             continue
-        for f in fnames:
-            alphas = [a for a in alphas_per_file[fsid][class_uri][f]]
         for i, fname in enumerate(fnames):
+            alphas = [alphas_per_file[fsid][class_uri][fname]['alpha'] for fname in alphas_per_file[fsid][class_uri]]
             in_alphas = alphas[0:i] + alphas[i+1:]
             alpha_mean = np.mean(in_alphas)
             alpha_median = np.median(in_alphas)
@@ -81,8 +79,6 @@ def run_with_class(class_uri, alphas_per_file, title_case, data_dir):
     # predict and computer accuracy of the predicted alpha
     acc = measure_class_accuracy(class_uri=class_uri, fnames_colid=fname_colids, data_dir=data_dir,
                               alphas_fsid=alphas_per_file, title_case=title_case)
-    print("Class Accuracy: ")
-    print(acc)
     return acc
     # acc = dict()
     # for fname in fname_colids:
@@ -156,43 +152,52 @@ def run_with_pred_alpha(alphas_fsid, title_case, data_dir, classes):
     """
     acc = dict()
     for cls in classes:
-        run_with_class(cls, alphas_fsid, title_case, data_dir)
-        break  # TEST
-        mean_acc = Counter(mean_res)[True] * 1.0 / len(mean_res)
-        median_acc = Counter(median_res)[True] * 1.0 / len(median_res)
-        acc[cls] = {
-            'mean': mean_acc,
-            'median': median_acc,
-            'num': len(median_res)
-        }
-        # print(acc[cls])
-        break  # TEST
+        acc_cls = run_with_class(cls, alphas_fsid, title_case, data_dir)
+        for fsid in range(1, 6):
+            acc[fsid] = {
+                cls: dict()
+            }
+            for a_attr in ['alpha_mean', 'alpha_median']:
+                if fsid in acc_cls and a_attr in acc_cls[fsid]:
+                    bool_counter = Counter(acc_cls[fsid][a_attr])
+                    corrs = 0
+                    if True in bool_counter:
+                        corrs = bool_counter[True]
+                    if len(acc_cls[fsid][a_attr]) == 0:
+                        acc[fsid][cls][a_attr] = 0
+                    else:
+                        acc[fsid][cls][a_attr] = corrs * 1.0 / len(acc_cls[fsid][a_attr])
+                    # acc[fsid][cls][a_attr] = Counter(acc_cls[fsid][a_attr])[True] * 1.0 / len(acc_cls[fsid][a_attr])
+                    acc[fsid][cls]['num'] = len(acc_cls[fsid][a_attr])
     return acc
 
 
-def compute_k_fold_alpha_accuracy(falpha, data_dir, classes_dict, classes_list):
+def compute_k_fold_alpha_accuracy(falpha, data_dir, classes_dict, classes_list, title_case):
     df_all = pd.read_csv(falpha)
     alphas_fsid = dict()
     for fsid in range(1, 6):
         df = df_all[df_all.fsid == fsid]
         alphas_fsid[fsid] = aggregate_alpha_per_class_per_file(df, classes_dict)
 
-
-
-    acc = run_with_pred_alpha(alphas_fsid, title_case=True, data_dir=data_dir, classes=classes_list)
+    acc = run_with_pred_alpha(alphas_fsid, title_case=title_case, data_dir=data_dir, classes=classes_list)
+    return acc
     # draw_diagram(data)
     # save_accuracy(acc, fsid, True)
 
 
-def save_accuracy(acc, fsid, title_case):
+def save_accuracy(acc, title_case):
     lines = []
     title_str = "original"
     if title_case:
         title_str = "title"
-    for cls in acc:
-        line = "%s,%.2f,%.2f,%d" % (cls, acc[cls]['mean'], acc[cls]['median'], acc[cls]['num'])
-        lines.append(line)
-    with open("wcv2_k_fold_alpha_fsid%d_%s.csv" % (fsid, title_str), "w") as f:
+    line = "class,fsid,mean,median,num"
+    lines.append(line)
+    for fsid in range(1, 6):
+        for cls in acc:
+            if fsid in acc and cls in acc[fsid] and 'alpha_mean' in acc[fsid][cls]:
+                line = "%s,%d,%.2f,%.2f,%d" % (cls, fsid, acc[fsid][cls]['alpha_mean'], acc[cls]['alpha_median'], acc[cls]['num'])
+                lines.append(line)
+    with open("wcv2_k_fold_alpha_%s.csv" % (fsid, title_str), "w") as f:
         f.write("\n".join(lines))
 
 
@@ -205,10 +210,14 @@ def aggregate_alpha_per_class_per_file(df, classes):
     """fname,colid,fsid,from_alpha,to_alpha"""
     d = dict()
     for idx, row in df.iterrows():
+        # print("row: ")
+        # print(row)
+        # print("classes")
+        # print(classes)
         c = classes[row['fname']]
         if c not in d:
             d[c] = dict()
-        print(row)
+        # print(row)
         if row['from_alpha'] >= 0:
             d[c][row['fname']] = {
                 'alpha': (row['from_alpha'] + row['to_alpha'])/2,
@@ -224,7 +233,7 @@ def get_classes_list(classes_dict):
     return list(set(classes))
 
 
-def workflow(falpha, fmeta, data_dir):
+def workflow(falpha, fmeta, data_dir, title_case):
     """
     :param falpha:
     :param fmeta:
@@ -232,7 +241,50 @@ def workflow(falpha, fmeta, data_dir):
     """
     classes_dict = get_classes(fmeta)
     classes_list = get_classes_list(classes_dict=classes_dict)
-    compute_k_fold_alpha_accuracy(falpha, classes_dict, data_dir, classes_list)
+    acc = compute_k_fold_alpha_accuracy(falpha, data_dir, classes_dict, classes_list, title_case)
+    save_accuracy(acc, title_case)
+
+
+def generate_diagram(fpath):
+    df_all = pd.read_csv(fpath)
+    for fsid in range(1, 6):
+        df = df_all[df_all.fsid == fsid]
+        for idx, row in df.iterrows():
+            row['class'] = shorten_uri(row['class'])
+        rows = []
+        for idx, df_row in df.iterrows():
+            for a_attr in ['alpha_mean', 'alpha_median']:
+                r = [df_row['class'], df_row[a_attr], a_attr]
+                rows.append(r)
+        data = pd.DataFrame(rows, columns=['Class', 'Alpha', 'Aggr'])
+        ax = sns.boxplot(x="Alpha", y="Class",
+                         hue="Aggr",
+                         data=data, linewidth=1.0,
+                         # palette="colorblind",
+                         palette="Spectral",
+                         # palette="pastel",
+                         dodge=True,
+                         # palette="ch:start=.2,rot=-.3",
+                         orient="h",
+                         flierprops=dict(markerfacecolor='0.50', markersize=2))
+
+        # ax.legend_.remove()
+        # ax.set_xlim(0, 1.0)
+        # ax.set_ylim(0, 0.7)
+        # Horizontal
+        ticks = ax.get_yticks()
+        new_ticks = [t for t in ticks]
+        texts = ax.get_yticklabels()
+        print(ax.get_yticklabels())
+        labels = [t.get_text() for t in texts]
+        ax.set_yticks(new_ticks)
+        ax.set_yticklabels(labels, fontsize=8)
+        print(ax.get_yticklabels())
+        draw_fname = "wcv2_alpha_k_fold_fsid%d_title.csv" % fsid
+        plt.setp(ax.lines, color='k')
+        ax.figure.savefig('docs/%s.svg' % draw_fname, bbox_inches="tight")
+        ax.figure.clf()
+
 
 
 def main():
@@ -241,13 +293,18 @@ def main():
     :return:
     """
     parser = argparse.ArgumentParser(description='Alpha Evaluator')
-    parser.add_argument('falpha', help="The path to the alpha results file.")
-    parser.add_argument('fmeta', help="The path to the meta file which contain the classes.")
-    parser.add_argument('data_dir', help="The path to the csv files")
+    parser.add_argument('--falpha', help="The path to the alpha results file.")
+    parser.add_argument('--fmeta', help="The path to the meta file which contain the classes.")
+    parser.add_argument('--data_dir', help="The path to the csv files")
+    parser.add_argument('--title', choices=["true", "false"], default="true",
+                        help="Whether to force title case or use the original case")
+    parser.add_argument('--draw', help="The directory of the alpha k-fold csv file")
     parser.print_usage()
     parser.print_help()
     args = parser.parse_args()
-    workflow(args.falpha, args.fmeta, args.data_dir)
+    workflow(args.falpha, args.fmeta, args.data_dir, args.title == "true")
+    if args.draw:
+        generate_diagram(args.draw)
 
 
 if __name__ == "__main__":
