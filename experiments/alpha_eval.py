@@ -344,7 +344,7 @@ def main():
     if args.falpha and args.fmeta and args.data_dir and args.title:
         workflow(args.falpha, args.fmeta, args.data_dir, args.title.lower() == "true")
     elif args.draw and args.title and args.fscores:
-        generate_diagram(fscores=args.fscores, title_case=args.title, draw_file_base=args.draw)
+        generate_diagram(fscores=args.fscores, title_case=args.title.lower() == "true", draw_file_base=args.draw)
     else:
         parser.print_usage()
         parser.print_help()
