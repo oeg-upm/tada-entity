@@ -1,12 +1,19 @@
+"""
+This script evaluate the prediction of alpha values per class using k-fold
+"""
 import os
 import argparse
 import numpy as np
 import pandas as pd
-from experiments.alpha_analysis import get_classes
+import seaborn as sns
+from experiments.alpha_analysis import get_classes, shorten_uri
 from annotator.annot import Annotator
 from commons import ENDPOINT
 from collections import Counter
 import logging
+
+import matplotlib.pyplot as plt
+
 
 
 def validate_annotation(class_uri, fname, col_id, fpath, title_case, alphas_fsid):
@@ -34,12 +41,9 @@ def validate_annotation(class_uri, fname, col_id, fpath, title_case, alphas_fsid
 def measure_class_accuracy(class_uri, data_dir, fnames_colid, alphas_fsid, title_case):
     acc = dict()
     for fname in fnames_colid:
-        # print("measure_class_accuracy> fname: %s" % fname)
         fpath = os.path.join(data_dir, fname)
         fname_acc = validate_annotation(class_uri=class_uri, fname=fname, fpath=fpath, col_id=fnames_colid[fname],
                                         title_case=title_case, alphas_fsid=alphas_fsid)
-        # print("fname acc: ")
-        # print(fname_acc)
         for fsid in fname_acc:
             if fsid not in acc:
                 acc[fsid] = {
@@ -50,26 +54,28 @@ def measure_class_accuracy(class_uri, data_dir, fnames_colid, alphas_fsid, title
                 acc[fsid]['alpha_mean'].append(fname_acc[fsid]['alpha_mean'])
                 acc[fsid]['alpha_median'].append(fname_acc[fsid]['alpha_median'])
             else:
-                print("No optimal alpha for fsid: %d, fname: %s" % (fsid, fname))
-    # print("measure_class_accuracy> acc: ")
-    # print(acc)
+                print("measure_class_accuracy> No optimal alpha for fsid: %d, fname: %s" % (fsid, fname))
+    print("measure_class_accuracy> acc for class %s: " % class_uri)
+    print(acc)
     return acc
 
 
 def run_with_class(class_uri, alphas_per_file, title_case, data_dir):
     # Computer alphas mean and median for the k-fold test
-    alphas = []
     fname_colids = dict()
     for fsid in range(1, 6):
         if class_uri not in alphas_per_file[fsid]:
-            print("class <%s> is not in the alpha dict: " % class_uri)
+            print("run_with_class> class <%s> is not in the alpha dict <not an error>" % class_uri)
             continue
         fnames = list(alphas_per_file[fsid][class_uri])
         if len(fnames) < 2:
             del alphas_per_file[fsid][class_uri]
+            print("run_with_class> class <%s> with less than 2 files with optimal alphas" % class_uri)
             continue
+
+        alphas = [alphas_per_file[fsid][class_uri][fname]['alpha'] for fname in alphas_per_file[fsid][class_uri]]
         for i, fname in enumerate(fnames):
-            alphas = [alphas_per_file[fsid][class_uri][fname]['alpha'] for fname in alphas_per_file[fsid][class_uri]]
+            # alphas = [alphas_per_file[fsid][class_uri][fname]['alpha'] for fname in alphas_per_file[fsid][class_uri]]
             in_alphas = alphas[0:i] + alphas[i+1:]
             alpha_mean = np.mean(in_alphas)
             alpha_median = np.median(in_alphas)
@@ -148,16 +154,25 @@ def run_with_pred_alpha(alphas_fsid, title_case, data_dir, classes):
     :param title_case: bool
     :param data_dir: the path to the csv files
     :param classes: list of classes
-    :return:
+    :return: dict
+        {
+            fsid: {
+                cls1: {
+                    'alpha_mean': <>,
+                    'alpha_median': <>
+                }
+            }
+        }
     """
     acc = dict()
+    for fsid in range(1, 6):
+        acc[fsid] = dict()
     for cls in classes:
         acc_cls = run_with_class(cls, alphas_fsid, title_case, data_dir)
         for fsid in range(1, 6):
-            acc[fsid] = {
-                cls: dict()
-            }
+            acc[fsid][cls] = dict()
             for a_attr in ['alpha_mean', 'alpha_median']:
+                # Because some files does not have optimal alphas for certain fsid
                 if fsid in acc_cls and a_attr in acc_cls[fsid]:
                     bool_counter = Counter(acc_cls[fsid][a_attr])
                     corrs = 0
@@ -165,24 +180,26 @@ def run_with_pred_alpha(alphas_fsid, title_case, data_dir, classes):
                         corrs = bool_counter[True]
                     if len(acc_cls[fsid][a_attr]) == 0:
                         acc[fsid][cls][a_attr] = 0
+                        print("run_with_pred_alpha> class: %s, fsid: %d, empty alphas (not an error)" % (cls, fsid))
                     else:
                         acc[fsid][cls][a_attr] = corrs * 1.0 / len(acc_cls[fsid][a_attr])
                     # acc[fsid][cls][a_attr] = Counter(acc_cls[fsid][a_attr])[True] * 1.0 / len(acc_cls[fsid][a_attr])
                     acc[fsid][cls]['num'] = len(acc_cls[fsid][a_attr])
+                else:
+                    print("run_with_pred_alpha> class: %s, fsid: %d, does not have an optimal alpha (not an error)" % (cls, fsid))
+
     return acc
 
 
-def compute_k_fold_alpha_accuracy(falpha, data_dir, classes_dict, classes_list, title_case):
+def compute_k_fold_alpha_accuracy(falpha, data_dir, fnames_and_classes, classes_list, title_case):
     df_all = pd.read_csv(falpha)
     alphas_fsid = dict()
     for fsid in range(1, 6):
         df = df_all[df_all.fsid == fsid]
-        alphas_fsid[fsid] = aggregate_alpha_per_class_per_file(df, classes_dict)
+        alphas_fsid[fsid] = aggregate_alpha_per_class_per_file(df, fnames_and_classes)
 
     acc = run_with_pred_alpha(alphas_fsid, title_case=title_case, data_dir=data_dir, classes=classes_list)
     return acc
-    # draw_diagram(data)
-    # save_accuracy(acc, fsid, True)
 
 
 def save_accuracy(acc, title_case):
@@ -193,31 +210,28 @@ def save_accuracy(acc, title_case):
     line = "class,fsid,mean,median,num"
     lines.append(line)
     for fsid in range(1, 6):
-        for cls in acc:
+        for cls in acc[fsid]:
             if fsid in acc and cls in acc[fsid] and 'alpha_mean' in acc[fsid][cls]:
-                line = "%s,%d,%.2f,%.2f,%d" % (cls, fsid, acc[fsid][cls]['alpha_mean'], acc[cls]['alpha_median'], acc[cls]['num'])
+                line = "%s,%d,%.2f,%.2f,%d" % (cls, fsid, acc[fsid][cls]['alpha_mean'], acc[fsid][cls]['alpha_median'],
+                                               acc[fsid][cls]['num'])
                 lines.append(line)
-    with open("wcv2_k_fold_alpha_%s.csv" % (fsid, title_str), "w") as f:
+    fname = "wcv2_k_fold_alpha_%s.csv" % (title_str)
+    with open(fname, "w") as f:
         f.write("\n".join(lines))
 
 
-def aggregate_alpha_per_class_per_file(df, classes):
+def aggregate_alpha_per_class_per_file(df, fnames_and_classes):
     """
-    :param df: DataFrame of a meta file
-    :param classes: a dict of fnames and their classes
+    :param df: DataFrame of a meta file (filtered to have the same fsid)
+    :param fnames_and_classes: a dict of fnames (keys) and their classes (vals)
     :return:
     """
     """fname,colid,fsid,from_alpha,to_alpha"""
     d = dict()
     for idx, row in df.iterrows():
-        # print("row: ")
-        # print(row)
-        # print("classes")
-        # print(classes)
-        c = classes[row['fname']]
+        c = fnames_and_classes[row['fname']]
         if c not in d:
             d[c] = dict()
-        # print(row)
         if row['from_alpha'] >= 0:
             d[c][row['fname']] = {
                 'alpha': (row['from_alpha'] + row['to_alpha'])/2,
@@ -239,36 +253,61 @@ def workflow(falpha, fmeta, data_dir, title_case):
     :param fmeta:
     :return:
     """
-    classes_dict = get_classes(fmeta)
-    classes_list = get_classes_list(classes_dict=classes_dict)
-    acc = compute_k_fold_alpha_accuracy(falpha, data_dir, classes_dict, classes_list, title_case)
+    fnames_and_classes = get_classes(fmeta)
+    classes_list = get_classes_list(fnames_and_classes)
+    acc = compute_k_fold_alpha_accuracy(falpha, data_dir, fnames_and_classes, classes_list, title_case)
     save_accuracy(acc, title_case)
 
 
-def generate_diagram(fpath):
-    df_all = pd.read_csv(fpath)
+def generate_diagram(fscores, title_case, draw_file_base):
+    """
+    :param fscores: path to scores file
+    :param title_case: bool
+    :param draw_file_base: base of the diagram
+    :return: None
+    """
+    if title_case:
+        title_txt = "title"
+    else:
+        title_txt = "original"
+    df_all = pd.read_csv(fscores)
     for fsid in range(1, 6):
         df = df_all[df_all.fsid == fsid]
         for idx, row in df.iterrows():
             row['class'] = shorten_uri(row['class'])
         rows = []
         for idx, df_row in df.iterrows():
-            for a_attr in ['alpha_mean', 'alpha_median']:
+            for a_attr in ['mean', 'median']:
+                print("df_row")
+                print(df_row)
                 r = [df_row['class'], df_row[a_attr], a_attr]
                 rows.append(r)
         data = pd.DataFrame(rows, columns=['Class', 'Alpha', 'Aggr'])
-        ax = sns.boxplot(x="Alpha", y="Class",
+        # ax = sns.boxplot(x="Alpha", y="Class",
+        #                  hue="Aggr",
+        #                  data=data, linewidth=1.0,
+        #                  # palette="colorblind",
+        #                  palette="Spectral",
+        #                  # palette="pastel",
+        #                  dodge=True,
+        #                  # palette="ch:start=.2,rot=-.3",
+        #                  orient="h",
+        #                  flierprops=dict(markerfacecolor='0.50', markersize=2))
+
+        ax = sns.barplot(x="Alpha", y="Class",
                          hue="Aggr",
                          data=data, linewidth=1.0,
                          # palette="colorblind",
-                         palette="Spectral",
+                         # palette="Spectral",
                          # palette="pastel",
-                         dodge=True,
                          # palette="ch:start=.2,rot=-.3",
-                         orient="h",
-                         flierprops=dict(markerfacecolor='0.50', markersize=2))
+                         # palette="YlOrBr",
+                         palette="Paired",
+                         orient="h")
 
         # ax.legend_.remove()
+        # ax.legend(bbox_to_anchor=(1.01, 1), borderaxespad=0)
+        ax.legend(bbox_to_anchor=(1.0, -0.1), borderaxespad=0)
         # ax.set_xlim(0, 1.0)
         # ax.set_ylim(0, 0.7)
         # Horizontal
@@ -280,11 +319,11 @@ def generate_diagram(fpath):
         ax.set_yticks(new_ticks)
         ax.set_yticklabels(labels, fontsize=8)
         print(ax.get_yticklabels())
-        draw_fname = "wcv2_alpha_k_fold_fsid%d_title.csv" % fsid
+        draw_fname = draw_file_base+"_fsid%d_%s" % (fsid, title_txt)  # "wcv2_alpha_k_fold_fsid%d_title.csv" % fsid
+        # draw_fname = "wcv2_alpha_k_fold_fsid%d_title.csv" % fsid
         plt.setp(ax.lines, color='k')
         ax.figure.savefig('docs/%s.svg' % draw_fname, bbox_inches="tight")
         ax.figure.clf()
-
 
 
 def main():
@@ -298,13 +337,17 @@ def main():
     parser.add_argument('--data_dir', help="The path to the csv files")
     parser.add_argument('--title', choices=["true", "false"], default="true",
                         help="Whether to force title case or use the original case")
-    parser.add_argument('--draw', help="The directory of the alpha k-fold csv file")
-    parser.print_usage()
-    parser.print_help()
+    parser.add_argument('--draw', help="The base name for the diagram file (without the extension)")
+    parser.add_argument('--fscores', help="The path to the k-fold scores file")
     args = parser.parse_args()
-    workflow(args.falpha, args.fmeta, args.data_dir, args.title == "true")
-    if args.draw:
-        generate_diagram(args.draw)
+
+    if args.falpha and args.fmeta and args.data_dir and args.title:
+        workflow(args.falpha, args.fmeta, args.data_dir, args.title.lower() == "true")
+    elif args.draw and args.title and args.fscores:
+        generate_diagram(fscores=args.fscores, title_case=args.title, draw_file_base=args.draw)
+    else:
+        parser.print_usage()
+        parser.print_help()
 
 
 if __name__ == "__main__":

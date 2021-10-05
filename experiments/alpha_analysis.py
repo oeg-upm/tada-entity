@@ -1,3 +1,6 @@
+"""
+This script analyses optimal alphas for each class and draws them in a box and whisker plot
+"""
 import pandas as pd
 import argparse
 import seaborn as sns

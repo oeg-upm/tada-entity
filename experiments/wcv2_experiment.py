@@ -57,7 +57,7 @@ if __name__ == "__main__":
         alpha_range = False
         meta_fdir, sc_dir, data_dir = sys.argv[1:4]
         if len(sys.argv) >= 5:
-            if sys.argv[4] == "title":
+            if sys.argv[4].lower() == "title":
                 print("Title case")
                 results_fname = results_fname_title
                 title_case = True

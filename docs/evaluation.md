@@ -24,6 +24,16 @@ file which has an optimal alpha.
 |  5  | <img src="./wcv2_alpha_from_to_original_fsid5.svg" width="300px">  | <img src="./wcv2_alpha_from_to_title_fsid5.svg" width="300px"> |
 
 
+## Alpha k-fold
+|fsid| Original Case | Title Case |
+|:---:|:---:|:---:|
+|  1  |  <img src="./wcv2_alpha_k_fold_scores_fsid1_original.svg" width="300px">  | <img src="./wcv2_alpha_k_fold_scores_fsid1_title.svg" width="300px"> |
+|  2  |  <img src="./wcv2_alpha_k_fold_scores_fsid2_original.svg" width="300px">  | <img src="./wcv2_alpha_k_fold_scores_fsid2_title.svg" width="300px"> |
+|  3  | <img src="./wcv2_alpha_k_fold_scores_fsid3_original.svg" width="300px">  | <img src="./wcv2_alpha_k_fold_scores_fsid3_title.svg" width="300px"> |
+|  4  |  <img src="./wcv2_alpha_k_fold_scores_fsid4_original.svg" width="300px">  | <img src="./wcv2_alpha_k_fold_scores_fsid4_title.svg" width="300px"> |
+|  5  | <img src="./wcv2_alpha_k_fold_scores_fsid5_original.svg" width="300px">  | <img src="./wcv2_alpha_k_fold_scores_fsid5_title.svg" width="300px"> |
+
+
 ## SemTab 2019
 
 *In these tests, ok and perfect annotations are treated as perfect*

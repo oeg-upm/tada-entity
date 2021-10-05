@@ -19,6 +19,16 @@ To run alpha analysis
 
 
 `python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv --draw wcv2_alpha_from_to_original`
+
+## Alpha prediction
+
+To run alpha evaluation
+
+```
+python -m experiments.alpha_eval 
+```
+
+
 # NEW
 ## Experiments
 * alpha inc `0.001`
@@ -27,12 +37,14 @@ To run alpha analysis
 
 meta_fdir, sc_dir, data_dir 
 To run the experiment
-`python experiments/wcv2_experiment.py <meta dir> <subject column dir> <data dir>`
+`python -m experiments.wcv2_experiment <meta dir> <subject column dir> <data dir>`
 
 meta dir: the path to the file which contains the file names and their classes
 subject column dir: the path to the file which contains the subject column ids
 data dir: the path to the folder which contain the csv files
-
+```
+python -m experiments.wcv2_experiment <meta dir> <subject column dir> <data dir>
+```
 ### SemTab
 #### Invalid
 ```

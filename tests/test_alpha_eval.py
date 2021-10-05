@@ -123,12 +123,14 @@ class AlphaEvalTest(TestCase):
         fname2 = "swimmers2.csv"
         falpha = "tests/alpha_test_1.csv"
         data_dir = "tests"
+        title_case = False
         classes_list = [class_uri]
         classes_dict = {
             fname: class_uri,
             fname2: class_uri
         }
-        acc = ae.compute_k_fold_alpha_accuracy(falpha, data_dir, classes_dict, classes_list)
+        acc = ae.compute_k_fold_alpha_accuracy(falpha, data_dir, classes_dict, classes_list, title_case)
         self.assertIn(3, acc)
         self.assertIn(class_uri, acc[3])
         self.assertIn('num', acc[3][class_uri])
+        self.assertEqual(acc[3][class_uri]['alpha_mean'], 1.0)
