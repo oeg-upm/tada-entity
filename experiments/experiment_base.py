@@ -103,9 +103,13 @@ class ExperimentBase:
                     max_alpha = alpha
                 elif min_alpha is not None:
                     return min_alpha, max_alpha
+        print("%s> correct_candidates: %s" % (__name__, str(correct_candidates)))
+        print(min_alpha)
+        print(max_alpha)
         return min_alpha, max_alpha
 
     def compute_alpha_range(self, correct_candidates, alpha_inc=0.001, k=1):
+        print("%s> " % (__name__))
         for i in range(1, 6):
             fsid = i
             from_alpha, to_alpha = self.get_alpha_range_fsid(correct_candidates, fsid=fsid, alpha_inc=alpha_inc, k=k)

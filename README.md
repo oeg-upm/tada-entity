@@ -9,23 +9,88 @@
 
 To run alpha analysis
 
-`python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv --draw wcv2_alpha_mid_title --midalpha`
+### T2Dv1
+1. Generate the alpha ranges.
 
+Original case
+```
+python -m experiments.wcv1_experiment experiments/wcv1_meta.csv ~/workspaces/Datasets/T2Dv1/tables_complete original alpha
+```
 
-`python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv --draw wcv2_alpha_mid_original --midalpha`
+Title case
+```
+python -m experiments.wcv1_experiment experiments/wcv1_meta.csv ~/workspaces/Datasets/T2Dv1/tables_complete title alpha
+```
 
+2. Generate mid alpha diagrams.
 
-`python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv --draw wcv2_alpha_from_to_title`
+Title case
+```
+python -m experiments.alpha_analysis wc1_alpha_title_case.csv  experiments/wcv1_meta.csv wcv1 --draw wcv1_alpha_mid_title --midalpha  
+```
+   
+Original case
+```
+python -m experiments.alpha_analysis wc1_alpha_original_case.csv  experiments/wcv1_meta.csv wcv1 --draw wcv1_alpha_mid_original --midalpha  
+```
 
+3. Generate from-to alpha diagrams.
+   
+Title case
 
-`python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv --draw wcv2_alpha_from_to_original`
+```
+python -m experiments.alpha_analysis wc1_alpha_title_case.csv  experiments/wcv1_meta.csv wcv1 --draw wcv1_alpha_from_to_title
+```
 
-## Alpha prediction
+Original case.
+
+```
+python -m experiments.alpha_analysis wc1_alpha_original_case.csv  experiments/wcv1_meta.csv wcv1 --draw wcv2_alpha_from_to_original
+```
+
+### T2Dv2
+
+1. Generate alpha ranges
+
+Original 
+```
+python -m experiments.wcv2_experiment experiments/wcv1_meta.csv ~/workspaces/Datasets/T2Dv1/tables_complete original alpha
+```
+
+1. Generate mid alpha diagrams for title.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_mid_title --midalpha
+```
+   
+2. Generate mid alpha diagrams with original case.
+
+```python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_mid_original --midalpha```
+
+3. Generate from-to alpha diagrams with title case.
+
+```python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_from_to_title```
+
+4. Generate from-to alpha diagrams with original case.
+
+```python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_from_to_original```
+
+## Alpha k-fold evaluation
 
 To run alpha evaluation
 
+1. Generate scores file
 ```
-python -m experiments.alpha_eval 
+python -m experiments.alpha_eval --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --data_dir ~/workspaces/Datasets/T2Dv2/csv --title true
+
+python -m experiments.alpha_eval_k_fold --falpha <alpha dir> --fmeta <meta dir> --title true 
+```
+
+2. Generate the diagrams
+```
+python -m experiments.alpha_eval --draw wcv2_alpha_k_fold_scores --fscores wcv2_k_fold_alpha_title.csv --title false
+
+python -m experiments.alpha_eval_k_fold --fscores <kfold scores file> --draw <base fname> --title true
 ```
 
 

@@ -61,7 +61,7 @@ if __name__ == "__main__":
                 print("Title case")
                 results_fname = results_fname_title
                 title_case = True
-            elif sys.argv[4] == "original":
+            elif sys.argv[4].lower() == "original":
                 print("original case")
                 results_fname = results_fname_original
                 title_case = False

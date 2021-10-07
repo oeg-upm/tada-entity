@@ -2,7 +2,33 @@
 
 
 ## Alpha Analysis
-### Mid alpha
+
+### WCv1
+#### Mid alpha
+Mid alpha is the middle alpha between the `from_alpha` and `to_alpha`. This is computed for each
+file which has an optimal alpha.
+
+|fsid| Original Case | Title Case |
+|:---:|:---:|:---:|
+|  1  |  <img src="./wcv1_alpha_mid_original_fsid1.svg" width="300px">  | <img src="./wcv1_alpha_mid_title_fsid1.svg" width="300px"> |
+|  2  |  <img src="./wcv1_alpha_mid_original_fsid2.svg" width="300px">  | <img src="./wcv1_alpha_mid_title_fsid2.svg" width="300px"> |
+|  3  | <img src="./wcv1_alpha_mid_original_fsid3.svg" width="300px">  | <img src="./wcv1_alpha_mid_title_fsid3.svg" width="300px"> |
+|  4  |  <img src="./wcv1_alpha_mid_original_fsid4.svg" width="300px">  | <img src="./wcv1_alpha_mid_title_fsid4.svg" width="300px"> |
+|  5  | <img src="./wcv1_alpha_mid_original_fsid5.svg" width="300px">  | <img src="./wcv1_alpha_mid_title_fsid5.svg" width="300px"> |
+
+#### Alpha ranges
+|fsid| Original Case | Title Case |
+|:---:|:---:|:---:|
+|  1  |  <img src="./wcv1_alpha_from_to_original_fsid1.svg" width="300px">  | <img src="./wcv1_alpha_from_to_title_fsid1.svg" width="300px"> |
+|  2  |  <img src="./wcv1_alpha_from_to_original_fsid2.svg" width="300px">  | <img src="./wcv1_alpha_from_to_title_fsid2.svg" width="300px"> |
+|  3  | <img src="./wcv1_alpha_from_to_original_fsid3.svg" width="300px">  | <img src="./wcv1_alpha_from_to_title_fsid3.svg" width="300px"> |
+|  4  |  <img src="./wcv1_alpha_from_to_original_fsid4.svg" width="300px">  | <img src="./wcv1_alpha_from_to_title_fsid4.svg" width="300px"> |
+|  5  | <img src="./wcv1_alpha_from_to_original_fsid5.svg" width="300px">  | <img src="./wcv1_alpha_from_to_title_fsid5.svg" width="300px"> |
+
+
+
+### WCv2
+#### Mid alpha
 Mid alpha is the middle alpha between the `from_alpha` and `to_alpha`. This is computed for each
 file which has an optimal alpha.
 
@@ -14,7 +40,7 @@ file which has an optimal alpha.
 |  4  |  <img src="./wcv2_alpha_mid_original_fsid4.svg" width="300px">  | <img src="./wcv2_alpha_mid_title_fsid4.svg" width="300px"> |
 |  5  | <img src="./wcv2_alpha_mid_original_fsid5.svg" width="300px">  | <img src="./wcv2_alpha_mid_title_fsid5.svg" width="300px"> |
 
-### Alpha ranges
+#### Alpha ranges
 |fsid| Original Case | Title Case |
 |:---:|:---:|:---:|
 |  1  |  <img src="./wcv2_alpha_from_to_original_fsid1.svg" width="300px">  | <img src="./wcv2_alpha_from_to_title_fsid1.svg" width="300px"> |

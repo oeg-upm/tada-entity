@@ -15,7 +15,6 @@ import logging
 import matplotlib.pyplot as plt
 
 
-
 def validate_annotation(class_uri, fname, col_id, fpath, title_case, alphas_fsid):
     # create empty logger to disable the logging
     logger = logging.getLogger(__name__)

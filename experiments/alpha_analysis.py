@@ -12,16 +12,22 @@ def shorten_uri(class_uri, base="http://dbpedia.org/ontology/", pref="dbo:"):
     return class_uri.replace(base, pref)
 
 
-def get_classes(fpath):
+def get_classes(fpath, dataset):
     d = dict()
     f = open(fpath)
     for line in f.readlines():
         sline = line.strip()
         if sline == "":
             continue
-        fname, _, class_uri = sline.split(',')
+        if dataset == "wcv2":
+            fname, _, class_uri = sline.split(',')
+        elif dataset == "wcv1":
+            fname, _, class_uri, _ = sline.split(',')
+            fname = fname.split(".")[0]
         fname = fname.replace('"', '')
         fname += ".csv"
+        #DEBUG
+        print("%s> fname: %s" % (__name__, fname))
         class_uri = class_uri.replace('"', "")
         d[fname] = class_uri
     return d
@@ -84,6 +90,8 @@ def analyse_alpha(alpha_per_class, draw_fname, midalpha):
                      # palette="ch:start=.2,rot=-.3",
                      orient="h",
                      flierprops=dict(markerfacecolor='0.50', markersize=2))
+
+    ax.legend(bbox_to_anchor=(1.0, -0.1), borderaxespad=0)
     if midalpha:
         # to remove legend
         ax.legend_.remove()
@@ -130,8 +138,9 @@ def aggregate_alpha_per_class(df, classes):
     d = dict()
     for idx, row in df.iterrows():
         # print("fname: <%s>" % row['fname'])
-        # print("classes: ")
-        # print(classes)
+        # DEBUG
+        print("classes: ")
+        print(classes)
         c = classes[row['fname']]
         if c not in d:
             d[c] = {'from_alpha': [], 'to_alpha': [], 'mid_alpha': []}
@@ -141,8 +150,8 @@ def aggregate_alpha_per_class(df, classes):
     return d
 
 
-def workflow(falpha, fmeta, draw_fpath, midalpha):
-    classes = get_classes(fmeta)
+def workflow(falpha, fmeta, draw_fpath, midalpha, dataset):
+    classes = get_classes(fmeta, dataset)
     analyse_alpha_for_all(falpha, classes, draw_fpath, midalpha)
 
 
@@ -155,13 +164,16 @@ def main():
     # parser.add_argument('--debug', action="store_true", default=False, help="Whether to enable debug messages.")
     parser.add_argument('falpha', help="The path to the alpha results file.")
     parser.add_argument('fmeta', help="The path to the meta file which contain the classes.")
+    parser.add_argument('dataset', choices=["wcv1", "wcv2", "st19-r1",  "st19-r2", "st19-r3", "st19-r4"],
+                        help="The name of the dataset as the meta file differ for each")
     parser.add_argument('--draw', default="test.svg", help="The filename prefix to draw (without the extension)")
     parser.add_argument('--midalpha', action="store_true", default=False,
                         help="Whether to report the mid ranges of the optimal alpha or just the ranges")
+
     parser.print_usage()
     parser.print_help()
     args = parser.parse_args()
-    workflow(args.falpha, args.fmeta, args.draw, args.midalpha)
+    workflow(args.falpha, args.fmeta, args.draw, args.midalpha, args.dataset)
 
 
 if __name__ == "__main__":
