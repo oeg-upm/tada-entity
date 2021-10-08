@@ -201,7 +201,7 @@ def compute_k_fold_alpha_accuracy(falpha, data_dir, fnames_and_classes, classes_
     return acc
 
 
-def save_accuracy(acc, title_case):
+def save_accuracy(acc, title_case, dataset):
     lines = []
     title_str = "original"
     if title_case:
@@ -214,7 +214,7 @@ def save_accuracy(acc, title_case):
                 line = "%s,%d,%.2f,%.2f,%d" % (cls, fsid, acc[fsid][cls]['alpha_mean'], acc[fsid][cls]['alpha_median'],
                                                acc[fsid][cls]['num'])
                 lines.append(line)
-    fname = "wcv2_k_fold_alpha_%s.csv" % (title_str)
+    fname = "%s_k_fold_alpha_%s.csv" % (dataset, title_str)
     with open(fname, "w") as f:
         f.write("\n".join(lines))
 
@@ -246,16 +246,19 @@ def get_classes_list(classes_dict):
     return list(set(classes))
 
 
-def workflow(falpha, fmeta, data_dir, title_case):
+def workflow(falpha, fmeta, data_dir, title_case, dataset):
     """
     :param falpha:
     :param fmeta:
+    :param data_dir: the path to the csv data
+    :param title_case: bool
+    :param dataset: str  wcv1, or wcv2, or ..
     :return:
     """
-    fnames_and_classes = get_classes(fmeta)
+    fnames_and_classes = get_classes(fmeta, dataset)
     classes_list = get_classes_list(fnames_and_classes)
     acc = compute_k_fold_alpha_accuracy(falpha, data_dir, fnames_and_classes, classes_list, title_case)
-    save_accuracy(acc, title_case)
+    save_accuracy(acc, title_case, dataset)
 
 
 def generate_diagram(fscores, title_case, draw_file_base):
@@ -334,14 +337,16 @@ def main():
     parser.add_argument('--falpha', help="The path to the alpha results file.")
     parser.add_argument('--fmeta', help="The path to the meta file which contain the classes.")
     parser.add_argument('--data_dir', help="The path to the csv files")
+    parser.add_argument('--dataset', choices=["wcv1", "wcv2", "st19-r1",  "st19-r2", "st19-r3", "st19-r4"],
+                        help="The name of the dataset as the meta file differ for each")
     parser.add_argument('--title', choices=["true", "false"], default="true",
                         help="Whether to force title case or use the original case")
     parser.add_argument('--draw', help="The base name for the diagram file (without the extension)")
     parser.add_argument('--fscores', help="The path to the k-fold scores file")
     args = parser.parse_args()
 
-    if args.falpha and args.fmeta and args.data_dir and args.title:
-        workflow(args.falpha, args.fmeta, args.data_dir, args.title.lower() == "true")
+    if args.falpha and args.fmeta and args.data_dir and args.title and args.dataset:
+        workflow(args.falpha, args.fmeta, args.data_dir, args.title.lower() == "true", dataset=args.dataset)
     elif args.draw and args.title and args.fscores:
         generate_diagram(fscores=args.fscores, title_case=args.title.lower() == "true", draw_file_base=args.draw)
     else:

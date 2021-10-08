@@ -4,6 +4,7 @@
 ## Alpha Analysis
 
 ### WCv1
+
 #### Mid alpha
 Mid alpha is the middle alpha between the `from_alpha` and `to_alpha`. This is computed for each
 file which has an optimal alpha.
@@ -28,6 +29,7 @@ file which has an optimal alpha.
 
 
 ### WCv2
+
 #### Mid alpha
 Mid alpha is the middle alpha between the `from_alpha` and `to_alpha`. This is computed for each
 file which has an optimal alpha.
@@ -51,6 +53,18 @@ file which has an optimal alpha.
 
 
 ## Alpha k-fold
+
+## T2Dv1
+|fsid| Original Case | Title Case |
+|:---:|:---:|:---:|
+|  1  |  <img src="./wcv1_alpha_k_fold_scores_fsid1_original.svg" width="300px">  | <img src="./wcv1_alpha_k_fold_scores_fsid1_title.svg" width="300px"> |
+|  2  |  <img src="./wcv1_alpha_k_fold_scores_fsid2_original.svg" width="300px">  | <img src="./wcv1_alpha_k_fold_scores_fsid2_title.svg" width="300px"> |
+|  3  | <img src="./wcv1_alpha_k_fold_scores_fsid3_original.svg" width="300px">  | <img src="./wcv1_alpha_k_fold_scores_fsid3_title.svg" width="300px"> |
+|  4  |  <img src="./wcv1_alpha_k_fold_scores_fsid4_original.svg" width="300px">  | <img src="./wcv1_alpha_k_fold_scores_fsid4_title.svg" width="300px"> |
+|  5  | <img src="./wcv1_alpha_k_fold_scores_fsid5_original.svg" width="300px">  | <img src="./wcv1_alpha_k_fold_scores_fsid5_title.svg" width="300px"> |
+
+
+## T2Dv2
 |fsid| Original Case | Title Case |
 |:---:|:---:|:---:|
 |  1  |  <img src="./wcv2_alpha_k_fold_scores_fsid1_original.svg" width="300px">  | <img src="./wcv2_alpha_k_fold_scores_fsid1_title.svg" width="300px"> |
