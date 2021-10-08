@@ -45,7 +45,7 @@ python -m experiments.alpha_analysis wc1_alpha_title_case.csv  experiments/wcv1_
 Original case.
 
 ```
-python -m experiments.alpha_analysis wc1_alpha_original_case.csv  experiments/wcv1_meta.csv wcv1 --draw wcv2_alpha_from_to_original
+python -m experiments.alpha_analysis wc1_alpha_original_case.csv  experiments/wcv1_meta.csv wcv1 --draw wcv1_alpha_from_to_original
 ```
 
 ### T2Dv2
