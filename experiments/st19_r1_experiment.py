@@ -3,13 +3,14 @@ import os
 import sys
 from datetime import datetime
 
+
 class ST19R1(ExperimentBase):
 
     def __init__(self, log_fname=None, title_case=False):
         super().__init__(log_fname=log_fname, title_case=title_case)
         self.invalid_files = []
 
-    def workflow(self, meta_fdir, data_dir, ks):
+    def workflow(self, meta_fdir, data_dir, ks, alpha_range):
         f = open(meta_fdir)
         num_files = 0
         for line in f.readlines():
@@ -21,7 +22,7 @@ class ST19R1(ExperimentBase):
             fdir = os.path.join(data_dir, fname)
             if not os.path.exists(fdir):
                 self.invalid_files.append(fdir)
-                num_files -=1
+                num_files -= 1
                 continue
             self.annotate_single(fpath=fdir, col_id=col_id)
             self.validate_with_opt_alpha(correct_candidates=[class_uri])
@@ -29,9 +30,19 @@ class ST19R1(ExperimentBase):
         print("# of invalid files: %d" % len(self.invalid_files))
         for invf in self.invalid_files:
             print(invf)
-        for k in ks:
-            print("Scores for k=%d" % k)
-            self.get_scores(k)
+        # for k in ks:
+        #     print("Scores for k=%d" % k)
+        #     self.get_scores(k)
+        if alpha_range:
+            if title_case:
+                tc = "title_case"
+            else:
+                tc = "original_case"
+            self.save_alpha_ranges("st19r1_alpha_%s.csv" % (tc))
+        else:
+            for k in ks:
+                print("Scores for k=%d" % k)
+                self.get_scores(k)
 
 
 if __name__ == "__main__":
@@ -40,22 +51,26 @@ if __name__ == "__main__":
         results_fname_title = "st19-r1-results-title.csv"
         results_fname = results_fname_original
         title_case = False
+        alpha_range = False
         meta_fdir,  data_dir = sys.argv[1:3]
-        if len(sys.argv) == 4:
-            if sys.argv[3]=="title":
+        if len(sys.argv) > 3:
+            if sys.argv[3] == "title":
                 print("Title case")
                 results_fname = results_fname_title
                 title_case = True
-            elif sys.argv[3]=="original":
+            elif sys.argv[3] == "original":
                 print("original case")
                 results_fname = results_fname_original
                 title_case = False
             else:
-                print("Error: expects the fourth paramerter to either be title or original")
+                print("Error: expects the fourth parameter to either be title or original")
                 raise Exception("Invalid case")
+            if len(sys.argv) > 4:
+                if sys.argv[4] == "alpha":
+                    alpha_range = True
         start = datetime.now()
         o = ST19R1(results_fname, title_case=title_case)
-        o.workflow(meta_fdir=meta_fdir, data_dir=data_dir, ks=[1, 3, 5])
+        o.workflow(meta_fdir=meta_fdir, data_dir=data_dir, ks=[1, 3, 5], alpha_range=alpha_range)
         end = datetime.now()
         print("time consumed: "+str(end-start))
     else:

@@ -24,10 +24,12 @@ def get_classes(fpath, dataset):
         elif dataset == "wcv1":
             fname, _, class_uri, _ = sline.split(',')
             fname = fname.split(".")[0]
+        else:
+            raise Exception("Unknown dataset")
         fname = fname.replace('"', '')
         fname += ".csv"
-        #DEBUG
-        print("%s> fname: %s" % (__name__, fname))
+        # #DEBUG
+        # print("%s> fname: %s" % (__name__, fname))
         class_uri = class_uri.replace('"', "")
         d[fname] = class_uri
     return d

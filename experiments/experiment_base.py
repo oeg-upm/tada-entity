@@ -113,6 +113,9 @@ class ExperimentBase:
         for i in range(1, 6):
             fsid = i
             from_alpha, to_alpha = self.get_alpha_range_fsid(correct_candidates, fsid=fsid, alpha_inc=alpha_inc, k=k)
+            print("from alpha to alpha: ")
+            print(from_alpha)
+            print(to_alpha)
             if from_alpha is None or to_alpha is None:
                 from_alpha = -1
                 to_alpha = -1
@@ -127,6 +130,8 @@ class ExperimentBase:
     def save_alpha_ranges(self, outf):
         f = open(outf, 'w')
         f.write("fname,colid,fsid,from_alpha,to_alpha\n")
+        print("alpha ranges: ")
+        print(self.alpha_ranges)
         for fp in self.alpha_ranges:
             for colid in self.alpha_ranges[fp]:
                 for fsid in self.alpha_ranges[fp][colid]:

@@ -91,6 +91,55 @@ Original case.
 python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_from_to_original
 ```
 
+
+### ST19R1
+
+1. Generate alpha ranges
+
+Original 
+```
+python -m experiments.st19_r1_experiment ~/workspaces/Datasets/semtab2019/Round\ 1/gt/CTA_Round1_gt.csv ~/workspaces/Datasets/semtab2019/Round\ 1/tables original alpha
+```
+
+Title 
+```
+python -m experiments.st19_r1_experiment ~/workspaces/Datasets/semtab2019/Round\ 1/gt/CTA_Round1_gt.csv ~/workspaces/Datasets/semtab2019/Round\ 1/tables title alpha
+```
+
+
+1. Generate mid alpha diagrams
+   
+Title case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_mid_title --midalpha
+```
+   
+Original case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_mid_original --midalpha
+```
+
+3. Generate from-to alpha diagrams
+   
+Title case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_from_to_title
+```
+
+Original case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_from_to_original
+```
+
+
+
+
+
+
 ## Alpha k-fold evaluation
 
 ### T2Dv1
@@ -102,8 +151,6 @@ Title case
 
 ```
 python -m experiments.alpha_eval_k_fold --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --data_dir ~/workspaces/Datasets/T2Dv1/tables_complete --title true --dataset wcv1
-
-
 ```
 
 Original case
@@ -118,17 +165,14 @@ Title case
 
 ```
 python -m experiments.alpha_eval_k_fold --draw wcv1_alpha_k_fold_scores --fscores wcv1_k_fold_alpha_title.csv --title true  --dataset wcv1
-
-
 ```
 
 Original case
 
 ```
 python -m experiments.alpha_eval_k_fold --draw wcv1_alpha_k_fold_scores --fscores wcv1_k_fold_alpha_original.csv --title false  --dataset wcv1
-
-
 ```
+
 
 ### T2Dv2
 To run alpha evaluation
@@ -159,6 +203,20 @@ Original case
 python -m experiments.alpha_eval_k_fold --draw wcv2_alpha_k_fold_scores --fscores wcv2_k_fold_alpha_original.csv --title false --dataset wcv2
 ```
 
+
+## One alpha for all
+
+### T2Dv2
+
+Title case
+```
+ python -m experiments.alpha_eval_one --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --fscores wcv2_k_fold_alpha_title.csv --draw wcv2_alpha_one_title
+```
+
+Original case
+```
+ python -m experiments.alpha_eval_one --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --fscores wcv2_k_fold_alpha_original.csv --draw wcv2_alpha_one_original
+```
 
 # NEW
 ## Experiments

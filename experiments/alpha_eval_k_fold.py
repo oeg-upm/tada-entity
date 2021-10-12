@@ -54,8 +54,8 @@ def measure_class_accuracy(class_uri, data_dir, fnames_colid, alphas_fsid, title
                 acc[fsid]['alpha_median'].append(fname_acc[fsid]['alpha_median'])
             else:
                 print("measure_class_accuracy> No optimal alpha for fsid: %d, fname: %s" % (fsid, fname))
-    print("measure_class_accuracy> acc for class %s: " % class_uri)
-    print(acc)
+    # print("measure_class_accuracy> acc for class %s: " % class_uri)
+    # print(acc)
     return acc
 
 
@@ -275,14 +275,14 @@ def generate_diagram(fscores, title_case, draw_file_base):
     df_all = pd.read_csv(fscores)
     for fsid in range(1, 6):
         df = df_all[df_all.fsid == fsid]
-        for idx, row in df.iterrows():
-            row['class'] = shorten_uri(row['class'])
+        # for idx, row in df.iterrows():
+        #     row['class'] = shorten_uri(row['class'])
         rows = []
         for idx, df_row in df.iterrows():
             for a_attr in ['mean', 'median']:
                 print("df_row")
                 print(df_row)
-                r = [df_row['class'], df_row[a_attr], a_attr]
+                r = [shorten_uri(df_row['class']), df_row[a_attr], a_attr]
                 rows.append(r)
         data = pd.DataFrame(rows, columns=['Class', 'Alpha', 'Aggr'])
         # ax = sns.boxplot(x="Alpha", y="Class",
@@ -348,7 +348,7 @@ def main():
     if args.falpha and args.fmeta and args.data_dir and args.title and args.dataset:
         workflow(args.falpha, args.fmeta, args.data_dir, args.title.lower() == "true", dataset=args.dataset)
     elif args.draw and args.title and args.fscores:
-        generate_diagram(fscores=args.fscores, title_case=args.title.lower() == "true", draw_file_base=args.draw)
+        generate_diagram(fscores=args.fscores, title_case=(args.title.lower() == "true"), draw_file_base=args.draw)
     else:
         parser.print_usage()
         parser.print_help()
