@@ -76,6 +76,18 @@ file which has an optimal alpha.
 
 ## One alpha for all
 
+### T2Dv1
+|fsid| Original Case | Title Case |
+|:---:|:---:|:---:|
+|  1  |  <img src="./wcv1_alpha_one_original_fsid1.svg" width="300px">  | <img src="./wcv1_alpha_one_title_fsid1.svg" width="300px"> |
+|  2  |  <img src="./wcv1_alpha_one_original_fsid2.svg" width="300px">  | <img src="./wcv1_alpha_one_title_fsid2.svg" width="300px"> |
+|  3  | <img src="./wcv1_alpha_one_original_fsid3.svg" width="300px">  | <img src="./wcv1_alpha_one_title_fsid3.svg" width="300px"> |
+|  4  |  <img src="./wcv1_alpha_one_original_fsid4.svg" width="300px">  | <img src="./wcv1_alpha_one_title_fsid4.svg" width="300px"> |
+|  5  | <img src="./wcv1_alpha_one_original_fsid5.svg" width="300px">  | <img src="./wcv1_alpha_one_title_fsid5.svg" width="300px"> |
+
+
+
+
 ### T2Dv2
 |fsid| Original Case | Title Case |
 |:---:|:---:|:---:|
