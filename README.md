@@ -210,7 +210,7 @@ python -m experiments.alpha_eval_k_fold --draw wcv2_alpha_k_fold_scores --fscore
 
 Title case
 ```
- python -m experiments.alpha_eval_one --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --fscores wcv1_k_fold_alpha_title.csv --draw wcv1_alpha_one_title
+ python -m experiments.alpha_eval_one --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --fscores wcv1_k_fold_alpha_title.csv --draw wcv1_alpha_one_title
 ```
 
 Original case
