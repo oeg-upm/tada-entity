@@ -44,39 +44,27 @@ def compute_accuracy_for_all_classes(df_alpha, classes_alpha, classes_fnames):
     return acc
 
 
-def get_alpha_per_class(df_alphas, classes_fnames):
+def get_alpha_one_class_out(df_scores):
     d = dict()
-    for class_uri in classes_fnames:
-        df_class = df_alphas[df_alphas.fname.isin(classes_fnames[class_uri])]
-        for idx, row in df_class.iterrows():
-            if row['from_alpha'] >= 0 and row['to_alpha'] >= 0:
-                if class_uri not in d:
-                    d[class_uri] = {'alphas': []}
-                # if 'alphas' not in d[class_uri]:
-                #     d[class_uri]['alphas'] = []
-                d[class_uri]['alphas'].append((row['from_alpha'] + row['to_alpha']) * 0.5)
+    for idx, row in df_scores.iterrows():
+        # print("row")
+        # print(row)
+        if row['mean'] >= 0 and row['median'] >= 0 and row['num'] > 0:
+            for idx2, row2 in df_scores.iterrows():
+                if idx == idx2:
+                    continue
+                if row2['mean'] >= 0 and row2['median'] >= 0 and row2['num'] > 0:
+                    if row['class'] not in d:
+                        d[row['class']] = {
+                            'mean': [],
+                            'median': []
+                        }
+                    d[row['class']]['mean'].append(row2['mean'])
+                    d[row['class']]['median'].append(row2['median'])
 
     for class_uri in d:
-        if class_uri in d and len(d[class_uri]) > 0:
-            d[class_uri]['mean'] = np.mean(d[class_uri]['alphas'])
-            d[class_uri]['median'] = np.median(d[class_uri]['alphas'])
-    return d
-
-
-def get_alpha_one_class_out(alpha_per_class):
-    d = dict()
-    for class_uri in alpha_per_class:
-        alphas_mean = []
-        alphas_median = []
-        for other_uri in alpha_per_class:
-            if class_uri == other_uri:
-                continue
-            alphas_mean.append(alpha_per_class[other_uri]['mean'])
-            alphas_median.append(alpha_per_class[other_uri]['median'])
-        d[class_uri] = {
-            'mean': np.mean(alphas_mean),
-            'median': np.median(alphas_median)
-        }
+        d[class_uri]['mean'] = np.mean(d[class_uri]['mean'])
+        d[class_uri]['median'] = np.median(d[class_uri]['median'])
     return d
 
 
@@ -106,12 +94,12 @@ def get_classes_fnames(fpath, dataset, ext=".csv"):
     return d
 
 
-def get_accuracy(df_alpha, classes_fnames):
+def get_accuracy(df_alpha, df_scores, classes_fnames):
     acc = dict()
     for fsid in range(1, 6):
         df_alpha_fsid = df_alpha[df_alpha.fsid == fsid]
-        alphas_per_class = get_alpha_per_class(df_alpha_fsid, classes_fnames)
-        alpha_per_class = get_alpha_one_class_out(alphas_per_class)
+        df_scores_fsid = df_scores[df_scores.fsid == fsid]
+        alpha_per_class = get_alpha_one_class_out(df_scores_fsid)
         acc[fsid] = compute_accuracy_for_all_classes(df_alpha_fsid, alpha_per_class, classes_fnames)
     return acc
 
@@ -161,10 +149,11 @@ def generate_diagram(acc, draw_file_base):
         ax.figure.clf()
 
 
-def workflow(falpha, draw_basename, dataset, fmeta):
+def workflow(falpha, fscores, draw_basename, dataset, fmeta):
     df_alphas = pd.read_csv(falpha)
+    df_scores = pd.read_csv(fscores)
     classes_fnames = get_classes_fnames(fmeta, dataset)
-    acc = get_accuracy(df_alphas, classes_fnames)
+    acc = get_accuracy(df_alphas, df_scores, classes_fnames)
     generate_diagram(acc, draw_basename)
     # print(acc)
     # df_meta = pd.read_csv(fmeta)
@@ -180,10 +169,11 @@ def main():
     parser.add_argument('--fmeta', help="The path to the meta file which contain the filenames and classes.")
     parser.add_argument('--dataset', choices=['wcv1', 'wcv2'], help="The path to the csv files")
     parser.add_argument('--draw', help="The base name for the diagram file (without the extension)")
+    parser.add_argument('--fscores', help="The path to the k-fold scores file")
     args = parser.parse_args()
 
-    if args.falpha and args.fmeta and args.dataset and args.draw:
-        workflow(falpha=args.falpha, draw_basename=args.draw,
+    if args.falpha and args.fscores and args.fmeta and args.dataset and args.draw:
+        workflow(falpha=args.falpha, fscores=args.fscores, draw_basename=args.draw,
                  fmeta=args.fmeta, dataset=args.dataset)
     else:
         parser.print_usage()

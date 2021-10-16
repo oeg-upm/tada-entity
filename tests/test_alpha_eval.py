@@ -3,7 +3,7 @@ from unittest import TestCase
 import annotator
 import commons
 from annotator.annot import Annotator
-import experiments.alpha_eval as ae
+import experiments.alpha_eval_k_fold as ae
 import math
 import pandas as pd
 

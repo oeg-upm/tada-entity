@@ -1,6 +1,13 @@
-from django.test import TestCase
-from commons import easysparql, ENDPOINT
-from commons.easysparqlclass import EasySparql
+from unittest import TestCase
+from commons import ENDPOINT
+from easysparql import easysparql
+from easysparql import cacher
+from easysparql.easysparqlclass import EasySparql
+
+
+
+# from commons.easysparqlclass import EasySparql
+
 
 class EasySPARQLTest(TestCase):
 
