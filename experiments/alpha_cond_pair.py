@@ -115,31 +115,39 @@ def compute_file_acc(row, alphas_classes, data_path, correct_class_uri, title_ca
                         candidate_class = class_uri
             if candidate_class == correct_class_uri:
                 res = 1
+                # print("Correct candidate: fsid: %d - class: %s (correct: %s)- alpha: %f - a_attr: %s - fname: %s" % (fsid, candidate_class, correct_class_uri, alpha, a_attr, row['fname']))
             else:
                 res = 0
-                print("Invalid candidate: fsid: %d - class: %s (correct: %s)- alpha: %f" % (fsid, candidate_class, correct_class_uri, alpha))
+                # print(row)
+                print("Invalid candidate: fsid: %d - class: %s (correct: %s)- alpha: %f - a_attr: %s - fname: %s" % (fsid, candidate_class, correct_class_uri, alpha, a_attr, row['fname']))
             acc[fsid][a_attr] = res
     return acc
 
 
 def get_file_acc(row, class_files_alpha, alphas_classes, class_uri, title_case, data_path):
     # old = alphas_classes[class_uri].copy()
+    print("get_file_acc> alphas classes: ")
+    print(alphas_classes)
+    print("fname: %s colid: %d fsid: %d" % (row['fname'], row['colid'], row['fsid']))
+
     old = dict()
     for fsid in range(1, 6):
         old[fsid] = dict()
         old[fsid][class_uri] = alphas_classes[fsid][class_uri].copy()
-
+    # print("Checking ")
+    # print("fname: %s colid: %d fsid: %d" % (row['fname'], row['colid'], row['fsid']))
+    # print(class_files_alpha)
     alphas_classes[class_uri] = class_files_alpha[row.fsid][row.fname][row.colid].copy()
     # acc = compute_file_acc(row, alphas_classes)
     # df_fname = df_class[df_class.fname == row.fname]
     # df_col = df_fname[df_fname.colid == row.colid]
     acc = compute_file_acc(row=row, alphas_classes=alphas_classes, data_path=data_path, correct_class_uri=class_uri,
                            title_case=title_case)
-    print("fname: %s colid: %d fsid: %d" % (row['fname'], row['colid'], row['fsid']))
-    print("get_file_acc> keys: "+str(list(acc.keys())))
-    """
-    (row, alphas_classes, data_path, correct_class_uri, title_case)
-    """
+    # print("fname: %s colid: %d fsid: %d" % (row['fname'], row['colid'], row['fsid']))
+    # print("get_file_acc> keys: "+str(list(acc.keys())))
+    # """
+    # (row, alphas_classes, data_path, correct_class_uri, title_case)
+    # """
     # alphas_classes[class_uri] = old
 
     for fsid in range(1, 6):
@@ -200,26 +208,35 @@ def get_class_files_alphas(df_class):
 
 def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path):
     # Get the alpha (mean and median) for file class (using one file out from the same class) for the given rows.
+    # print("\n\ndf_class: ")
+    # print(df_class)
     class_files_alpha = get_class_files_alphas(df_class)
+    # print("class_files_alpha: ")
+    # print(class_files_alpha)
     acc = dict()
     computed_files = dict()
-    print("get_acc_per_class> in")
+    # print("get_acc_per_class> in")
+    # print(df_class)
     for idx, row in df_class.iterrows():
+        # print("row: ")
+        # print(row)
         if row['fname'] in computed_files:
             if row['colid'] in computed_files[row['fname']]:
                 continue
-
+        # print(row)
+        # print("===========\n\n")
+        # print("fname: %s" % row['fname'])
         file_acc = get_file_acc(row, class_files_alpha, alphas_classes, class_uri, title_case, data_path)
-        print("get_acc_per_class> file_acc: ")
-        print(file_acc)
-        print("=======")
+        # print("get_acc_per_class> file_acc: ")
+        # print(file_acc)
+        # print("=======")
         for fsid in file_acc:
-            print("get_acc_per_class> fsid: %d" % fsid)
+            # print("get_acc_per_class> fsid: %d" % fsid)
             if fsid not in acc:
                 acc[fsid] = {'mean': [], 'median': []}
             for a_attr in file_acc[fsid]:
-                print("\t%s" % a_attr)
-                print(file_acc[fsid][a_attr])
+                # print("\t%s" % a_attr)
+                # print(file_acc[fsid][a_attr])
                 acc[fsid][a_attr].append(file_acc[fsid][a_attr])
         if row['fname'] not in computed_files:
             computed_files[row['fname']] = dict()
@@ -228,7 +245,7 @@ def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path
     for fsid in acc:
         for a_attr in acc[fsid]:
             acc[fsid][a_attr] = sum(acc[fsid][a_attr])/len(acc[fsid][a_attr])
-    print(acc)
+    # print(acc)
     return acc
 
 
@@ -255,21 +272,42 @@ def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path
 #     return acc
 
 
-def get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case):
+def get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path):
     acc = dict()
     for class_uri in classes_fnames:
         # Get rows with files (with their colid) of the class class_uri
-        df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(classes_fnames[class_uri])]
+        # print("get_accuracy_for_classes> class uri: %s" % class_uri)
+        # print("Pre")
+        # print(df_alphas)
+        # print("classes fnames: ")
+        # print(classes_fnames)
+        # df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(classes_fnames[class_uri])]
+        # print("tuple: ")
+        # print(tuple(tuple(t) for t in classes_fnames[class_uri]))
+        # df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(tuple(classes_fnames[class_uri]))]
+        t = [tuple(tt) for tt in classes_fnames[class_uri]]
+        # print(t)
+        df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(t)]
+
+        # print("Post")
+        # print(df_class)
+        # print("\n\n")
         # df_class = df_alphas[df_alphas.fname.isin(classes_fnames[class_uri])]
         # Get accuracy of the class_uri
-        acc[class_uri] = get_acc_per_class(df_class, alphas_classes, class_uri, title_case)
+        acc[class_uri] = get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path)
+        # print("Acc: ")
+        # print(acc[class_uri])
     return acc
 
 
 def get_alpha_per_class(df_alphas, classes_fnames):
     d = dict()
     for class_uri in classes_fnames:
-        df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(classes_fnames[class_uri])]
+        print("get_alpha_per_class> ")
+        print(class_uri)
+        t = [tuple(tt) for tt in classes_fnames[class_uri]]
+        df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(t)]
+        print(df_class)
         # df_class = df_alphas[df_alphas.fname.isin(classes_fnames[class_uri])]
         for idx, row in df_class.iterrows():
             if row['from_alpha'] >= 0 and row['to_alpha'] >= 0:
@@ -286,20 +324,23 @@ def get_alpha_per_class(df_alphas, classes_fnames):
     return d
 
 
-def get_accuracy(df_alphas, classes_fnames, title_case):
+def get_accuracy(df_alphas, classes_fnames, title_case, data_path):
     alphas_classes = dict()
     for fsid in range(1, 6):
         df_alphas_fsid = df_alphas[df_alphas.fsid == fsid]
         alphas_classes[fsid] = get_alpha_per_class(df_alphas_fsid, classes_fnames)
-    acc = get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case)
+        print("get_accuracy> ")
+        print(alphas_classes[fsid])
+    acc = get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path)
     return acc
 
 
-def workflow(falpha, draw_basename, dataset, fmeta, title_case):
+def workflow(falpha, draw_basename, dataset, fmeta, title_case, data_path):
     df_alphas = pd.read_csv(falpha)
+    df_alphas[["colid"]] = df_alphas[["colid"]].apply(pd.to_numeric)
     add_alpha_per_file(df_alphas)
     classes_fnames = get_classes_fnames_col_ids(fmeta, dataset)
-    acc = get_accuracy(df_alphas, classes_fnames, title_case)
+    acc = get_accuracy(df_alphas, classes_fnames, title_case, data_path)
     generate_diagram(acc, draw_basename)
 
 
@@ -314,6 +355,7 @@ def get_classes_fnames_col_ids(fpath, dataset, ext=".csv", subject_col_fpath=Non
                 if sline == "":
                     continue
                 fn, colid = line.split(',')
+                colid = int(colid)
                 subj_col_dict[fn+".tar.gz"] = colid
 
     for line in f.readlines():
@@ -326,6 +368,7 @@ def get_classes_fnames_col_ids(fpath, dataset, ext=".csv", subject_col_fpath=Non
         elif dataset == "wcv1":
             fname, _, class_uri, colid = sline.split(',')
             fname = fname.split(".")[0]
+            colid = int(colid)
         else:
             raise Exception("Unknown dataset")
         fname = fname.replace('"', '')
@@ -334,11 +377,8 @@ def get_classes_fnames_col_ids(fpath, dataset, ext=".csv", subject_col_fpath=Non
         if class_uri not in d:
             d[class_uri] = []
         d[class_uri].append([fname, colid])
+    f.close()
     return d
-
-"""
-df[df[['a', 'b']].apply(tuple, axis=1).isin([(1,2)])]
-"""
 
 
 def main():
@@ -353,10 +393,11 @@ def main():
     parser.add_argument('--draw', help="The base name for the diagram file (without the extension)")
     parser.add_argument('--title_case', default="title", choices=["title", "original"],
                         help="Whether title case or not. true or false")
+    parser.add_argument('--data-path', help="The path to the data (csv files)")
     args = parser.parse_args()
 
-    if args.falpha and args.fscores and args.fmeta and args.dataset and args.draw:
-        workflow(falpha=args.falpha, draw_basename=args.draw,
+    if args.falpha and args.fscores and args.fmeta and args.dataset and args.draw and args.data_path:
+        workflow(falpha=args.falpha, draw_basename=args.draw, data_path=args.data_path,
                  fmeta=args.fmeta, dataset=args.dataset, title_case=(args.title_case.lower() == "title"))
     else:
         parser.print_usage()
