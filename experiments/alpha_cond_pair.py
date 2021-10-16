@@ -341,7 +341,9 @@ def workflow(falpha, draw_basename, dataset, fmeta, title_case, data_path):
     add_alpha_per_file(df_alphas)
     classes_fnames = get_classes_fnames_col_ids(fmeta, dataset)
     acc = get_accuracy(df_alphas, classes_fnames, title_case, data_path)
-    generate_diagram(acc, draw_basename)
+    if draw_basename:
+        generate_diagram(acc, draw_basename)
+    return acc
 
 
 def get_classes_fnames_col_ids(fpath, dataset, ext=".csv", subject_col_fpath=None):

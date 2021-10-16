@@ -490,7 +490,65 @@ class AlphaCondPairTest(TestCase):
     #     #         for a_attr in acc[class_uri][fsid]:
     #     #             self.assertNotEqual(acc[class_uri][fsid][a_attr], 1.0)
 
-    def test_get_accuracy_for_all(self):
+    # def test_get_accuracy_for_all(self):
+    #     df = pd.read_csv('tests/alpha_test_3.csv')
+    #     df[["colid"]] = df[["colid"]].apply(pd.to_numeric)
+    #     # print(df['colid'])
+    #     acp.add_alpha_per_file(df)
+    #
+    #     data_path = "tests"
+    #     correct_class_uris = ["http://dbpedia.org/ontology/Swimmer", "http://dbpedia.org/ontology/GolfPlayer",
+    #                           "http://dbpedia.org/ontology/Bird"]
+    #     alphas_classes = {
+    #         1: {
+    #             "http://dbpedia.org/ontology/Swimmer": {'mean': 0.005, 'median': 0.005},
+    #             "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.004, 'median': 0.004},
+    #             "http://dbpedia.org/ontology/Bird": {'mean': 0.004, 'median': 0.004}
+    #         },
+    #         2: {
+    #             "http://dbpedia.org/ontology/Swimmer": {'mean': 0.005, 'median': 0.005},
+    #             "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.004, 'median': 0.004},
+    #             "http://dbpedia.org/ontology/Bird": {'mean': 0.004, 'median': 0.004}
+    #
+    #         },
+    #         3: {
+    #             "http://dbpedia.org/ontology/Swimmer": {'mean': 0.1, 'median': 0.11},
+    #             "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.09, 'median': 0.1},
+    #             "http://dbpedia.org/ontology/Bird": {'mean': 0.25, 'median': 0.24}
+    #         },
+    #         4: {
+    #             "http://dbpedia.org/ontology/Swimmer": {'mean': 0.1, 'median': 0.11},
+    #             "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.09, 'median': 0.01},
+    #             "http://dbpedia.org/ontology/Bird": {'mean': 0.4, 'median': 0.4}
+    #
+    #         },
+    #         5: {
+    #             "http://dbpedia.org/ontology/Swimmer": {'mean': 0.99, 'median': 0.99},
+    #             "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.99, 'median': 0.99},
+    #             "http://dbpedia.org/ontology/Bird": {'mean': 0.99, 'median': 0.99}
+    #
+    #         },
+    #     }
+    #
+    #     classes_fnames = acp.get_classes_fnames_col_ids("tests/meta1.csv", "wcv1")
+    #
+    #     acc = acp.get_accuracy(df, classes_fnames, False, data_path)
+    #
+    #     for fsid in range(1, 5):
+    #         for class_uri in correct_class_uris:
+    #             self.assertIn(fsid, acc[class_uri])
+    #             for a_attr in acc[class_uri][fsid]:
+    #                 print("fsid: %d, class: %s, attr: %s, acc: %f" % (fsid, class_uri, a_attr, acc[class_uri][fsid][a_attr]))
+    #                 self.assertEqual(acc[class_uri][fsid][a_attr], 1.0)
+    #
+    #     for fsid in range(5, 6):
+    #         for class_uri in correct_class_uris:
+    #             self.assertIn(fsid, acc[class_uri])
+    #             for a_attr in acc[class_uri][fsid]:
+    #                 self.assertNotEqual(acc[class_uri][fsid][a_attr], 1.0)
+    #
+
+    def test_workflow(self):
         df = pd.read_csv('tests/alpha_test_3.csv')
         df[["colid"]] = df[["colid"]].apply(pd.to_numeric)
         # print(df['colid'])
@@ -499,46 +557,14 @@ class AlphaCondPairTest(TestCase):
         data_path = "tests"
         correct_class_uris = ["http://dbpedia.org/ontology/Swimmer", "http://dbpedia.org/ontology/GolfPlayer",
                               "http://dbpedia.org/ontology/Bird"]
-        alphas_classes = {
-            1: {
-                "http://dbpedia.org/ontology/Swimmer": {'mean': 0.005, 'median': 0.005},
-                "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.004, 'median': 0.004},
-                "http://dbpedia.org/ontology/Bird": {'mean': 0.004, 'median': 0.004}
-            },
-            2: {
-                "http://dbpedia.org/ontology/Swimmer": {'mean': 0.005, 'median': 0.005},
-                "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.004, 'median': 0.004},
-                "http://dbpedia.org/ontology/Bird": {'mean': 0.004, 'median': 0.004}
 
-            },
-            3: {
-                "http://dbpedia.org/ontology/Swimmer": {'mean': 0.1, 'median': 0.11},
-                "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.09, 'median': 0.1},
-                "http://dbpedia.org/ontology/Bird": {'mean': 0.25, 'median': 0.24}
-            },
-            4: {
-                "http://dbpedia.org/ontology/Swimmer": {'mean': 0.1, 'median': 0.11},
-                "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.09, 'median': 0.01},
-                "http://dbpedia.org/ontology/Bird": {'mean': 0.4, 'median': 0.4}
-
-            },
-            5: {
-                "http://dbpedia.org/ontology/Swimmer": {'mean': 0.99, 'median': 0.99},
-                "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.99, 'median': 0.99},
-                "http://dbpedia.org/ontology/Bird": {'mean': 0.99, 'median': 0.99}
-
-            },
-        }
-
-        classes_fnames = acp.get_classes_fnames_col_ids("tests/meta1.csv", "wcv1")
-
-        acc = acp.get_accuracy(df, classes_fnames, False, data_path)
+        acc = acp.workflow('tests/alpha_test_3.csv', None, "wcv1", "tests/meta1.csv", False, data_path)
 
         for fsid in range(1, 5):
             for class_uri in correct_class_uris:
                 self.assertIn(fsid, acc[class_uri])
                 for a_attr in acc[class_uri][fsid]:
-                    print("fsid: %d, class: %s, attr: %s, acc: %f" % (fsid, class_uri, a_attr, acc[class_uri][fsid][a_attr]))
+                    # print("fsid: %d, class: %s, attr: %s, acc: %f" % (fsid, class_uri, a_attr, acc[class_uri][fsid][a_attr]))
                     self.assertEqual(acc[class_uri][fsid][a_attr], 1.0)
 
         for fsid in range(5, 6):
