@@ -12,7 +12,7 @@ import logging
 from annotator.annot import Annotator
 from commons import ENDPOINT
 from experiments.alpha_analysis import shorten_uri
-from experiments.alpha_eval_one import get_classes_fnames, generate_diagram
+from experiments.alpha_eval_one import get_classes_fnames
 
 import matplotlib.pyplot as plt
 
@@ -172,19 +172,25 @@ def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path
             if fsid not in acc:
                 acc[fsid] = {'mean': [], 'median': []}
             for a_attr in file_acc[fsid]:
-                acc[fsid][a_attr].append(file_acc[fsid][a_attr])
+                if file_acc[fsid][a_attr] >= 0:
+                    acc[fsid][a_attr].append(file_acc[fsid][a_attr])
         if row['fname'] not in computed_files:
             computed_files[row['fname']] = dict()
         computed_files[row['fname']][row['colid']] = True
 
     for fsid in acc:
         for a_attr in acc[fsid]:
+            # # DEBUG
+            # print("\nDEBUG: ")
+            # print(acc[fsid][a_attr])
             # in case there is a single file, one file out per class is not applicable
-            if len(acc[fsid][a_attr]) == 1:
+            if len(acc[fsid][a_attr]) <= 1:
                 acc[fsid][a_attr] = -1
                 print("get_acc_per_class> Ignoring fsid %d for class %s" % (fsid, class_uri))
                 continue
             else:
+                # if -1 in acc[fsid][a_attr]:
+                #     raise Exception("Something went wrong")
                 acc[fsid][a_attr] = sum(acc[fsid][a_attr])/len(acc[fsid][a_attr])
     return acc
 
@@ -192,6 +198,9 @@ def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path
 def get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path):
     acc = dict()
     for class_uri in classes_fnames:
+        # # DEBUG
+        # if 'Airline' not in class_uri:
+        #     continue
         # Get rows with files (with their colid) of the class class_uri
         t = [tuple(tt) for tt in classes_fnames[class_uri]]
         df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(t)]
@@ -232,11 +241,11 @@ def get_accuracy(df_alphas, classes_fnames, title_case, data_path):
     return acc
 
 
-def workflow(falpha, draw_basename, dataset, fmeta, title_case, data_path):
+def workflow(falpha, draw_basename, dataset, fmeta, title_case, data_path, subject_col_fpath):
     df_alphas = pd.read_csv(falpha)
     df_alphas[["colid"]] = df_alphas[["colid"]].apply(pd.to_numeric)
     add_alpha_per_file(df_alphas)
-    classes_fnames = get_classes_fnames_col_ids(fmeta, dataset)
+    classes_fnames = get_classes_fnames_col_ids(fmeta, dataset, subject_col_fpath=subject_col_fpath)
     acc = get_accuracy(df_alphas, classes_fnames, title_case, data_path)
     if draw_basename:
         generate_diagram(acc, draw_basename)
@@ -251,6 +260,7 @@ def get_classes_fnames_col_ids(fpath, dataset, ext=".csv", subject_col_fpath=Non
             subj_col_dict = dict()
             for line in f_subj_col:
                 sline = line.strip()
+                # sline = sline.replace('"', '')
                 if sline == "":
                     continue
                 fn, colid = line.split(',')
@@ -263,6 +273,9 @@ def get_classes_fnames_col_ids(fpath, dataset, ext=".csv", subject_col_fpath=Non
             continue
         if dataset == "wcv2":
             fname, _, class_uri = sline.split(',')
+            fname = fname.replace('"', '')
+            print("fname: "+fname)
+            print(subj_col_dict)
             colid = subj_col_dict[fname]
         elif dataset == "wcv1":
             fname, _, class_uri, colid = sline.split(',')
@@ -280,6 +293,53 @@ def get_classes_fnames_col_ids(fpath, dataset, ext=".csv", subject_col_fpath=Non
     return d
 
 
+def generate_diagram(acc, draw_file_base):
+    """
+    :param acc: acc
+    :param draw_file_base: base of the diagram
+    :return: None
+    """
+    for fsid in range(1, 6):
+        rows = []
+        for class_uri in acc:
+            if fsid not in acc[class_uri]:
+                continue
+            for a_attr in ['mean', 'median']:
+                if acc[class_uri][fsid][a_attr] == -1:
+                    continue
+                r = [shorten_uri(class_uri), acc[class_uri][fsid][a_attr], a_attr]
+                rows.append(r)
+        data = pd.DataFrame(rows, columns=['Class', 'Accuracy', 'Aggr'])
+        ax = sns.barplot(x="Accuracy", y="Class",
+                         hue="Aggr",
+                         data=data, linewidth=1.0,
+                         # palette="colorblind",
+                         # palette="Spectral",
+                         # palette="pastel",
+                         # palette="ch:start=.2,rot=-.3",
+                         # palette="YlOrBr",
+                         palette="Paired",
+                         orient="h")
+        # ax.legend_.remove()
+        # ax.legend(bbox_to_anchor=(1.01, 1), borderaxespad=0)
+        ax.legend(bbox_to_anchor=(1.0, -0.1), borderaxespad=0)
+        # ax.set_xlim(0, 1.0)
+        # ax.set_ylim(0, 0.7)
+        # Horizontal
+        ticks = ax.get_yticks()
+        new_ticks = [t for t in ticks]
+        texts = ax.get_yticklabels()
+        print(ax.get_yticklabels())
+        labels = [t.get_text() for t in texts]
+        ax.set_yticks(new_ticks)
+        ax.set_yticklabels(labels, fontsize=8)
+        print(ax.get_yticklabels())
+        draw_fname = draw_file_base+"_fsid%d" % (fsid)
+        plt.setp(ax.lines, color='k')
+        ax.figure.savefig('docs/%s.svg' % draw_fname, bbox_inches="tight")
+        ax.figure.clf()
+
+
 def main():
     """
     Parse the arguments
@@ -293,10 +353,11 @@ def main():
     parser.add_argument('--title_case', default="title", choices=["title", "original"],
                         help="Whether title case or not. true or false")
     parser.add_argument('--data-path', help="The path to the data (csv files)")
+    parser.add_argument('--subject-col', help="The path to the subject column file (only for wcv2)")
     args = parser.parse_args()
 
-    if args.falpha and args.fscores and args.fmeta and args.dataset and args.draw and args.data_path:
-        workflow(falpha=args.falpha, draw_basename=args.draw, data_path=args.data_path,
+    if args.falpha and args.fmeta and args.dataset and args.draw and args.data_path:
+        workflow(falpha=args.falpha, draw_basename=args.draw, data_path=args.data_path, subject_col_fpath=args.subject_col,
                  fmeta=args.fmeta, dataset=args.dataset, title_case=(args.title_case.lower() == "title"))
     else:
         parser.print_usage()

@@ -425,13 +425,11 @@ class AlphaCondPairTest(TestCase):
                 "http://dbpedia.org/ontology/Swimmer": {'mean': 0.1, 'median': 0.11},
                 "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.09, 'median': 0.01},
                 "http://dbpedia.org/ontology/Bird": {'mean': 0.4, 'median': 0.4}
-
             },
             5: {
                 "http://dbpedia.org/ontology/Swimmer": {'mean': 0.99, 'median': 0.99},
                 "http://dbpedia.org/ontology/GolfPlayer": {'mean': 0.99, 'median': 0.99},
                 "http://dbpedia.org/ontology/Bird": {'mean': 0.99, 'median': 0.99}
-
             },
         }
 
@@ -450,14 +448,11 @@ class AlphaCondPairTest(TestCase):
                 for a_attr in acc[class_uri][fsid]:
                     self.assertNotEqual(acc[class_uri][fsid][a_attr], 1.0)
 
-
     def test_workflow_swimmers(self):
         data_path = "tests"
         correct_class_uris = ["http://dbpedia.org/ontology/Swimmer", "http://dbpedia.org/ontology/GolfPlayer",
                               "http://dbpedia.org/ontology/Bird"]
-
-        acc = acp.workflow('tests/alpha_test_5.csv', None, "wcv1", "tests/meta1.csv", False, data_path)
-
+        acc = acp.workflow('tests/alpha_test_5.csv', None, "wcv1", "tests/meta1.csv", False, data_path, None)
         for fsid in range(1, 5):
             for class_uri in correct_class_uris:
                 self.assertIn(fsid, acc[class_uri])
@@ -478,7 +473,7 @@ class AlphaCondPairTest(TestCase):
         correct_class_uris = ["http://dbpedia.org/ontology/Swimmer", "http://dbpedia.org/ontology/GolfPlayer",
                               "http://dbpedia.org/ontology/Bird"]
 
-        acc = acp.workflow('tests/alpha_test_3.csv', None, "wcv1", "tests/meta1.csv", False, data_path)
+        acc = acp.workflow('tests/alpha_test_3.csv', None, "wcv1", "tests/meta1.csv", False, data_path, None)
 
         for fsid in range(1, 5):
             for class_uri in correct_class_uris:
@@ -503,7 +498,7 @@ class AlphaCondPairTest(TestCase):
         correct_class_uris = ["http://dbpedia.org/ontology/Swimmer", "http://dbpedia.org/ontology/GolfPlayer",
                               "http://dbpedia.org/ontology/Bird"]
 
-        acc = acp.workflow('tests/alpha_test_4.csv', None, "wcv1", "tests/meta2.csv", False, data_path)
+        acc = acp.workflow('tests/alpha_test_4.csv', None, "wcv1", "tests/meta2.csv", False, data_path, None)
 
         # Swimmer
         for a_attr in ['mean', 'median']:

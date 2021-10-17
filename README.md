@@ -231,7 +231,40 @@ Original case
  python -m experiments.alpha_eval_one --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2  --draw wcv2_alpha_one_original
 ```
 
-## Conditional Input-Output Pair of Parameters and Outcome
+
+
+## Conditional (Input-Output) Pair of Parameters and Outcome
+
+
+
+### T2Dv1
+
+Title case
+```
+python -m experiments.alpha_cond_pair --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_cond_pair_title --title_case title --data-path ~/workspaces/Datasets/T2Dv1/tables_complete
+```
+
+
+Original case
+```
+python -m experiments.alpha_cond_pair --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_cond_pair_original --title_case original --data-path ~/workspaces/Datasets/T2Dv1/tables_complete
+```
+
+
+
+
+### T2Dv2
+
+Title case
+```
+python -m experiments.alpha_cond_pair --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --draw wcv2_alpha_cond_pair_title --title_case title --data-path ~/workspaces/Datasets/T2Dv2/csv --subject-col experiments/wcv2_subject_columns_gs.csv 
+```
+
+
+Original case
+```
+python -m experiments.alpha_cond_pair --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --draw wcv2_alpha_cond_pair_original --title_case original --data-path ~/workspaces/Datasets/T2Dv2/csv --subject-col experiments/wcv2_subject_columns_gs.csv 
+```
 
 
 
