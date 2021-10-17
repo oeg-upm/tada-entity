@@ -26,7 +26,6 @@ def add_alpha_per_file(df_alphas):
     """
     alphas = []
     for idx, row in df_alphas.iterrows():
-        # print("idx: %d" % idx)
         if row['from_alpha'] >= 0 and row['to_alpha'] >= 0:
             a = (row['from_alpha'] + row['to_alpha']) * 0.5
         else:
@@ -67,22 +66,6 @@ def predict_class(annotator, fsid, alpha):
     return candidates
 
 
-# def get_file_acc(row, idx, alphas_classes, class_uri, df_class):
-#     old = alphas_classes[class_uri].copy()
-#     alphas = []
-#     for idx2, row2 in df_class[df_class.fsid == row.fsid].iterrows():
-#         if idx == idx2:
-#             continue
-#         alphas.append(row2['alpha'])
-#     alphas_classes[class_uri] = {
-#         'mean': np.mean(alphas),
-#         'media': np.median(alphas)
-#     }
-#     if predict_class(row) == class_uri:
-#         return 1
-#     return 0
-
-
 def compute_file_acc(row, alphas_classes, data_path, correct_class_uri, title_case):
     annotator = annotate_column(os.path.join(data_path, row['fname']), row['colid'], title_case)
     acc = dict()
@@ -92,7 +75,6 @@ def compute_file_acc(row, alphas_classes, data_path, correct_class_uri, title_ca
             'median': -1
         }
         for a_attr in ['mean', 'median']:
-            # print(alphas_classes[fsid][correct_class_uri])
             if fsid in alphas_classes and correct_class_uri in alphas_classes[fsid]:
                 if alphas_classes[fsid][correct_class_uri][a_attr] == -1:
                     acc[fsid][a_attr] = -1
@@ -101,23 +83,16 @@ def compute_file_acc(row, alphas_classes, data_path, correct_class_uri, title_ca
                 candidate_alpha = -1
                 candidate_class = None
                 for class_uri in alphas_classes[fsid]:
-                    # print(alphas_classes)
-                    # print("=====")
-                    # print(alphas_classes[fsid][class_uri])
-
-
                     alpha = alphas_classes[fsid][class_uri][a_attr]
                     candidates = predict_class(annotator, fsid, alpha)
                     if class_uri == correct_class_uri:
                         print("\n\n========\nTesting: fsid: %d - class: %s (correct: %s)- alpha: %f - a_attr: %s - fname: %s" % (
                             fsid, candidates[0], correct_class_uri, alpha, a_attr, row['fname']))
                         print(alphas_classes)
-                    # print("pred_class")
                     if candidates == []:
                         print("No candidates")
                         continue
                     pred_class = candidates[0]
-                    # print("fsid: %d - class: %s - alpha: %f" % (fsid, pred_class, alpha))
                     if pred_class == class_uri:
                         if candidate_alpha < alpha:
                             if candidate_alpha >= 0:
@@ -127,21 +102,14 @@ def compute_file_acc(row, alphas_classes, data_path, correct_class_uri, title_ca
                             candidate_class = class_uri
                 if candidate_class == correct_class_uri:
                     res = 1
-                    # print("Correct candidate: fsid: %d - class: %s (correct: %s)- alpha: %f - a_attr: %s - fname: %s" % (fsid, candidate_class, correct_class_uri, alpha, a_attr, row['fname']))
                 else:
                     res = 0
-                    # print(row)
                     print("Invalid candidate: fsid: %d - class: %s (correct: %s)- alpha: %f - a_attr: %s - fname: %s" % (fsid, candidate_class, correct_class_uri, alpha, a_attr, row['fname']))
                 acc[fsid][a_attr] = res
     return acc
 
 
 def get_file_acc(row, class_files_alpha, alphas_classes, class_uri, title_case, data_path):
-    # old = alphas_classes[class_uri].copy()
-    # print("get_file_acc> alphas classes: ")
-    # print(alphas_classes)
-    # print("fname: %s colid: %d fsid: %d" % (row['fname'], row['colid'], row['fsid']))
-
     old = dict()
     for fsid in range(1, 6):
         old[fsid] = dict()
@@ -149,42 +117,16 @@ def get_file_acc(row, class_files_alpha, alphas_classes, class_uri, title_case, 
             old[fsid][class_uri] = alphas_classes[fsid][class_uri].copy()
         # Just to verify
             alphas_classes[fsid][class_uri] = None
-        # print("Checking ")
-        # print("fname: %s colid: %d fsid: %d" % (row['fname'], row['colid'], row['fsid']))
-        # print(class_files_alpha)
-
             if fsid in class_files_alpha and row.fname in class_files_alpha[fsid] and row.colid in class_files_alpha[fsid][row.fname]:
                 alphas_classes[fsid][class_uri] = class_files_alpha[fsid][row.fname][row.colid].copy()
             else:
                 alphas_classes[fsid][class_uri] = {'mean': -1, 'median': -1}
-        # alphas_classes[class_uri] = class_files_alpha[row.fsid][row.fname][row.colid].copy()
-        #     print("get_file_acc> fname: %s, fsid: %d" % (row.fname, fsid))
-        #     print(alphas_classes[fsid][class_uri])
-    # acc = compute_file_acc(row, alphas_classes)
-    # df_fname = df_class[df_class.fname == row.fname]
-    # df_col = df_fname[df_fname.colid == row.colid]
-    # print("get_file_acc> alphas classes: ")
-    # print(alphas_classes)
     acc = compute_file_acc(row=row, alphas_classes=alphas_classes, data_path=data_path, correct_class_uri=class_uri,
                            title_case=title_case)
-    # print("fname: %s colid: %d fsid: %d" % (row['fname'], row['colid'], row['fsid']))
-    # print("get_file_acc> keys: "+str(list(acc.keys())))
-    # """
-    # (row, alphas_classes, data_path, correct_class_uri, title_case)
-    # """
-    # alphas_classes[class_uri] = old
-
     for fsid in range(1, 6):
         if fsid in old and class_uri in old[fsid]:
             alphas_classes[fsid][class_uri] = old[fsid][class_uri]
-
     return acc
-    #     class_files_alpha[fsid][fname][a_attr]
-    #
-    # alphas_classes[class_uri] = alphas_classes
-    # if predict_class(row) == class_uri:
-    #     return 1
-    # return 0
 
 
 def get_class_files_alphas(df_class):
@@ -193,15 +135,7 @@ def get_class_files_alphas(df_class):
     :param df_class:
     :return:
     """
-    # alphas_classes_fsid = dict()
     alphas = dict()
-    # for fsid in range(1, 6):
-    #     for class_uri in alphas_classes:
-    #         if class_uri not in alphas_classes_fsid:
-    #             alphas_classes_fsid[class_uri] = dict()
-    #         alphas_classes_fsid[class_uri][fsid] = alphas_classes[class_uri].copy()
-    #
-
     for fsid in range(1, 6):
         df_class_fsid = df_class[df_class.fsid == fsid]
         alphas[fsid] = dict()
@@ -222,55 +156,26 @@ def get_class_files_alphas(df_class):
                     'mean': np.mean(alphas[fsid][fname][colid]),
                     'median': np.median(alphas[fsid][fname][colid])
                 }
-                # print("\n\nget_class_files_alphas> fname %s fsid %d alphas: %s" % (fname, fsid, str(d)))
                 alphas[fsid][fname][colid] = d
     return alphas
 
 
-# def get_acc_per_class(df_class, alphas_classes, class_uri):
-#     acc = []
-#     for idx, row in df_class.iterrows():
-#         acc.append(get_file_acc(row, idx, alphas_classes, class_uri, df_class))
-#     return sum(acc)/len(acc)
-
-
 def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path):
     # Get the alpha (mean and median) for file class (using one file out from the same class) for the given rows.
-    # print("\n\ndf_class: ")
-    # print(df_class)
     class_files_alpha = get_class_files_alphas(df_class)
-    # print("class_files_alpha: ")
-    # print(class_files_alpha)
     acc = dict()
     computed_files = dict()
-    # print("get_acc_per_class> in")
-    # print(df_class)
+
     for idx, row in df_class.iterrows():
-        # print("row: ")
-        # print(row)
         if row['fname'] in computed_files:
             if row['colid'] in computed_files[row['fname']]:
                 continue
-        # print(row)
-        # print("===========\n\n")
-        # print("fname: %s" % row['fname'])
-        #
-        # print("alphas classes BEFORE:")
-        # print(alphas_classes)
 
         file_acc = get_file_acc(row, class_files_alpha, alphas_classes, class_uri, title_case, data_path)
-        # print("alphas classes AFTER:")
-        # print(alphas_classes)
-        # print("get_acc_per_class> file_acc: ")
-        # print(file_acc)
-        # print("=======")
         for fsid in file_acc:
-            # print("get_acc_per_class> fsid: %d" % fsid)
             if fsid not in acc:
                 acc[fsid] = {'mean': [], 'median': []}
             for a_attr in file_acc[fsid]:
-                # print("\t%s" % a_attr)
-                # print(file_acc[fsid][a_attr])
                 acc[fsid][a_attr].append(file_acc[fsid][a_attr])
         if row['fname'] not in computed_files:
             computed_files[row['fname']] = dict()
@@ -285,76 +190,29 @@ def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path
                 continue
             else:
                 acc[fsid][a_attr] = sum(acc[fsid][a_attr])/len(acc[fsid][a_attr])
-    # print(acc)
     return acc
-
-
-# def get_accuracy_for_fsid(df_alphas, classes_fnames, alphas_classes):
-#     acc = dict()
-#     for class_uri in classes_fnames:
-#         df_class = df_alphas[df_alphas.fname.isin(classes_fnames[class_uri])]
-#         acc[class_uri] = get_acc_per_class(df_class, alphas_classes, class_uri)
-#
-
-# def get_alpha_per_class(df_alphas, classes_fnames, alphas_classes):
-#     acc = dict()
-#     for class_uri in classes_fnames:
-#         df_class = df_alphas[df_alphas.fname.isin(classes_fnames[class_uri])]
-#         acc[class_uri] = get_acc_per_class(df_class, alphas_classes, class_uri)
-
-
-# def get_accuracy(df_alphas, classes_fnames):
-#     acc = dict()
-#     for fsid in range(1, 6):
-#         df_alphas_fsid = df_alphas[df_alphas.fsid==fsid]
-#         alphas_classes = get_alpha_per_class(df_alphas_fsid, classes_fnames)
-#         acc[fsid] = get_accuracy_for_fsid(df_alphas_fsid, classes_fnames, alphas_classes)
-#     return acc
 
 
 def get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path):
     acc = dict()
     for class_uri in classes_fnames:
         # Get rows with files (with their colid) of the class class_uri
-        # print("get_accuracy_for_classes> class uri: %s" % class_uri)
-        # print("Pre")
-        # print(df_alphas)
-        # print("classes fnames: ")
-        # print(classes_fnames)
-        # df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(classes_fnames[class_uri])]
-        # print("tuple: ")
-        # print(tuple(tuple(t) for t in classes_fnames[class_uri]))
-        # df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(tuple(classes_fnames[class_uri]))]
         t = [tuple(tt) for tt in classes_fnames[class_uri]]
-        # print(t)
         df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(t)]
-
-        # print("Post")
-        # print(df_class)
-        # print("\n\n")
-        # df_class = df_alphas[df_alphas.fname.isin(classes_fnames[class_uri])]
         # Get accuracy of the class_uri
         acc[class_uri] = get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path)
-        # print("Acc: ")
-        # print(acc[class_uri])
     return acc
 
 
 def get_alpha_per_class(df_alphas, classes_fnames):
     d = dict()
     for class_uri in classes_fnames:
-        # print("get_alpha_per_class> ")
-        # print(class_uri)
         t = [tuple(tt) for tt in classes_fnames[class_uri]]
         df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(t)]
-        # print(df_class)
-        # df_class = df_alphas[df_alphas.fname.isin(classes_fnames[class_uri])]
         for idx, row in df_class.iterrows():
             if row['from_alpha'] >= 0 and row['to_alpha'] >= 0:
                 if class_uri not in d:
                     d[class_uri] = {'alphas': []}
-                # if 'alphas' not in d[class_uri]:
-                #     d[class_uri]['alphas'] = []
                 d[class_uri]['alphas'].append((row['from_alpha'] + row['to_alpha']) * 0.5)
 
     to_be_del = []
@@ -362,11 +220,8 @@ def get_alpha_per_class(df_alphas, classes_fnames):
         if class_uri in d and len(d[class_uri]['alphas']) > 1:
             d[class_uri]['mean'] = np.mean(d[class_uri]['alphas'])
             d[class_uri]['median'] = np.median(d[class_uri]['alphas'])
-            # #DEBUG
-            # print("class %s = %f alpha" % (class_uri, d[class_uri]['mean']))
         else:
             to_be_del.append(class_uri)
-            # del d[class_uri]
     for c in to_be_del:
         del d[c]
     return d
@@ -377,10 +232,6 @@ def get_accuracy(df_alphas, classes_fnames, title_case, data_path):
     for fsid in range(1, 6):
         df_alphas_fsid = df_alphas[df_alphas.fsid == fsid]
         alphas_classes[fsid] = get_alpha_per_class(df_alphas_fsid, classes_fnames)
-        # print("get_accuracy> fsid %d" % fsid)
-        # print(alphas_classes[fsid])
-    # print("\n\nget_accuracy> alphas classes")
-    # print(alphas_classes)
     acc = get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path)
     return acc
 
