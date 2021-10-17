@@ -85,10 +85,6 @@ def compute_file_acc(row, alphas_classes, data_path, correct_class_uri, title_ca
                 for class_uri in alphas_classes[fsid]:
                     alpha = alphas_classes[fsid][class_uri][a_attr]
                     candidates = predict_class(annotator, fsid, alpha)
-                    if class_uri == correct_class_uri:
-                        print("\n\n========\nTesting: fsid: %d - class: %s (correct: %s)- alpha: %f - a_attr: %s - fname: %s" % (
-                            fsid, candidates[0], correct_class_uri, alpha, a_attr, row['fname']))
-                        print(alphas_classes)
                     if candidates == []:
                         print("No candidates")
                         continue
