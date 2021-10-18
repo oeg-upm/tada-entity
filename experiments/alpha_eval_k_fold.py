@@ -284,7 +284,7 @@ def generate_diagram(fscores, title_case, draw_file_base):
                 print(df_row)
                 r = [shorten_uri(df_row['class']), df_row[a_attr], a_attr]
                 rows.append(r)
-        data = pd.DataFrame(rows, columns=['Class', 'Alpha', 'Aggr'])
+        data = pd.DataFrame(rows, columns=['Class', 'Accuracy', 'Aggr'])
         # ax = sns.boxplot(x="Alpha", y="Class",
         #                  hue="Aggr",
         #                  data=data, linewidth=1.0,
@@ -296,7 +296,7 @@ def generate_diagram(fscores, title_case, draw_file_base):
         #                  orient="h",
         #                  flierprops=dict(markerfacecolor='0.50', markersize=2))
 
-        ax = sns.barplot(x="Alpha", y="Class",
+        ax = sns.barplot(x="Accuracy", y="Class",
                          hue="Aggr",
                          data=data, linewidth=1.0,
                          # palette="colorblind",
