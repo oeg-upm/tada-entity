@@ -124,6 +124,34 @@ file which has an optimal alpha.
 |  5  | <img src="./wcv2_alpha_cond_pair_original_fsid5.svg" width="300px">  | <img src="./wcv2_alpha_cond_pair_title_fsid5.svg" width="300px"> |
 
 
+## Error Analysis of alphas prediction of leave one out per class
+
+The average alpha ranges per specificity function averaged among all the classes.
+
+### T2Dv1
+
+Title case
+
+|fsid| Alpha range mean| Alpha range median |
+|:---:|:---:|:---:|
+| 1 | 0.172400 | 0.045500 |
+| 2 | 0.176548 | 0.052500 |
+| 3 | 0.173480 | 0.148000 |
+| 4 | 0.120600 | 0.100500 |
+| 5 | 0.097360 | 0.076500 |
+
+### T2Dv2
+
+Title case
+
+|fsid| Alpha range mean| Alpha range median |
+|:---:|:---:|:---:|
+| 1 | 0.201175 | 0.116250
+| 2 | 0.203690| 0.083500
+| 3 | 0.215792| 0.199000
+| 4 | 0.144479| 0.107500
+| 5 |0.114563 |0.095750
+
 
 
 

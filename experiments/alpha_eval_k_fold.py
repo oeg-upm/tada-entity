@@ -275,6 +275,7 @@ def generate_diagram(fscores, title_case, draw_file_base):
     df_all = pd.read_csv(fscores)
     for fsid in range(1, 6):
         df = df_all[df_all.fsid == fsid]
+        df = df[df.num > 0]
         # for idx, row in df.iterrows():
         #     row['class'] = shorten_uri(row['class'])
         rows = []

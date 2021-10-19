@@ -267,6 +267,21 @@ python -m experiments.alpha_cond_pair --falpha wc2_alpha_original_case.csv --fme
 ```
 
 
+## Class k-fold error analysis
+
+### T2Dv1
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold range --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1  
+```
+
+### T2Dv2
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold range --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --subject-col experiments/wcv2_subject_columns_gs.csv 
+```
 
 
 
