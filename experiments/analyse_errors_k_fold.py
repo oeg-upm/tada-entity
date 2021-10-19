@@ -38,11 +38,13 @@ def check_ranges_per_fsid_workflow(falpha, fmeta, dataset, subject_col):
     add_alpha_per_file(df_alphas)
     classes_fnames = get_classes_fnames_col_ids(fmeta, dataset, subject_col_fpath=subject_col)
     df_alphas = df_alphas[df_alphas.from_alpha >= 0]
+    print("|fsid\t|range mean\t| range median\t|")
+    print("|:---:|:---:|:---:|")
     for fsid in range(1, 6):
         # print("\n\nfsid: %d" % fsid)
         df_fsid = df_alphas[df_alphas.fsid == fsid]
         a_range = check_range_per_class(df_fsid, classes_fnames)
-        print("fsid: %d ranges mean: %f, median: %f" % (fsid, np.mean(a_range), np.median(a_range)))
+        print("|%d\t|%f\t|%f\t|" % (fsid, np.mean(a_range), np.median(a_range)))
 
 
 def main():

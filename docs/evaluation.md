@@ -130,19 +130,30 @@ The average alpha ranges per specificity function averaged among all the classes
 
 ### T2Dv1
 
-Title case
+#### Title case
 
-|fsid| Alpha range mean| Alpha range median |
+|fsid| range mean| range median |
 |:---:|:---:|:---:|
 | 1 | 0.172400 | 0.045500 |
 | 2 | 0.176548 | 0.052500 |
 | 3 | 0.173480 | 0.148000 |
 | 4 | 0.120600 | 0.100500 |
-| 5 | 0.097360 | 0.076500 |
+| 5 | *0.097360* | 0.076500 |
+
+
+#### Original case
+
+|fsid	|range mean	| range median	|
+|:---:|:---:|:---:|
+|1	|0.271115	|0.330500	|
+|2	|0.266923	|0.328000	|
+|3	|0.188500	|0.219000	|
+|4	|0.110269	|0.115500	|
+|5	|*0.093833*	|0.091750	|
 
 ### T2Dv2
 
-Title case
+#### Title case
 
 |fsid| Alpha range mean| Alpha range median |
 |:---:|:---:|:---:|
@@ -150,10 +161,17 @@ Title case
 | 2 | 0.203690| 0.083500
 | 3 | 0.215792| 0.199000
 | 4 | 0.144479| 0.107500
-| 5 |0.114563 |0.095750
+| 5 |*0.114563* |0.095750
 
+#### Original case
 
-
+|fsid	|range mean	| range median	|
+|:---:|:---:|:---:|
+|1	|0.201225	|0.116250	|
+|2	|0.203690	|0.080000	|
+|3	|0.209042	|0.179750	|
+|4	|0.139312	|0.102250	|
+|5	|0.114696	|0.094500	|
 
 
 ## SemTab 2019
