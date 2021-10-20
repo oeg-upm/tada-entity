@@ -493,6 +493,33 @@ Comparing the optimal alpha (computed from the mean or median of the mid ranges 
 
 
 
+## Accuracy of One alpha for all verses conditional pair method
+
+Accuracy for One alpha method
+
+|fsid	|accuracy of mean	|accuracy of median|
+|:---:|:---:|:---:|
+1	|0.314629	|0.564188
+2	|0.371410	|0.579065
+3	|0.628732	|0.647621
+4	|0.876667	|0.882222
+5	|0.864630	|0.864630
+
+
+
+
+Accuracy using the Conditional Pair method
+
+|fsid	|accuracy of mean	|accuracy of median|
+|:---:|:---:|:---:|
+1	|0.561360	|0.623778
+2	|0.557548	|0.631716
+3	|0.664133	|0.698133
+4	|0.883173	|0.885278
+5	|0.896667	|0.888667
+
+
+
 
 ## SemTab 2019
 

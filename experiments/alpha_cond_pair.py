@@ -247,9 +247,28 @@ def workflow(falpha, draw_basename, dataset, fmeta, title_case, data_path, subje
     add_alpha_per_file(df_alphas)
     classes_fnames = get_classes_fnames_col_ids(fmeta, dataset, subject_col_fpath=subject_col_fpath)
     acc = get_accuracy(df_alphas, classes_fnames, title_case, data_path)
+    print_accuracy_per_fsid(acc)
     if draw_basename:
         generate_diagram(acc, draw_basename)
     return acc
+
+
+def print_accuracy_per_fsid(acc):
+    print("|fsid\t|accuracy of mean\t|accuracy of median|")
+    print("|:---:|:---:|:---:|")
+    for fsid in range(1, 6):
+        scores = {
+            'mean': [],
+            'median': []
+        }
+        for class_uri in acc:
+            if fsid not in acc[class_uri]:
+                continue
+            for a_attr in ['mean', 'median']:
+                if acc[class_uri][fsid][a_attr] == -1:
+                    continue
+                scores[a_attr].append(acc[class_uri][fsid][a_attr])
+        print("%d\t|%f\t|%f" % (fsid, np.mean(scores['mean']), np.mean(scores['median'])))
 
 
 def get_classes_fnames_col_ids(fpath, dataset, ext=".csv", subject_col_fpath=None):

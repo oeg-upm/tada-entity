@@ -164,11 +164,28 @@ def generate_diagram(acc, draw_file_base):
         ax.figure.clf()
 
 
+def print_accuracy_oer_fsid(acc):
+    print("|fsid\t|accuracy of mean\t|accuracy of median|")
+    print("|:---:|:---:|:---:|")
+    for fsid in range(1, 6):
+        scores = {
+            'mean': [],
+            'median': []
+        }
+        for class_uri in acc[fsid]:
+            for a_attr in ['mean', 'median']:
+                if acc[fsid][class_uri][a_attr] == -1:
+                    continue
+                scores[a_attr].append(acc[fsid][class_uri][a_attr])
+        print("%d\t|%f\t|%f" % (fsid, np.mean(scores['mean']), np.mean(scores['median'])))
+
+
 def workflow(falpha, draw_basename, dataset, fmeta):
     df_alphas = pd.read_csv(falpha)
     df_alphas = df_alphas[df_alphas.from_alpha >= 0]
     classes_fnames = get_classes_fnames(fmeta, dataset)
     acc = get_accuracy(df_alphas, classes_fnames)
+    print_accuracy_oer_fsid(acc)
     generate_diagram(acc, draw_basename)
     # print(acc)
     # df_meta = pd.read_csv(fmeta)
