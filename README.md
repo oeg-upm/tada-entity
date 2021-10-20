@@ -342,6 +342,21 @@ python -m experiments.analyse_errors_k_fold one --falpha wc1_alpha_original_case
 ```
 
 
+#### T2Dv2
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold one --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --draw wcv2_compare_one_alpha_title
+
+```
+
+
+Original case
+```
+python -m experiments.analyse_errors_k_fold one --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --draw wcv2_compare_one_alpha_original
+```
+
+
 
 # NEW
 ## Experiments

@@ -480,6 +480,19 @@ Comparing the optimal alpha (computed from the mean or median of the mid ranges 
 
 
 
+#### T2Dv2 
+
+
+|fsid| Original Case | Title Case |
+|:---:|:---:|:---:|
+|  1  |  <img src="./wcv2_compare_one_alpha_original_fsid1.svg" width="300px">  | <img src="./wcv2_compare_one_alpha_title_fsid1.svg" width="300px"> |
+|  2  |  <img src="./wcv2_compare_one_alpha_original_fsid2.svg" width="300px">  | <img src="./wcv2_compare_one_alpha_title_fsid2.svg" width="300px"> |
+|  3  | <img src="./wcv2_compare_one_alpha_original_fsid3.svg" width="300px">  | <img src="./wcv2_compare_one_alpha_title_fsid3.svg" width="300px"> |
+|  4  |  <img src="./wcv2_compare_one_alpha_original_fsid4.svg" width="300px">  | <img src="./wcv2_compare_one_alpha_title_fsid4.svg" width="300px"> |
+|  5  | <img src="./wcv2_compare_one_alpha_original_fsid5.svg" width="300px">  | <img src="./wcv2_compare_one_alpha_title_fsid5.svg" width="300px"> |
+
+
+
 
 ## SemTab 2019
 
