@@ -109,9 +109,12 @@ def get_classes_fnames(fpath, dataset, ext=".csv"):
 def get_accuracy(df_alpha, classes_fnames):
     acc = dict()
     for fsid in range(1, 6):
+        print("fsid: %d" % fsid)
         df_alpha_fsid = df_alpha[df_alpha.fsid == fsid]
         alphas_per_class = get_alpha_per_class(df_alpha_fsid, classes_fnames)
         alpha_per_class = get_alpha_one_class_out(alphas_per_class)
+        for class_uri in alpha_per_class:
+            print("\t%s\t: %f \t %f" % (shorten_uri(class_uri), alpha_per_class[class_uri]['mean'], alpha_per_class[class_uri]['median']))
         acc[fsid] = compute_accuracy_for_all_classes(df_alpha_fsid, alpha_per_class, classes_fnames)
     return acc
 
@@ -150,11 +153,11 @@ def generate_diagram(acc, draw_file_base):
         ticks = ax.get_yticks()
         new_ticks = [t for t in ticks]
         texts = ax.get_yticklabels()
-        print(ax.get_yticklabels())
+        # print(ax.get_yticklabels())
         labels = [t.get_text() for t in texts]
         ax.set_yticks(new_ticks)
         ax.set_yticklabels(labels, fontsize=8)
-        print(ax.get_yticklabels())
+        # print(ax.get_yticklabels())
         draw_fname = draw_file_base+"_fsid%d" % (fsid)
         plt.setp(ax.lines, color='k')
         ax.figure.savefig('docs/%s.svg' % draw_fname, bbox_inches="tight")
@@ -163,6 +166,7 @@ def generate_diagram(acc, draw_file_base):
 
 def workflow(falpha, draw_basename, dataset, fmeta):
     df_alphas = pd.read_csv(falpha)
+    df_alphas = df_alphas[df_alphas.from_alpha >= 0]
     classes_fnames = get_classes_fnames(fmeta, dataset)
     acc = get_accuracy(df_alphas, classes_fnames)
     generate_diagram(acc, draw_basename)

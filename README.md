@@ -269,7 +269,9 @@ python -m experiments.alpha_cond_pair --falpha wc2_alpha_original_case.csv --fme
 
 ## Class k-fold error analysis
 
-### T2Dv1
+### Ranges
+Check the mean and the median for the (mid) alpha ranges per fsid
+#### T2Dv1
 
 Title case
 ```
@@ -282,7 +284,7 @@ Original case
  python -m experiments.analyse_errors_k_fold range --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1  
 ```
 
-### T2Dv2
+#### T2Dv2
 
 Title case
 ```
@@ -293,6 +295,52 @@ Original case
 ```
 python -m experiments.analyse_errors_k_fold range --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --subject-col experiments/wcv2_subject_columns_gs.csv 
 ```
+
+### Diffs
+Check the mean and the median for differences between the mean/median of the (mid) alphas for each 
+class and aggregated them per each fsid
+
+#### T2Dv1
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold sd --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 
+```
+
+Original case
+```
+python -m experiments.analyse_errors_k_fold sd --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1  
+```
+
+#### T2Dv2
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold sd --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2  --subject-col experiments/wcv2_subject_columns_gs.csv
+```
+
+Original case
+```
+python -m experiments.analyse_errors_k_fold sd --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --subject-col experiments/wcv2_subject_columns_gs.csv
+```
+
+### Compare One alpha
+Compare the one computed alpha with the alpha of the files of that class
+
+#### T2Dv1
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold one --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 
+```
+
+
+Original case
+```
+python -m experiments.analyse_errors_k_fold one --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 
+```
+
+
 
 # NEW
 ## Experiments
