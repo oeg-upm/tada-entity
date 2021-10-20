@@ -331,13 +331,14 @@ Compare the one computed alpha with the alpha of the files of that class
 
 Title case
 ```
-python -m experiments.analyse_errors_k_fold one --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 
+python -m experiments.analyse_errors_k_fold one --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_compare_one_alpha_title
+
 ```
 
 
 Original case
 ```
-python -m experiments.analyse_errors_k_fold one --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 
+python -m experiments.analyse_errors_k_fold one --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_compare_one_alpha_original
 ```
 
 
