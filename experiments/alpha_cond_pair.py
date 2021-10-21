@@ -43,10 +43,7 @@ def annotate_column(fpath, col_id, title_case):
     :param title_case:
     :return:
     """
-    # create empty logger to disable the logging
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    annotator = Annotator(endpoint=ENDPOINT, title_case=title_case, num_of_threads=3, logger=logger,
+    annotator = Annotator(endpoint=ENDPOINT, title_case=title_case, num_of_threads=3, logger=None,
                                class_prefs=["http://dbpedia.org/ontology/", "http://www.w3.org/2002/07/owl#Thing"])
     annotator.annotate_table(file_dir=fpath, subject_col_id=col_id)
     return annotator
@@ -66,7 +63,7 @@ def predict_class(annotator, fsid, alpha):
     return candidates
 
 
-def compute_file_acc(row, alphas_classes, data_path, correct_class_uri, title_case):
+def compute_file_acc(row, alphas_classes, data_path, correct_class_uri, title_case, alpha_voting="max"):
     annotator = annotate_column(os.path.join(data_path, row['fname']), row['colid'], title_case)
     acc = dict()
     for fsid in range(1, 6):
@@ -90,12 +87,26 @@ def compute_file_acc(row, alphas_classes, data_path, correct_class_uri, title_ca
                         continue
                     pred_class = candidates[0]
                     if pred_class == class_uri:
-                        if candidate_alpha < alpha:
-                            if candidate_alpha >= 0:
-                                print("compute_file_acc> Prediction of %s colid %d (fsid %d)" % (row['fname'], row['colid'], fsid))
-                                print("\tSwitch <%s, %d> to <%s, %d>" % (candidate_class, candidate_alpha, pred_class, alpha))
-                            candidate_alpha = alpha
-                            candidate_class = class_uri
+                        if alpha_voting == "max":
+                            if candidate_alpha < alpha:
+                                if candidate_alpha >= 0:
+                                    print("compute_file_acc> Prediction of %s colid %d (fsid %d)" % (row['fname'], row['colid'], fsid))
+                                    print("\tSwitch max <%s, %f> to <%s, %f>" % (candidate_class, candidate_alpha, pred_class, alpha))
+                                candidate_alpha = alpha
+                                candidate_class = class_uri
+                        elif alpha_voting == "min":
+                            if candidate_alpha > -1:
+                                if candidate_alpha > alpha:
+                                    print("compute_file_acc> Prediction of %s colid %d (fsid %d)" % (
+                                    row['fname'], row['colid'], fsid))
+                                    print("\tSwitch min <%s, %f> to <%s, %f>" % (candidate_class, candidate_alpha, pred_class, alpha))
+                                    candidate_alpha = alpha
+                                    candidate_class = class_uri
+                            else:
+                                candidate_alpha = alpha
+                                candidate_class = class_uri
+                        else:
+                            raise Exception("unknown alpha voting method")
                 if candidate_class == correct_class_uri:
                     res = 1
                 else:
@@ -105,20 +116,21 @@ def compute_file_acc(row, alphas_classes, data_path, correct_class_uri, title_ca
     return acc
 
 
-def get_file_acc(row, class_files_alpha, alphas_classes, class_uri, title_case, data_path):
+def get_file_acc(row, class_files_alpha, alphas_classes, class_uri, title_case, data_path, alpha_voting):
     old = dict()
     for fsid in range(1, 6):
         old[fsid] = dict()
         if fsid in alphas_classes and class_uri in alphas_classes[fsid]:
             old[fsid][class_uri] = alphas_classes[fsid][class_uri].copy()
-        # Just to verify
+            # Just to verify
             alphas_classes[fsid][class_uri] = None
+
             if fsid in class_files_alpha and row.fname in class_files_alpha[fsid] and row.colid in class_files_alpha[fsid][row.fname]:
                 alphas_classes[fsid][class_uri] = class_files_alpha[fsid][row.fname][row.colid].copy()
             else:
                 alphas_classes[fsid][class_uri] = {'mean': -1, 'median': -1}
     acc = compute_file_acc(row=row, alphas_classes=alphas_classes, data_path=data_path, correct_class_uri=class_uri,
-                           title_case=title_case)
+                           title_case=title_case, alpha_voting=alpha_voting)
     for fsid in range(1, 6):
         if fsid in old and class_uri in old[fsid]:
             alphas_classes[fsid][class_uri] = old[fsid][class_uri]
@@ -156,7 +168,7 @@ def get_class_files_alphas(df_class):
     return alphas
 
 
-def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path):
+def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path, alpha_voting):
     # Get the alpha (mean and median) for file class (using one file out from the same class) for the given rows.
     class_files_alpha = get_class_files_alphas(df_class)
     acc = dict()
@@ -167,7 +179,7 @@ def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path
             if row['colid'] in computed_files[row['fname']]:
                 continue
 
-        file_acc = get_file_acc(row, class_files_alpha, alphas_classes, class_uri, title_case, data_path)
+        file_acc = get_file_acc(row, class_files_alpha, alphas_classes, class_uri, title_case, data_path, alpha_voting)
         for fsid in file_acc:
             if fsid not in acc:
                 acc[fsid] = {'mean': [], 'median': []}
@@ -195,7 +207,7 @@ def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path
     return acc
 
 
-def get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path):
+def get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path, alpha_voting):
     acc = dict()
     for class_uri in classes_fnames:
         # # DEBUG
@@ -205,7 +217,7 @@ def get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_ca
         t = [tuple(tt) for tt in classes_fnames[class_uri]]
         df_class = df_alphas[df_alphas[['fname', 'colid']].apply(tuple, axis=1).isin(t)]
         # Get accuracy of the class_uri
-        acc[class_uri] = get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path)
+        acc[class_uri] = get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path, alpha_voting)
     return acc
 
 
@@ -232,21 +244,21 @@ def get_alpha_per_class(df_alphas, classes_fnames):
     return d
 
 
-def get_accuracy(df_alphas, classes_fnames, title_case, data_path):
+def get_accuracy(df_alphas, classes_fnames, title_case, data_path, alpha_voting):
     alphas_classes = dict()
     for fsid in range(1, 6):
         df_alphas_fsid = df_alphas[df_alphas.fsid == fsid]
         alphas_classes[fsid] = get_alpha_per_class(df_alphas_fsid, classes_fnames)
-    acc = get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path)
+    acc = get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path, alpha_voting)
     return acc
 
 
-def workflow(falpha, draw_basename, dataset, fmeta, title_case, data_path, subject_col_fpath):
+def workflow(falpha, draw_basename, dataset, fmeta, title_case, data_path, subject_col_fpath, alpha_voting):
     df_alphas = pd.read_csv(falpha)
     df_alphas[["colid"]] = df_alphas[["colid"]].apply(pd.to_numeric)
     add_alpha_per_file(df_alphas)
     classes_fnames = get_classes_fnames_col_ids(fmeta, dataset, subject_col_fpath=subject_col_fpath)
-    acc = get_accuracy(df_alphas, classes_fnames, title_case, data_path)
+    acc = get_accuracy(df_alphas, classes_fnames, title_case, data_path, alpha_voting)
     print_accuracy_per_fsid(acc)
     if draw_basename:
         generate_diagram(acc, draw_basename)
@@ -268,7 +280,9 @@ def print_accuracy_per_fsid(acc):
                 if acc[class_uri][fsid][a_attr] == -1:
                     continue
                 scores[a_attr].append(acc[class_uri][fsid][a_attr])
+                # print("%d\t%s\t%s\t\t%f" % (fsid, shorten_uri(class_uri), a_attr, acc[class_uri][fsid][a_attr]))
         print("%d\t|%f\t|%f" % (fsid, np.mean(scores['mean']), np.mean(scores['median'])))
+
 
 
 def get_classes_fnames_col_ids(fpath, dataset, ext=".csv", subject_col_fpath=None):
@@ -348,11 +362,11 @@ def generate_diagram(acc, draw_file_base):
         ticks = ax.get_yticks()
         new_ticks = [t for t in ticks]
         texts = ax.get_yticklabels()
-        print(ax.get_yticklabels())
+        # print(ax.get_yticklabels())
         labels = [t.get_text() for t in texts]
         ax.set_yticks(new_ticks)
         ax.set_yticklabels(labels, fontsize=8)
-        print(ax.get_yticklabels())
+        # print(ax.get_yticklabels())
         draw_fname = draw_file_base+"_fsid%d" % (fsid)
         plt.setp(ax.lines, color='k')
         ax.figure.savefig('docs/%s.svg' % draw_fname, bbox_inches="tight")
@@ -373,11 +387,14 @@ def main():
                         help="Whether title case or not. true or false")
     parser.add_argument('--data-path', help="The path to the data (csv files)")
     parser.add_argument('--subject-col', help="The path to the subject column file (only for wcv2)")
+    parser.add_argument('--alpha-voting', default="max", choices=['max', 'min'],
+                        help="The voting method to select alpha if there are several candidates")
     args = parser.parse_args()
 
     if args.falpha and args.fmeta and args.dataset and args.draw and args.data_path:
         workflow(falpha=args.falpha, draw_basename=args.draw, data_path=args.data_path, subject_col_fpath=args.subject_col,
-                 fmeta=args.fmeta, dataset=args.dataset, title_case=(args.title_case.lower() == "title"))
+                 fmeta=args.fmeta, dataset=args.dataset, title_case=(args.title_case.lower() == "title"),
+                 alpha_voting=args.alpha_voting)
     else:
         parser.print_usage()
         parser.print_help()

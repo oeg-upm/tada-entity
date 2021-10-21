@@ -239,6 +239,7 @@ Original case
 
 ### T2Dv1
 
+#### Max alpha voting method
 Title case
 ```
 python -m experiments.alpha_cond_pair --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_cond_pair_title --title_case title --data-path ~/workspaces/Datasets/T2Dv1/tables_complete
@@ -250,6 +251,17 @@ Original case
 python -m experiments.alpha_cond_pair --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_cond_pair_original --title_case original --data-path ~/workspaces/Datasets/T2Dv1/tables_complete
 ```
 
+#### Min alpha voting method
+Title case
+```
+python -m experiments.alpha_cond_pair --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_cond_pair_title_min_vote --title_case title --data-path ~/workspaces/Datasets/T2Dv1/tables_complete --alpha-voting min
+```
+
+
+Original case
+```
+python -m experiments.alpha_cond_pair --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_cond_pair_original_min_vote --title_case original --data-path ~/workspaces/Datasets/T2Dv1/tables_complete --alpha-voting min
+```
 
 
 
@@ -327,14 +339,20 @@ python -m experiments.analyse_errors_k_fold sd --falpha wc2_alpha_original_case.
 ### Compare One alpha
 Compare the one computed alpha with the alpha of the files of that class
 
+
 #### T2Dv1
 
 Title case
 ```
 python -m experiments.analyse_errors_k_fold one --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_compare_one_alpha_title
-
 ```
 
+Generate diagram
+1. Manually copy the numbers to `wcv1_one_vs_cppo_title.csv`
+2. Run the following command
+```
+python docs/generate_one_cppo_diagrams.py wcv1_one_vs_cppo_title.csv wcv1_one_vs_cppo_title
+```
 
 Original case
 ```

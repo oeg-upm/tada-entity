@@ -23,10 +23,11 @@ class Annotator:
                  cache_dir=".cache"):
         if logger is None:
             logger = logging.getLogger(__name__)
-            logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.ERROR)
             # create console handler and set level to debug
-            handler = logging.StreamHandler()
-            handler.setLevel(logging.DEBUG)
+            #handler = logging.StreamHandler()
+            handler = logging.NullHandler()
+            handler.setLevel(logging.ERROR)
             logger.addHandler(handler)
 
         self.title_case = title_case

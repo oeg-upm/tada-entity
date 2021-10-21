@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import sys
 
+
 sns.set_style("whitegrid")
 
 
@@ -38,13 +39,17 @@ def parse_file(fpath):
     for idx, row in df.iterrows():
         r = [row['fsid'], row['One Alpha'], 'One Alpha']
         rows.append(r)
-        r = [row['fsid'], row['CPPO'], 'CPPO']
+        r = [row['fsid'], row['CPPO (max)'], 'CPPO (max)']
+        rows.append(r)
+        r = [row['fsid'], row['CPPO (min)'], 'CPPO (min)']
         rows.append(r)
     df_new = pd.DataFrame(rows, columns=['fsid', 'Accuracy', 'Method'])
     return df_new
 
 
 if __name__ == '__main__':
+    if len(sys.argv) != 3:
+        print("Expects the results csv file and the basename of the diagram")
     data = parse_file(sys.argv[1])
     generate_diagram(data, sys.argv[2])
 

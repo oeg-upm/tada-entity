@@ -103,6 +103,7 @@ file which has an optimal alpha.
 
 
 ### T2Dv1
+#### Using alpha max
 |fsid| Original Case | Title Case |
 |:---:|:---:|:---:|
 |  1  |  <img src="./wcv1_alpha_cond_pair_original_fsid1.svg" width="300px">  | <img src="./wcv1_alpha_cond_pair_title_fsid1.svg" width="300px"> |
@@ -111,6 +112,15 @@ file which has an optimal alpha.
 |  4  |  <img src="./wcv1_alpha_cond_pair_original_fsid4.svg" width="300px">  | <img src="./wcv1_alpha_cond_pair_title_fsid4.svg" width="300px"> |
 |  5  | <img src="./wcv1_alpha_cond_pair_original_fsid5.svg" width="300px">  | <img src="./wcv1_alpha_cond_pair_title_fsid5.svg" width="300px"> |
 
+
+#### Using alpha mix
+|fsid| Original Case | Title Case |
+|:---:|:---:|:---:|
+|  1  |  <img src="./wcv1_alpha_cond_pair_original_min_vote_fsid1.svg" width="300px">  | <img src="./wcv1_alpha_cond_pair_title_min_vote_fsid1.svg" width="300px"> |
+|  2  |  <img src="./wcv1_alpha_cond_pair_original_min_vote_fsid2.svg" width="300px">  | <img src="./wcv1_alpha_cond_pair_title_min_vote_fsid2.svg" width="300px"> |
+|  3  | <img src="./wcv1_alpha_cond_pair_original_min_vote_fsid3.svg" width="300px">  | <img src="./wcv1_alpha_cond_pair_title_min_vote_fsid3.svg" width="300px"> |
+|  4  |  <img src="./wcv1_alpha_cond_pair_original_min_vote_fsid4.svg" width="300px">  | <img src="./wcv1_alpha_cond_pair_title_min_vote_fsid4.svg" width="300px"> |
+|  5  | <img src="./wcv1_alpha_cond_pair_original_min_vote_fsid5.svg" width="300px">  | <img src="./wcv1_alpha_cond_pair_title_min_vote_fsid5.svg" width="300px"> |
 
 
 
@@ -495,7 +505,7 @@ Comparing the optimal alpha (computed from the mean or median of the mid ranges 
 
 ## Accuracy of One alpha for all verses conditional pair method
 
-Accuracy for One alpha method
+#### Accuracy for One alpha method
 
 |fsid	|accuracy of mean	|accuracy of median|
 |:---:|:---:|:---:|
@@ -508,7 +518,9 @@ Accuracy for One alpha method
 
 
 
-Accuracy using the Conditional Pair method
+#### Accuracy using the Conditional Pair method
+
+##### Using max
 
 |fsid	|accuracy of mean	|accuracy of median|
 |:---:|:---:|:---:|
@@ -518,7 +530,15 @@ Accuracy using the Conditional Pair method
 4	|0.883173	|0.885278
 5	|0.896667	|0.888667
 
+##### Using min
 
+|fsid	|accuracy of mean	|accuracy of median|
+|:---:|:---:|:---:|
+1	|1.000000	|1.000000
+2	|1.000000	|1.000000
+3	|1.000000	|1.000000
+4	|1.000000	|1.000000
+5	|0.000000	|0.000000
 
 
 ## SemTab 2019

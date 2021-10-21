@@ -104,7 +104,7 @@ class AlphaCondPairTest(TestCase):
         class_files_alpha = acp.get_class_files_alphas(df)
 
         for idx, row in df.iterrows():
-            acc = acp.get_file_acc(row, class_files_alpha, alphas_classes, correct_class_uri, False, data_path)
+            acc = acp.get_file_acc(row, class_files_alpha, alphas_classes, correct_class_uri, False, data_path, "max")
             break
 
         for fsid in range(1, 6):
@@ -158,7 +158,7 @@ class AlphaCondPairTest(TestCase):
         birds_files_alpha = acp.get_class_files_alphas(df_birds)
 
         for idx, row in df_swimmers.iterrows():
-            acc = acp.get_file_acc(row, swimmers_files_alpha, alphas_classes, correct_class_uri, False, data_path)
+            acc = acp.get_file_acc(row, swimmers_files_alpha, alphas_classes, correct_class_uri, False, data_path, "max")
             break
 
         for fsid in range(1, 5):
@@ -166,14 +166,14 @@ class AlphaCondPairTest(TestCase):
                 self.assertEqual(acc[fsid][a_attr], 1)
 
         for idx, row in df_golfers.iterrows():
-            acc = acp.get_file_acc(row, golfers_files_alpha, alphas_classes, correct_class_uri2, False, data_path)
+            acc = acp.get_file_acc(row, golfers_files_alpha, alphas_classes, correct_class_uri2, False, data_path, "max")
             break
         for fsid in range(1, 5):
             for a_attr in ['mean', 'median']:
                 self.assertEqual(acc[fsid][a_attr], 1)
 
         for idx, row in df_birds.iterrows():
-            acc = acp.get_file_acc(row, birds_files_alpha, alphas_classes, correct_class_uri3, False, data_path)
+            acc = acp.get_file_acc(row, birds_files_alpha, alphas_classes, correct_class_uri3, False, data_path, "max")
             break
         for fsid in range(1, 5):
             for a_attr in ['mean', 'median']:
@@ -232,7 +232,7 @@ class AlphaCondPairTest(TestCase):
         birds_files_alpha = acp.get_class_files_alphas(df_birds)
 
         for idx, row in df_swimmers.iterrows():
-            acc = acp.get_file_acc(row, swimmers_files_alpha, alphas_classes, correct_class_uri, False, data_path)
+            acc = acp.get_file_acc(row, swimmers_files_alpha, alphas_classes, correct_class_uri, False, data_path, "max")
             break
 
         for fsid in range(1, 6):
@@ -240,14 +240,14 @@ class AlphaCondPairTest(TestCase):
                 self.assertEqual(acc[fsid][a_attr], 1)
 
         for idx, row in df_golfers.iterrows():
-            acc = acp.get_file_acc(row, golfers_files_alpha, alphas_classes, correct_class_uri2, False, data_path)
+            acc = acp.get_file_acc(row, golfers_files_alpha, alphas_classes, correct_class_uri2, False, data_path, "max")
             break
         for fsid in range(1, 6):
             for a_attr in ['mean', 'median']:
                 self.assertEqual(acc[fsid][a_attr], 1)
 
         for idx, row in df_birds.iterrows():
-            acc = acp.get_file_acc(row, birds_files_alpha, alphas_classes, correct_class_uri3, False, data_path)
+            acc = acp.get_file_acc(row, birds_files_alpha, alphas_classes, correct_class_uri3, False, data_path, "max")
             break
         for fsid in range(1, 6):
             for a_attr in ['mean', 'median']:
@@ -329,7 +329,7 @@ class AlphaCondPairTest(TestCase):
         dfs = [df_swimmers, df_golfers, df_birds]
 
         for idx, df in enumerate(dfs):
-            acc[idx] = acp.get_acc_per_class(df, alphas_classes, correct_class_uris[idx], False, data_path)
+            acc[idx] = acp.get_acc_per_class(df, alphas_classes, correct_class_uris[idx], False, data_path, "max")
 
         for fsid in range(1, 5):
             for class_idx in range(len(dfs)):
@@ -382,7 +382,7 @@ class AlphaCondPairTest(TestCase):
         }
 
         classes_fnames = acp.get_classes_fnames_col_ids("tests/meta1.csv", "wcv1")
-        acc = acp.get_accuracy_for_classes(df, classes_fnames, alphas_classes, True, "tests")
+        acc = acp.get_accuracy_for_classes(df, classes_fnames, alphas_classes, True, "tests", "max")
 
         for fsid in range(1, 5):
             for class_uri in correct_class_uris:
@@ -434,7 +434,7 @@ class AlphaCondPairTest(TestCase):
         }
 
         classes_fnames = acp.get_classes_fnames_col_ids("tests/meta1.csv", "wcv1")
-        acc = acp.get_accuracy(df, classes_fnames, False, data_path)
+        acc = acp.get_accuracy(df, classes_fnames, False, data_path, "max")
 
         for fsid in range(1, 5):
             for class_uri in correct_class_uris:
@@ -452,7 +452,7 @@ class AlphaCondPairTest(TestCase):
         data_path = "tests"
         correct_class_uris = ["http://dbpedia.org/ontology/Swimmer", "http://dbpedia.org/ontology/GolfPlayer",
                               "http://dbpedia.org/ontology/Bird"]
-        acc = acp.workflow('tests/alpha_test_5.csv', None, "wcv1", "tests/meta1.csv", False, data_path, None)
+        acc = acp.workflow('tests/alpha_test_5.csv', None, "wcv1", "tests/meta1.csv", False, data_path, None, "max")
         for fsid in range(1, 5):
             for class_uri in correct_class_uris:
                 self.assertIn(fsid, acc[class_uri])
@@ -473,7 +473,7 @@ class AlphaCondPairTest(TestCase):
         correct_class_uris = ["http://dbpedia.org/ontology/Swimmer", "http://dbpedia.org/ontology/GolfPlayer",
                               "http://dbpedia.org/ontology/Bird"]
 
-        acc = acp.workflow('tests/alpha_test_3.csv', None, "wcv1", "tests/meta1.csv", False, data_path, None)
+        acc = acp.workflow('tests/alpha_test_3.csv', None, "wcv1", "tests/meta1.csv", False, data_path, None, "max")
 
         for fsid in range(1, 5):
             for class_uri in correct_class_uris:
@@ -498,7 +498,7 @@ class AlphaCondPairTest(TestCase):
         correct_class_uris = ["http://dbpedia.org/ontology/Swimmer", "http://dbpedia.org/ontology/GolfPlayer",
                               "http://dbpedia.org/ontology/Bird"]
 
-        acc = acp.workflow('tests/alpha_test_4.csv', None, "wcv1", "tests/meta2.csv", False, data_path, None)
+        acc = acp.workflow('tests/alpha_test_4.csv', None, "wcv1", "tests/meta2.csv", False, data_path, None, "max")
 
         # Swimmer
         for a_attr in ['mean', 'median']:
