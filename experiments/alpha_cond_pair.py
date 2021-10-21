@@ -207,9 +207,20 @@ def get_acc_per_class(df_class, alphas_classes, class_uri, title_case, data_path
     return acc
 
 
-def get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path, alpha_voting):
+def get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path, alpha_voting,
+                             debug_class=None):
+    print("%s > debug class: %s" % (__name__, str(debug_class)))
     acc = dict()
     for class_uri in classes_fnames:
+        if debug_class:
+            # print("**** Debug class is there")
+            if debug_class not in class_uri:
+                # print("*** Ignore: %s" % class_uri)
+                continue
+            # else:
+            #     print("*** Class %s is there" % class_uri)
+        # else:
+        #     print("*** No Debug class")
         # # DEBUG
         # if 'Airline' not in class_uri:
         #     continue
@@ -244,21 +255,24 @@ def get_alpha_per_class(df_alphas, classes_fnames):
     return d
 
 
-def get_accuracy(df_alphas, classes_fnames, title_case, data_path, alpha_voting):
+def get_accuracy(df_alphas, classes_fnames, title_case, data_path, alpha_voting, debug_class=None):
     alphas_classes = dict()
     for fsid in range(1, 6):
         df_alphas_fsid = df_alphas[df_alphas.fsid == fsid]
         alphas_classes[fsid] = get_alpha_per_class(df_alphas_fsid, classes_fnames)
-    acc = get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path, alpha_voting)
+    acc = get_accuracy_for_classes(df_alphas, classes_fnames, alphas_classes, title_case, data_path, alpha_voting,
+                                   debug_class)
     return acc
 
 
-def workflow(falpha, draw_basename, dataset, fmeta, title_case, data_path, subject_col_fpath, alpha_voting):
+def workflow(falpha, draw_basename, dataset, fmeta, title_case, data_path, subject_col_fpath, alpha_voting,
+             debug_class=None):
+    print("%s > debug class: %s" % (__name__, str(debug_class)))
     df_alphas = pd.read_csv(falpha)
     df_alphas[["colid"]] = df_alphas[["colid"]].apply(pd.to_numeric)
     add_alpha_per_file(df_alphas)
     classes_fnames = get_classes_fnames_col_ids(fmeta, dataset, subject_col_fpath=subject_col_fpath)
-    acc = get_accuracy(df_alphas, classes_fnames, title_case, data_path, alpha_voting)
+    acc = get_accuracy(df_alphas, classes_fnames, title_case, data_path, alpha_voting, debug_class)
     print_accuracy_per_fsid(acc)
     if draw_basename:
         generate_diagram(acc, draw_basename)
@@ -282,7 +296,6 @@ def print_accuracy_per_fsid(acc):
                 scores[a_attr].append(acc[class_uri][fsid][a_attr])
                 # print("%d\t%s\t%s\t\t%f" % (fsid, shorten_uri(class_uri), a_attr, acc[class_uri][fsid][a_attr]))
         print("%d\t|%f\t|%f" % (fsid, np.mean(scores['mean']), np.mean(scores['median'])))
-
 
 
 def get_classes_fnames_col_ids(fpath, dataset, ext=".csv", subject_col_fpath=None):
@@ -382,19 +395,20 @@ def main():
     parser.add_argument('--falpha', help="The path to the alpha results file.")
     parser.add_argument('--fmeta', help="The path to the meta file which contain the filenames and classes.")
     parser.add_argument('--dataset', choices=['wcv1', 'wcv2'], help="The path to the csv files")
-    parser.add_argument('--draw', help="The base name for the diagram file (without the extension)")
+    parser.add_argument('--draw', default=None, help="The base name for the diagram file (without the extension)")
     parser.add_argument('--title_case', default="title", choices=["title", "original"],
                         help="Whether title case or not. true or false")
     parser.add_argument('--data-path', help="The path to the data (csv files)")
     parser.add_argument('--subject-col', help="The path to the subject column file (only for wcv2)")
     parser.add_argument('--alpha-voting', default="max", choices=['max', 'min'],
                         help="The voting method to select alpha if there are several candidates")
+    parser.add_argument('--debug-class', default=None, help="The class to be debugged")
     args = parser.parse_args()
 
     if args.falpha and args.fmeta and args.dataset and args.draw and args.data_path:
         workflow(falpha=args.falpha, draw_basename=args.draw, data_path=args.data_path, subject_col_fpath=args.subject_col,
                  fmeta=args.fmeta, dataset=args.dataset, title_case=(args.title_case.lower() == "title"),
-                 alpha_voting=args.alpha_voting)
+                 alpha_voting=args.alpha_voting, debug_class=args.debug_class)
     else:
         parser.print_usage()
         parser.print_help()

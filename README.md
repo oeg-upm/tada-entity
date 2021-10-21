@@ -257,6 +257,12 @@ Title case
 python -m experiments.alpha_cond_pair --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_cond_pair_title_min_vote --title_case title --data-path ~/workspaces/Datasets/T2Dv1/tables_complete --alpha-voting min
 ```
 
+DEBUG
+```
+python -m experiments.alpha_cond_pair --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw test --title_case title --data-path ~/workspaces/Datasets/T2Dv1/tables_complete --alpha-voting min
+--debug-class Journal
+```
+
 
 Original case
 ```
