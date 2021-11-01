@@ -1,9 +1,9 @@
 import os
-from django.test import TestCase
-from tadae.models import *
+from unittest import TestCase
+# from tadae.models import *
 import annotator
 import commons
-from tadae.settings import BASE_DIR
+# from tadae.settings import BASE_DIR
 from annotator.annot import Annotator
 
 

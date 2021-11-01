@@ -12,19 +12,22 @@ from multiprocessing import Process, Lock, Pipe
 from TPool.TPool import Pool
 
 from commons import random_string
-from commons.easysparql import get_entities_and_classes, get_entities_and_classes_naive
-from commons.easysparql import get_parents_of_class, get_num_class_subjects
+# from commons.easysparql import get_entities_and_classes, get_entities_and_classes_naive
+# from commons.easysparql import get_parents_of_class, get_num_class_subjects
 from commons.tgraph import TGraph
+from easysparql import cacher, easysparqlclass
 
 
 class Annotator:
-    def __init__(self, num_of_threads=10, logger=None, endpoint="", class_prefs=[], alpha=None, title_case=False):
+    def __init__(self, num_of_threads=10, logger=None, endpoint="", class_prefs=[], alpha=None, title_case=False,
+                 cache_dir=".cache"):
         if logger is None:
             logger = logging.getLogger(__name__)
-            logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.ERROR)
             # create console handler and set level to debug
-            handler = logging.StreamHandler()
-            handler.setLevel(logging.DEBUG)
+            #handler = logging.StreamHandler()
+            handler = logging.NullHandler()
+            handler.setLevel(logging.ERROR)
             logger.addHandler(handler)
 
         self.title_case = title_case
@@ -38,6 +41,8 @@ class Annotator:
         self.ancestors = dict()
         self.classes_counts = dict()
         self.alpha = alpha
+        self.easysparql = easysparqlclass.EasySparql(endpoint=self.endpoint, lang_tag="@en", cache_dir=cache_dir,
+                                                     logger=logger)
 
     def clear_for_reuse(self):
         self.alpha = None
@@ -70,10 +75,10 @@ class Annotator:
         logger.info('annotating: %s (col=%d)' % (file_dir, subject_col_id))
         params_list = self._get_cell_ann_param_list(subject_col_id, file_dir)
 
-        # logger.debug("annotate_csv> total number of lines: " + str(len(params_list)))
+        logger.debug("annotate_csv> total number of lines: " + str(len(params_list)))
         pool = Pool(max_num_of_threads=self.num_of_threads, func=self.annotate_single_cell, params_list=params_list)
         pool.run()
-        # logger.debug("annotate_csv> annotated all cells")
+        logger.debug("annotate_csv> annotated all cells (took %f )" % (time.time() - start))
 
         self.build_ancestors_lookup()
         self.remove_unwanted_parent_classes()
@@ -122,14 +127,13 @@ class Annotator:
         else:
             possible_cell_values = [cell_value]
         for cell_val in possible_cell_values:
-            entity_class_pairs = get_entities_and_classes(subject_name=cell_val, attributes=attrs,
-                                                          endpoint=self.endpoint)
+            entity_class_pairs = self.easysparql.get_entities_and_classes(subject_name=cell_val, attributes=attrs)
             if len(entity_class_pairs) > 0:
                 break
 
         if len(entity_class_pairs) == 0:
             for cell_val in possible_cell_values:
-                entity_class_pairs = get_entities_and_classes_naive(subject_name=cell_val, endpoint=self.endpoint)
+                entity_class_pairs = self.easysparql.get_entities_and_classes_naive(subject_name=cell_val)
                 if len(entity_class_pairs) > 0:
                     break
         # entity_class_pairs = get_entities_and_classes(subject_name=cell_value, attributes=attrs, endpoint=self.endpoint)
@@ -221,7 +225,7 @@ class Annotator:
             return False
         newly_added = self.tgraph.add_class(class_uri)
         if newly_added:
-            parents = get_parents_of_class(class_uri, endpoint=self.endpoint)
+            parents = self.easysparql.get_parents_of_class(class_uri)
             for p in parents:
                 if not self.class_prefix_match(p):
                     continue
@@ -318,7 +322,7 @@ class Annotator:
     def _compute_classes_counts(self):
         for class_uri in self.tgraph.nodes:
             if class_uri not in self.classes_counts:  # to skip in case it was cleared for the reuse
-                num = get_num_class_subjects(class_uri, self.endpoint)
+                num = self.easysparql.get_num_class_subjects(class_uri)
                 self.classes_counts[class_uri] = num
 
     def compute_Is(self):

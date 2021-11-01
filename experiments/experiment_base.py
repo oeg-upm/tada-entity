@@ -15,10 +15,11 @@ class ExperimentBase:
         self.log_fname = log_fname
         if log_fname:
             f = open(log_fname, "w")
-            f.write(",".join(["fname", "colid" , "fs", "alpha", "k"])+"\n")
+            f.write(",".join(["fname", "colid", "fs", "alpha", "k"])+"\n")
             f.close()
         for i in range(1, 6):
             self.k[i] = dict()
+        self.alpha_ranges = dict()
 
     def append_line(self, line):
         if self.log_fname:
@@ -82,6 +83,61 @@ class ExperimentBase:
         self.k[fsid][self.fpath + str(self.col_id)] = kmin
         self.append_line(",".join([self.fpath.split("/")[-1], str(self.col_id), str(fsid), str(max_alpha), str(kmin)]))
         print("max alpha: %s (fs%d)" % (str(max_alpha), fsid))
+
+    def get_alpha_range_fsid(self, correct_candidates, fsid, alpha_inc, k):
+        alpha = 0.0
+        min_alpha = None
+        max_alpha = None
+        while alpha < 1:
+            alpha += alpha_inc
+            self.annotator.compute_f(alpha)
+            candidates = self.annotator.get_top_k(fsid=fsid, k=k)
+            if len(candidates) == 0:
+                if self.fpath not in self.not_founds:
+                    self.not_founds.append(self.fpath)
+                return -1, -1
+            for idx, c in enumerate(candidates):
+                if c in correct_candidates:
+                    if min_alpha is None:
+                        min_alpha = alpha
+                    max_alpha = alpha
+                elif min_alpha is not None:
+                    return min_alpha, max_alpha
+        print("%s> correct_candidates: %s" % (__name__, str(correct_candidates)))
+        print(min_alpha)
+        print(max_alpha)
+        return min_alpha, max_alpha
+
+    def compute_alpha_range(self, correct_candidates, alpha_inc=0.001, k=1):
+        print("%s> " % (__name__))
+        for i in range(1, 6):
+            fsid = i
+            from_alpha, to_alpha = self.get_alpha_range_fsid(correct_candidates, fsid=fsid, alpha_inc=alpha_inc, k=k)
+            print("from alpha to alpha: ")
+            print(from_alpha)
+            print(to_alpha)
+            if from_alpha is None or to_alpha is None:
+                from_alpha = -1
+                to_alpha = -1
+            if self.fpath not in self.alpha_ranges:
+                self.alpha_ranges[self.fpath] = {
+                    self.col_id: dict()
+                }
+            elif self.col_id not in self.alpha_ranges[self.fpath]:
+                self.alpha_ranges[self.fpath][self.col_id] = dict()
+            self.alpha_ranges[self.fpath][self.col_id][fsid] = (from_alpha, to_alpha)
+
+    def save_alpha_ranges(self, outf):
+        f = open(outf, 'w')
+        f.write("fname,colid,fsid,from_alpha,to_alpha\n")
+        print("alpha ranges: ")
+        print(self.alpha_ranges)
+        for fp in self.alpha_ranges:
+            for colid in self.alpha_ranges[fp]:
+                for fsid in self.alpha_ranges[fp][colid]:
+                    from_alpha, to_alpha = self.alpha_ranges[fp][colid][fsid]
+                    f.write("%s,%d,%d,%.5f,%.5f\n" % (fp.split('/')[-1], colid, fsid, from_alpha, to_alpha))
+        f.close()
 
     def get_scores(self, k):
         for i in range(1, 6):

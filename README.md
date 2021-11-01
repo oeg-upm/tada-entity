@@ -5,9 +5,399 @@
 
 **This is being re-written**
 
+## Alpha analysis
+
+To run alpha analysis
+
+### T2Dv1
+1. Generate the alpha ranges.
+
+Original case
+```
+python -m experiments.wcv1_experiment experiments/wcv1_meta.csv ~/workspaces/Datasets/T2Dv1/tables_complete original alpha
+```
+
+Title case
+```
+python -m experiments.wcv1_experiment experiments/wcv1_meta.csv ~/workspaces/Datasets/T2Dv1/tables_complete title alpha
+```
+
+2. Generate mid alpha diagrams.
+
+Title case
+```
+python -m experiments.alpha_analysis wc1_alpha_title_case.csv  experiments/wcv1_meta.csv wcv1 --draw wcv1_alpha_mid_title --midalpha  
+```
+   
+Original case
+```
+python -m experiments.alpha_analysis wc1_alpha_original_case.csv  experiments/wcv1_meta.csv wcv1 --draw wcv1_alpha_mid_original --midalpha  
+```
+
+3. Generate from-to alpha diagrams.
+   
+Title case
+
+```
+python -m experiments.alpha_analysis wc1_alpha_title_case.csv  experiments/wcv1_meta.csv wcv1 --draw wcv1_alpha_from_to_title
+```
+
+Original case.
+
+```
+python -m experiments.alpha_analysis wc1_alpha_original_case.csv  experiments/wcv1_meta.csv wcv1 --draw wcv1_alpha_from_to_original
+```
+
+### T2Dv2
+
+1. Generate alpha ranges
+
+Original 
+```
+python -m experiments.wcv2_experiment experiments/wcv2_meta.csv experiments/wcv2_subject_columns_gs.csv ~/workspaces/Datasets/T2Dv2/csv original alpha 
+```
+
+Title 
+```
+python -m experiments.wcv2_experiment experiments/wcv2_meta.csv experiments/wcv2_subject_columns_gs.csv ~/workspaces/Datasets/T2Dv2/csv title alpha 
+```
+
+
+1. Generate mid alpha diagrams
+   
+Title case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_mid_title --midalpha
+```
+   
+Original case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_mid_original --midalpha
+```
+
+3. Generate from-to alpha diagrams
+   
+Title case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_from_to_title
+```
+
+Original case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_from_to_original
+```
+
+
+### ST19R1
+
+1. Generate alpha ranges
+
+Original 
+```
+python -m experiments.st19_r1_experiment ~/workspaces/Datasets/semtab2019/Round\ 1/gt/CTA_Round1_gt.csv ~/workspaces/Datasets/semtab2019/Round\ 1/tables original alpha
+```
+
+Title 
+```
+python -m experiments.st19_r1_experiment ~/workspaces/Datasets/semtab2019/Round\ 1/gt/CTA_Round1_gt.csv ~/workspaces/Datasets/semtab2019/Round\ 1/tables title alpha
+```
+
+
+1. Generate mid alpha diagrams
+   
+Title case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_mid_title --midalpha
+```
+   
+Original case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_mid_original --midalpha
+```
+
+3. Generate from-to alpha diagrams
+   
+Title case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_title_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_from_to_title
+```
+
+Original case.
+
+```
+python -m experiments.alpha_analysis wc2_alpha_original_case.csv  experiments/wcv2_meta.csv wcv2 --draw wcv2_alpha_from_to_original
+```
+
+
+
+
+
+
+## Alpha k-fold evaluation
+
+### T2Dv1
+To run alpha evaluation
+
+1. Generate scores file
+
+Title case
+
+```
+python -m experiments.alpha_eval_k_fold --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --data_dir ~/workspaces/Datasets/T2Dv1/tables_complete --title true --dataset wcv1
+```
+
+Original case
+
+```
+python -m experiments.alpha_eval_k_fold --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --data_dir ~/workspaces/Datasets/T2Dv1/tables_complete --title false --dataset wcv1
+```
+
+2. Generate the diagrams
+
+Title case
+
+```
+python -m experiments.alpha_eval_k_fold --draw wcv1_alpha_k_fold_scores --fscores wcv1_k_fold_alpha_title.csv --title true  --dataset wcv1
+```
+
+Original case
+
+```
+python -m experiments.alpha_eval_k_fold --draw wcv1_alpha_k_fold_scores --fscores wcv1_k_fold_alpha_original.csv --title false  --dataset wcv1
+```
+
+
+### T2Dv2
+To run alpha evaluation
+
+1. Generate scores file
+
+Title case
+
+```
+python -m experiments.alpha_eval_k_fold --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --data_dir ~/workspaces/Datasets/T2Dv2/csv --title true --dataset wcv2
+```
+
+Original case
+
+```
+python -m experiments.alpha_eval_k_fold --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --data_dir ~/workspaces/Datasets/T2Dv2/csv --title false --dataset wcv2
+```
+
+2. Generate the diagrams
+
+Title case
+```
+python -m experiments.alpha_eval_k_fold --draw wcv2_alpha_k_fold_scores --fscores wcv2_k_fold_alpha_title.csv --title true --dataset wcv2
+```
+
+Original case
+```
+python -m experiments.alpha_eval_k_fold --draw wcv2_alpha_k_fold_scores --fscores wcv2_k_fold_alpha_original.csv --title false --dataset wcv2
+```
+
+
+## One alpha for all
+
+### T2Dv1
+
+Title case
+```
+ python -m experiments.alpha_eval_one --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1  --draw wcv1_alpha_one_title
+```
+
+Original case
+```
+ python -m experiments.alpha_eval_one --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_one_original
+```
+
+
+### T2Dv2
+
+Title case
+```
+ python -m experiments.alpha_eval_one --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --draw wcv2_alpha_one_title
+```
+
+Original case
+```
+ python -m experiments.alpha_eval_one --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2  --draw wcv2_alpha_one_original
+```
+
+
+
+## Conditional (Input-Output) Pair of Parameters and Outcome
+
+
+
+### T2Dv1
+
+#### Max alpha voting method
+Title case
+```
+python -m experiments.alpha_cond_pair --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_cond_pair_title --title_case title --data-path ~/workspaces/Datasets/T2Dv1/tables_complete
+```
+
+
+Original case
+```
+python -m experiments.alpha_cond_pair --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_cond_pair_original --title_case original --data-path ~/workspaces/Datasets/T2Dv1/tables_complete
+```
+
+#### Min alpha voting method
+Title case
+```
+python -m experiments.alpha_cond_pair --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_cond_pair_title_min_vote --title_case title --data-path ~/workspaces/Datasets/T2Dv1/tables_complete --alpha-voting min
+```
+
+DEBUG
+```
+python -m experiments.alpha_cond_pair --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw test --title_case title --data-path ~/workspaces/Datasets/T2Dv1/tables_complete --alpha-voting min
+--debug-class Journal
+```
+
+
+Original case
+```
+python -m experiments.alpha_cond_pair --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_alpha_cond_pair_original_min_vote --title_case original --data-path ~/workspaces/Datasets/T2Dv1/tables_complete --alpha-voting min
+```
+
+
+
+### T2Dv2
+
+Title case
+```
+python -m experiments.alpha_cond_pair --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --draw wcv2_alpha_cond_pair_title --title_case title --data-path ~/workspaces/Datasets/T2Dv2/csv --subject-col experiments/wcv2_subject_columns_gs.csv 
+```
+
+
+Original case
+```
+python -m experiments.alpha_cond_pair --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --draw wcv2_alpha_cond_pair_original --title_case original --data-path ~/workspaces/Datasets/T2Dv2/csv --subject-col experiments/wcv2_subject_columns_gs.csv 
+```
+
+
+## Class k-fold error analysis
+
+### Ranges
+Check the mean and the median for the (mid) alpha ranges per fsid
+#### T2Dv1
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold range --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1  
+```
+
+Original case
+
+```
+ python -m experiments.analyse_errors_k_fold range --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1  
+```
+
+#### T2Dv2
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold range --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --subject-col experiments/wcv2_subject_columns_gs.csv 
+```
+
+Original case
+```
+python -m experiments.analyse_errors_k_fold range --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --subject-col experiments/wcv2_subject_columns_gs.csv 
+```
+
+### Diffs
+Check the mean and the median for differences between the mean/median of the (mid) alphas for each 
+class and aggregated them per each fsid
+
+#### T2Dv1
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold sd --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 
+```
+
+Original case
+```
+python -m experiments.analyse_errors_k_fold sd --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1  
+```
+
+#### T2Dv2
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold sd --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2  --subject-col experiments/wcv2_subject_columns_gs.csv
+```
+
+Original case
+```
+python -m experiments.analyse_errors_k_fold sd --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --subject-col experiments/wcv2_subject_columns_gs.csv
+```
+
+### Compare One alpha
+Compare the one computed alpha with the alpha of the files of that class
+
+
+#### T2Dv1
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold one --falpha wc1_alpha_title_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_compare_one_alpha_title
+```
+
+Generate diagram
+1. Manually copy the numbers to `wcv1_one_vs_cppo_title.csv`
+2. Run the following command
+```
+python docs/generate_one_cppo_diagrams.py wcv1_one_vs_cppo_title.csv wcv1_one_vs_cppo_title
+```
+
+Original case
+```
+python -m experiments.analyse_errors_k_fold one --falpha wc1_alpha_original_case.csv --fmeta experiments/wcv1_meta.csv --dataset wcv1 --draw wcv1_compare_one_alpha_original
+```
+
+
+#### T2Dv2
+
+Title case
+```
+python -m experiments.analyse_errors_k_fold one --falpha wc2_alpha_title_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --draw wcv2_compare_one_alpha_title
+
+```
+
+
+Original case
+```
+python -m experiments.analyse_errors_k_fold one --falpha wc2_alpha_original_case.csv --fmeta experiments/wcv2_meta.csv --dataset wcv2 --draw wcv2_compare_one_alpha_original
+```
+
+
+
 # NEW
 ## Experiments
 * alpha inc `0.001`
+
+### WCv2
+
+meta_fdir, sc_dir, data_dir 
+To run the experiment
+`python -m experiments.wcv2_experiment <meta dir> <subject column dir> <data dir>`
+
+meta dir: the path to the file which contains the file names and their classes
+subject column dir: the path to the file which contains the subject column ids
+data dir: the path to the folder which contain the csv files
+```
+python -m experiments.wcv2_experiment <meta dir> <subject column dir> <data dir>
+```
 ### SemTab
 #### Invalid
 ```
