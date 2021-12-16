@@ -3,3 +3,4 @@ python-dateutil==2.8.2
 pytz==2021.1
 six==1.16.0
 easysparql==1.5
+TPool==1.3
