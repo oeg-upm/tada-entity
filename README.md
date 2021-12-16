@@ -383,8 +383,6 @@ python -m experiments.analyse_errors_k_fold one --falpha wc2_alpha_original_case
 ```
 
 
-
-# NEW
 ## Experiments
 * alpha inc `0.001`
 
