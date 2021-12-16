@@ -3,7 +3,8 @@
 [![codecov](https://codecov.io/gh/oeg-upm/tada-entity/branch/master/graph/badge.svg)](https://codecov.io/gh/oeg-upm/tada-entity)
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 
-**This is being re-written**
+## Results
+[results](docs/evaluation.md)
 
 ## Alpha analysis
 
@@ -414,6 +415,7 @@ Round 1/tables/55238374_0_3379409961751009152.csv
 Round 1/tables/57943722_0_8666078014685775876.csv
 ```
 
+<!--
 # OLD
 
 Tabular Data Annotation of entity columns
@@ -519,3 +521,5 @@ to specify the engine of your choosing (`sqlite` is not thread-safe, we don't re
 ```sh run_coverage.sh```
 
 *Note that the experiments are not included in the coverage*
+
+-->
